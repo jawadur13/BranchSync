@@ -51,4 +51,4 @@
 - [ ] Frontend Development (React Dashboards)
 
 ---
-*Created by Md Jawadur Rafid (22203044) for Practicum Spring 2026*
+*Developed by [Jawadur Rafid](https://jawadur.pro.bd)*
