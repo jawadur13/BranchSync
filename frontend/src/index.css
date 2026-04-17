@@ -1,0 +1,86 @@
+:root {
+  --primary-color: #003366; /* Jamuna Bank Blue */
+  --secondary-color: #f2a900; /* Jamuna Bank Gold/Yellow */
+  --accent-color: #00a4e4;
+  --bg-dark: #0a0e14;
+  --bg-card: #161b22;
+  --text-main: #e6edf3;
+  --text-dim: #848d97;
+  --border-color: #30363d;
+  --glass-bg: rgba(22, 27, 34, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --success: #238636;
+  --error: #da3633;
+  --font-family: 'Outfit', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+}
+
+/* Modern Button */
+.btn-premium {
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), #004080);
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 51, 102, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 51, 102, 0.4);
+  filter: brightness(1.1);
+}
+
+/* Hero Section Styles */
+.hero-gradient {
+  background: radial-gradient(circle at top right, rgba(0, 164, 228, 0.15), transparent),
+              radial-gradient(circle at bottom left, rgba(0, 51, 102, 0.2), transparent);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
