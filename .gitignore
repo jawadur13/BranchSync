@@ -1,0 +1,28 @@
+# Build artifacts
+**/target/
+**/node_modules/
+**/.mvn/
+**/build/
+**/dist/
+
+# Java compiled files
+**/*.class
+
+# IDE settings
+.vscode/
+.idea/
+*.iml
+*.iws
+
+# Environment & Secrets
+.env
+.env.local
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Project specific helpers
+scratch/
+schema_instructions.md
