@@ -1,0 +1,125 @@
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    background: linear-gradient(135deg, var(--color-primary-blue), var(--color-neutral-900));
+    font-family: var(--font-family-sans);
+}
+
+.login-card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-8);
+    width: 100%;
+    max-width: 400px;
+    box-shadow: var(--shadow-lg);
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: var(--spacing-6);
+}
+
+.login-logo {
+    width: 60px;
+    height: 60px;
+    margin-bottom: var(--spacing-3);
+    /* Make SVG green/blue depending on your logo, assuming it's responsive or standard */
+}
+
+.login-header h2 {
+    color: var(--color-primary-blue);
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    margin: 0 0 var(--spacing-1) 0;
+}
+
+.login-header p {
+    color: var(--color-neutral-600);
+    font-size: var(--font-size-sm);
+    margin: 0;
+}
+
+.login-error {
+    background-color: #fee2e2;
+    color: var(--color-danger);
+    padding: var(--spacing-3);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-4);
+    font-size: var(--font-size-sm);
+    text-align: center;
+    border: 1px solid #fca5a5;
+}
+
+.login-form .form-group {
+    margin-bottom: var(--spacing-4);
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: var(--spacing-2);
+    color: var(--color-neutral-700);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.login-form input {
+    width: 100%;
+    padding: var(--spacing-3);
+    border: 1px solid var(--color-neutral-300);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: var(--color-primary-blue);
+    box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
+}
+
+.login-btn {
+    width: 100%;
+    padding: var(--spacing-3);
+    background-color: var(--color-primary-green);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    margin-top: var(--spacing-2);
+}
+
+.login-btn:hover {
+    background-color: var(--color-primary-green-hover);
+}
+
+.login-btn:active {
+    transform: scale(0.98);
+}
+
+.login-btn:disabled {
+    background-color: var(--color-neutral-400);
+    cursor: not-allowed;
+}
+
+.login-footer {
+    text-align: center;
+    margin-top: var(--spacing-6);
+    font-size: var(--font-size-xs);
+    color: var(--color-neutral-500);
+}
