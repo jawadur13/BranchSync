@@ -33,6 +33,6 @@ public class AuthController {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         String role = userDetails.getAuthorities().iterator().next().getAuthority();
 
-        return ResponseEntity.ok(new JwtResponseDto(jwt, "Bearer", userDetails.getUserId(), userDetails.getUsername(), role));
+        return ResponseEntity.ok(new JwtResponseDto(jwt, "Bearer", userDetails.getUserId(), userDetails.getUsername(), role, userDetails.getBranchId()));
     }
 }

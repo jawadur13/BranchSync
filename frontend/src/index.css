@@ -1,3 +1,5 @@
+@import './variables.css';
+
 :root {
   --primary-color: #003366; /* Jamuna Bank Blue */
   --secondary-color: #f2a900; /* Jamuna Bank Gold/Yellow */
