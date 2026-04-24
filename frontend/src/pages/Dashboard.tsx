@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axiosConfig';
-import { TransferResponseDto } from '../types/transfer';
+import type { TransferResponseDto } from '../types/transfer';
 import { useAuth } from '../context/AuthContext';
 import './Dashboard.css';
 
-const Dashboard: React.FC = () => {
+const Dashboard = () => {
     const { user } = useAuth();
     const [transfers, setTransfers] = useState<TransferResponseDto[]>([]);
     const [loading, setLoading] = useState(true);
