@@ -1,6 +1,7 @@
 package com.jamunabank.branchsync.service;
 
 import com.jamunabank.branchsync.model.entity.TransferRequest;
+import java.util.List;
 
 public interface TransferService {
     /**
@@ -29,4 +30,9 @@ public interface TransferService {
      * 3. If both confirmed, move status to SUCCESSFUL (or CONFIRMED in your enum)
      */
     TransferRequest processDualVerification(Long requestId, Long actorId, boolean isOriginConfirmation);
+
+    /**
+     * Gets a list of transfers relevant to the user's role and branch for the dashboard.
+     */
+    List<TransferRequest> getDashboardTransfers(Long actorId);
 }

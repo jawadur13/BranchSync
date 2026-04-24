@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface TransferRequestRepository extends JpaRepository<TransferRequest, Long> {
@@ -23,4 +24,10 @@ public interface TransferRequestRepository extends JpaRepository<TransferRequest
     Page<TransferRequest> findByDestinationBranch_BranchIdAndStatus(Long branchId, TransferStatus status, Pageable pageable);
     
     Page<TransferRequest> findByInitiatedBy_UserId(Long userId, Pageable pageable);
+    Page<TransferRequest> findByInitiatedBy_UserId(Long userId, Pageable pageable);
+    
+    // Non-paginated for simple dashboard
+    List<TransferRequest> findByStatusOrderByRequestedAtDesc(TransferStatus status);
+    List<TransferRequest> findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(Long originBranchId, Long destBranchId);
+    List<TransferRequest> findAllByOrderByRequestedAtDesc();
 }

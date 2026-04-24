@@ -1,0 +1,196 @@
+.dashboard-container {
+    animation: fadeIn 0.4s ease-out;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-6);
+}
+
+.dashboard-title {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--color-neutral-900);
+    margin: 0 0 var(--spacing-1) 0;
+}
+
+.dashboard-subtitle {
+    color: var(--color-neutral-500);
+    font-size: var(--font-size-sm);
+    margin: 0;
+}
+
+.dashboard-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    font-size: var(--font-size-lg);
+    color: var(--color-neutral-500);
+}
+
+.dashboard-error {
+    background-color: #fee2e2;
+    color: var(--color-danger);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-4);
+    border: 1px solid #fca5a5;
+}
+
+/* Premium Card */
+.table-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-neutral-200);
+    overflow: hidden;
+}
+
+/* Data Table */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.data-table th {
+    background-color: var(--color-neutral-50);
+    padding: var(--spacing-3) var(--spacing-4);
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-neutral-500);
+    font-weight: 600;
+    border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.data-table td {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-neutral-100);
+    color: var(--color-neutral-700);
+    font-size: var(--font-size-sm);
+    vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+    background-color: var(--color-neutral-50);
+}
+
+.fw-semibold {
+    font-weight: 600;
+    color: var(--color-neutral-900);
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.badge-success {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.badge-warning {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.badge-danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-neutral {
+    background-color: var(--color-neutral-100);
+    color: var(--color-neutral-600);
+}
+
+.badge-danger-outline {
+    background-color: transparent;
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+}
+
+.badge-neutral-outline {
+    background-color: transparent;
+    color: var(--color-neutral-500);
+    border: 1px solid var(--color-neutral-300);
+}
+
+/* Buttons */
+.btn-primary {
+    display: inline-block;
+    background-color: var(--color-primary-blue);
+    color: white;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-blue-light);
+}
+
+.btn-secondary-sm {
+    display: inline-block;
+    background-color: white;
+    color: var(--color-neutral-700);
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    border: 1px solid var(--color-neutral-300);
+    transition: all 0.2s;
+}
+
+.btn-secondary-sm:hover {
+    background-color: var(--color-neutral-50);
+    border-color: var(--color-neutral-400);
+    color: var(--color-neutral-900);
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-12);
+    text-align: center;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: var(--spacing-4);
+}
+
+.empty-state h3 {
+    margin: 0 0 var(--spacing-2) 0;
+    color: var(--color-neutral-800);
+}
+
+.empty-state p {
+    margin: 0;
+    color: var(--color-neutral-500);
+}

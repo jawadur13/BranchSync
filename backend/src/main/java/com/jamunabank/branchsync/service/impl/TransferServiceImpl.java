@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -143,5 +144,25 @@ public class TransferServiceImpl implements TransferService {
         );
 
         return updatedRequest;
+    }
+
+    @Override
+    public List<TransferRequest> getDashboardTransfers(Long actorId) {
+        User actor = userRepository.findById(actorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Actor not found"));
+
+        String role = actor.getRole().getRoleName();
+
+        if ("FIRST_EXECUTIVE_OFFICER".equals(role)) {
+            return transferRequestRepository.findByStatusOrderByRequestedAtDesc(TransferStatus.PENDING_APPROVAL);
+        } else if ("BRANCH_MANAGER".equals(role) || "BRANCH_STAFF".equals(role)) {
+            Long branchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
+            if (branchId != null) {
+                return transferRequestRepository.findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(branchId, branchId);
+            }
+        }
+        
+        // Fallback for admins or super users
+        return transferRequestRepository.findAllByOrderByRequestedAtDesc();
     }
 }

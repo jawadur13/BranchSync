@@ -14,6 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.jamunabank.branchsync.security.CustomUserDetails;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/transfers")
@@ -67,5 +69,19 @@ public class TransferController {
         );
         
         return ResponseEntity.ok(transferMapper.toResponseDto(verifiedRequest));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TransferResponseDto>> getDashboardTransfers(Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long actorId = userDetails.getUserId();
+
+        List<TransferRequest> transfers = transferService.getDashboardTransfers(actorId);
+        
+        List<TransferResponseDto> responseDtos = transfers.stream()
+                .map(transferMapper::toResponseDto)
+                .collect(Collectors.toList());
+                
+        return ResponseEntity.ok(responseDtos);
     }
 }
