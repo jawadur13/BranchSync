@@ -2,7 +2,7 @@
 
 **BranchSync** is an inter-branch coordination and requisition tracking system designed specifically for **Jamuna Bank PLC**. It manages the flow of sensitive items (Cash, Loan Files, IT Equipment, etc.) across the banking network with strict oversight and dual-verification security.
 
-## 🚀 Current Project Status: **Phase 1 Complete (Backend Core)**
+## 🚀 Current Project Status: **Phase 2 Complete (Backend APIs & Security)**
 
 ### Core Architecture
 - **Backend:** Java 21, Spring Boot 3.4.0, PostgreSQL (via Supabase).
@@ -22,6 +22,11 @@
 3.  **Auditing & Security:**
     *   **Transactional Audit Log:** Every status change is automatically logged in an immutable audit table within the same transaction.
     *   **Integrity:** Automatic rollback of business actions if auditing fails.
+4.  **API & Security Layer:**
+    *   **REST Controllers & DTOs:** Clean, structured endpoints with strict Jakarta Bean Validation.
+    *   **Global Exception Handling:** Centralized `@RestControllerAdvice` delivering predictable, standardized JSON errors (400, 403, 404, 500).
+    *   **Spring Security & JWT:** Stateless authentication architecture utilizing BCrypt password hashing and secure token-based identity verification.
+    *   **Role-Based Access Control (RBAC):** Endpoint-level `@PreAuthorize` security enforcing strict hierarchy (FEO, Branch Manager) for approvals.
 
 ---
 
@@ -45,9 +50,9 @@
 - [x] Database Schema & JPA Entities
 - [x] Repository Layer with Pagination
 - [x] Service Layer & Business Workflow
-- [ ] REST API Controllers
-- [ ] Global Exception Handling
-- [ ] Spring Security & JWT Integration
+- [x] REST API Controllers
+- [x] Global Exception Handling
+- [x] Spring Security & JWT Integration
 - [ ] Frontend Development (React Dashboards)
 
 ---
