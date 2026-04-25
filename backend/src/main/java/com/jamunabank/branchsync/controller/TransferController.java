@@ -2,9 +2,11 @@ package com.jamunabank.branchsync.controller;
 
 import com.jamunabank.branchsync.dto.request.InitiateTransferRequestDto;
 import com.jamunabank.branchsync.dto.request.VerificationRequestDto;
+import com.jamunabank.branchsync.dto.response.TransferDetailDto;
 import com.jamunabank.branchsync.dto.response.TransferResponseDto;
 import com.jamunabank.branchsync.mapper.TransferMapper;
 import com.jamunabank.branchsync.model.entity.TransferRequest;
+import com.jamunabank.branchsync.repository.TransferRequestRepository;
 import com.jamunabank.branchsync.service.TransferService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,14 @@ public class TransferController {
 
     private final TransferService transferService;
     private final TransferMapper transferMapper;
+    private final TransferRequestRepository transferRequestRepository;
+
+    @GetMapping("/{requestId}")
+    public ResponseEntity<TransferDetailDto> getTransferById(@PathVariable Long requestId) {
+        TransferRequest request = transferRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Transfer request not found with ID: " + requestId));
+        return ResponseEntity.ok(transferMapper.toDetailDto(request));
+    }
 
     @PostMapping
     public ResponseEntity<TransferResponseDto> initiateTransfer(
@@ -85,3 +95,4 @@ public class TransferController {
         return ResponseEntity.ok(responseDtos);
     }
 }
+
