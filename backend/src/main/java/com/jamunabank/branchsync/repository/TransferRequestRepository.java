@@ -24,7 +24,6 @@ public interface TransferRequestRepository extends JpaRepository<TransferRequest
     Page<TransferRequest> findByDestinationBranch_BranchIdAndStatus(Long branchId, TransferStatus status, Pageable pageable);
     
     Page<TransferRequest> findByInitiatedBy_UserId(Long userId, Pageable pageable);
-    Page<TransferRequest> findByInitiatedBy_UserId(Long userId, Pageable pageable);
     
     // Non-paginated for simple dashboard
     List<TransferRequest> findByStatusOrderByRequestedAtDesc(TransferStatus status);

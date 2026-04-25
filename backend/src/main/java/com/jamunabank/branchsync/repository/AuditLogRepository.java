@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
     Page<AuditLog> findByEntityNameAndEntityIdOrderByActedAtDesc(String entityName, Long entityId, Pageable pageable);
-    Page<AuditLog> findByRequest_RequestIdOrderByActedAtDesc(Long requestId, Pageable pageable);
+    Page<AuditLog> findByTransferRequest_RequestIdOrderByActedAtDesc(Long requestId, Pageable pageable);
     Page<AuditLog> findByActor_UserIdOrderByActedAtDesc(Long userId, Pageable pageable);
 }
