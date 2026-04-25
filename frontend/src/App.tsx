@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import NewTransfer from './pages/NewTransfer';
 import Layout from './components/Layout/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -22,7 +23,7 @@ function App() {
           }
         >
           <Route index element={<Dashboard />} />
-          <Route path="transfers/new" element={<div>New Transfer Form Placeholder</div>} />
+          <Route path="transfers/new" element={<NewTransfer />} />
           <Route path="transfers/history" element={<div>Transfer History Placeholder</div>} />
         </Route>
 
