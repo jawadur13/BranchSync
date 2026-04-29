@@ -13,7 +13,8 @@ import java.time.OffsetDateTime;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Department {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "departments_seq")
+    @SequenceGenerator(name = "departments_seq", sequenceName = "departments_department_id_seq", allocationSize = 1)
     @EqualsAndHashCode.Include
     private Long departmentId;
 

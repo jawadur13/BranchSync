@@ -14,7 +14,8 @@ import java.time.OffsetDateTime;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Branch {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "branches_seq")
+    @SequenceGenerator(name = "branches_seq", sequenceName = "branches_branch_id_seq", allocationSize = 1)
     @EqualsAndHashCode.Include
     private Long branchId;
 

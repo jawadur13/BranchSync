@@ -27,11 +27,15 @@ api.interceptors.response.use(
         return response;
     },
     (error) => {
-        if (error.response && error.response.status === 401) {
-            console.error('Unauthorized access. Clearing local storage and redirecting to login.');
+        // Only redirect if not already on login page or attempting to login
+        const isLoginRequest = error.config && error.config.url && error.config.url.endsWith('/auth/login');
+        const isLoginPage = window.location.pathname === '/login';
+
+        if (error.response && error.response.status === 401 && !isLoginRequest && !isLoginPage) {
+            console.error('Unauthorized access. Redirecting to login.');
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = '/login'; // Force redirect to login page
+            window.location.href = '/login'; 
         }
         return Promise.reject(error);
     }

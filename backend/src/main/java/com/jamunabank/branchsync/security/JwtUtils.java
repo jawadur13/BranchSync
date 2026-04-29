@@ -23,9 +23,13 @@ public class JwtUtils {
 
     public String generateJwtToken(Authentication authentication) {
         CustomUserDetails userPrincipal = (CustomUserDetails) authentication.getPrincipal();
+        java.util.List<String> roles = userPrincipal.getAuthorities().stream()
+                .map(org.springframework.security.core.GrantedAuthority::getAuthority)
+                .collect(java.util.stream.Collectors.toList());
 
         return Jwts.builder()
                 .subject((userPrincipal.getUsername()))
+                .claim("roles", roles)
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key())
@@ -37,12 +41,18 @@ public class JwtUtils {
                 .parseSignedClaims(token).getPayload().getSubject();
     }
 
+    @SuppressWarnings("unchecked")
+    public java.util.List<String> getRolesFromJwtToken(String token) {
+        return Jwts.parser().verifyWith(key()).build()
+                .parseSignedClaims(token).getPayload().get("roles", java.util.List.class);
+    }
+
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parser().verifyWith(key()).build().parseSignedClaims(authToken);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            // Log error in production
+            // Log error
         }
         return false;
     }

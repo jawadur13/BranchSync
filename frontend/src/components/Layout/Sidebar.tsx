@@ -1,8 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import './Layout.css';
 
 const Sidebar: React.FC = () => {
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'ROLE_SYSTEM_ADMIN';
+
     return (
         <aside className="sidebar">
             <div className="sidebar-header">
@@ -19,6 +23,19 @@ const Sidebar: React.FC = () => {
                 <NavLink to="/transfers/history" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                     <span className="nav-icon">📜</span> History
                 </NavLink>
+
+                {isAdmin && (
+                    <>
+                        <div className="sidebar-divider"></div>
+                        <div className="sidebar-section-label">Administration</div>
+                        <NavLink to="/admin/users" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                            <span className="nav-icon">👥</span> User Management
+                        </NavLink>
+                        <NavLink to="/admin/org" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                            <span className="nav-icon">🏛️</span> Branches & Depts
+                        </NavLink>
+                    </>
+                )}
             </nav>
         </aside>
     );
