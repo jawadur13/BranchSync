@@ -11,12 +11,10 @@ import java.time.OffsetDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Branch {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "branches_seq")
-    @SequenceGenerator(name = "branches_seq", sequenceName = "branches_branch_id_seq", allocationSize = 1)
-    @EqualsAndHashCode.Include
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "branch_id")
     private Long branchId;
 
     @Column(name = "branch_code", nullable = false, unique = true, length = 20)
@@ -29,24 +27,21 @@ public class Branch {
     @Column(name = "branch_type", nullable = false)
     private BranchType branchType;
 
-    @Column(nullable = false, length = 100)
-    private String district;
-
-    @Column(nullable = false, length = 100)
-    private String division;
-
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "address")
     private String address;
 
-    @Column(length = 20)
-    private String phone;
+    @Column(name = "district")
+    private String district;
 
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+    @Column(name = "contact_number", length = 20)
+    private String contactNumber;
+
+    @Column(name = "email", length = 100)
+    private String email;
+
+    @Column(name = "is_active")
+    private Boolean isActive;
 
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
     private OffsetDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
-    private OffsetDateTime updatedAt;
 }

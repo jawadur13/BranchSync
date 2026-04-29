@@ -115,7 +115,6 @@ public class ManagementServiceImpl implements ManagementService {
                     .phone(dto.getPhone() != null ? dto.getPhone().trim() : null)
                     .isActive(true)
                     .createdAt(OffsetDateTime.now())
-                    .updatedAt(OffsetDateTime.now())
                     .build();
             return branchRepository.save(branch);
         } catch (IllegalArgumentException e) {
