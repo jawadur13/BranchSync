@@ -21,9 +21,10 @@ public class CustomUserDetails implements UserDetails {
     private final Collection<? extends GrantedAuthority> authorities;
 
     public static CustomUserDetails build(User user) {
-        // Prefix role with "ROLE_" for Spring Security's @PreAuthorize
-        String roleName = "ROLE_" + user.getRole().getRoleName();
+        // Replace spaces with underscores and prefix with "ROLE_"
+        String roleName = "ROLE_" + user.getRole().getRoleName().replace(" ", "_").toUpperCase();
         GrantedAuthority authority = new SimpleGrantedAuthority(roleName);
+        System.out.println("DEBUG: Mapping database role '" + user.getRole().getRoleName() + "' to Spring Authority: " + roleName);
 
         return new CustomUserDetails(
                 user.getUserId(),

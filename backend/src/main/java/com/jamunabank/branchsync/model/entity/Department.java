@@ -26,8 +26,11 @@ public class Department {
     private Branch branch;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "head_user_id")
+    @JoinColumn(name = "head_user_id", insertable = false, updatable = false)
     private User headUser;
+
+    @Column(name = "head_user_id")
+    private Long headUserId;
 
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
     private OffsetDateTime createdAt;

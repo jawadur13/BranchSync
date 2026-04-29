@@ -27,8 +27,9 @@ public class ManagementServiceImpl implements ManagementService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional(readOnly = true)
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        return userRepository.findAllWithDetails();
     }
 
     @Override
@@ -96,8 +97,9 @@ public class ManagementServiceImpl implements ManagementService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Branch> getAllBranches() {
-        return branchRepository.findAll();
+        return branchRepository.findAllBranches();
     }
 
     @Override
@@ -113,6 +115,7 @@ public class ManagementServiceImpl implements ManagementService {
                     .phone(dto.getPhone() != null ? dto.getPhone().trim() : null)
                     .isActive(true)
                     .createdAt(OffsetDateTime.now())
+                    .updatedAt(OffsetDateTime.now())
                     .build();
             return branchRepository.save(branch);
         } catch (IllegalArgumentException e) {
@@ -123,8 +126,9 @@ public class ManagementServiceImpl implements ManagementService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Department> getAllDepartments() {
-        return departmentRepository.findAll();
+        return departmentRepository.findAllWithBranch();
     }
 
     @Override

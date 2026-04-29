@@ -18,7 +18,7 @@ public class JwtUtils {
     private final int jwtExpirationMs = 86400000; // 24 hours
 
     private SecretKey key() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 
     public String generateJwtToken(Authentication authentication) {
@@ -51,8 +51,8 @@ public class JwtUtils {
         try {
             Jwts.parser().verifyWith(key()).build().parseSignedClaims(authToken);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            // Log error
+        } catch (Exception e) {
+            System.err.println("JWT Authentication error: " + e.getMessage());
         }
         return false;
     }
