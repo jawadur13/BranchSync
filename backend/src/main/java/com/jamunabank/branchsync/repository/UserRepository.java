@@ -12,7 +12,7 @@ import java.util.List;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.role LEFT JOIN FETCH u.branch LEFT JOIN FETCH u.department")
+    @Query("SELECT u FROM User u JOIN FETCH u.role JOIN FETCH u.branch LEFT JOIN FETCH u.department")
     List<User> findAllWithDetails();
 
     Optional<User> findByEmployeeId(String employeeId);
