@@ -27,9 +27,14 @@ public class TransferDetailDto {
     private Long originBranchId;
     private String originBranchName;
     private String originBranchCode;
+    private Long originDepartmentId;
+    private String originDepartmentName;
+    
     private Long destinationBranchId;
     private String destinationBranchName;
     private String destinationBranchCode;
+    private Long destinationDepartmentId;
+    private String destinationDepartmentName;
     
     // Category info
     private String categoryName;

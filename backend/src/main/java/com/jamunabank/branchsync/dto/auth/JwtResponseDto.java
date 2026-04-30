@@ -14,4 +14,5 @@ public class JwtResponseDto {
     private String employeeId;
     private String role;
     private Long branchId;
+    private Long departmentId;
 }

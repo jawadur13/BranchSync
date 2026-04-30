@@ -40,6 +40,6 @@ public class AuthController {
         String role = userDetails.getAuthorities().iterator().next().getAuthority();
 
         return ResponseEntity.ok(new JwtResponseDto(jwt, "Bearer", userDetails.getUserId(),
-                userDetails.getUsername(), role, userDetails.getBranchId()));
+                userDetails.getUsername(), role, userDetails.getBranchId(), userDetails.getDepartmentId()));
     }
 }

@@ -22,7 +22,9 @@ public class TransferMapper {
                 .requestType(dto.getRequestType())
                 // Use proxy-like entity instances for relationships
                 .originBranch(Branch.builder().branchId(dto.getOriginBranchId()).build())
+                .originDepartment(dto.getOriginDepartmentId() != null ? com.jamunabank.branchsync.model.entity.Department.builder().departmentId(dto.getOriginDepartmentId()).build() : null)
                 .destinationBranch(Branch.builder().branchId(dto.getDestinationBranchId()).build())
+                .destinationDepartment(dto.getDestinationDepartmentId() != null ? com.jamunabank.branchsync.model.entity.Department.builder().departmentId(dto.getDestinationDepartmentId()).build() : null)
                 .category(ItemCategory.builder().categoryId(dto.getCategoryId()).build())
                 .build();
     }
@@ -74,6 +76,16 @@ public class TransferMapper {
             builder.destinationBranchId(entity.getDestinationBranch().getBranchId())
                    .destinationBranchName(entity.getDestinationBranch().getBranchName())
                    .destinationBranchCode(entity.getDestinationBranch().getBranchCode());
+        }
+
+        if (entity.getOriginDepartment() != null) {
+            builder.originDepartmentId(entity.getOriginDepartment().getDepartmentId())
+                   .originDepartmentName(entity.getOriginDepartment().getDepartmentName());
+        }
+
+        if (entity.getDestinationDepartment() != null) {
+            builder.destinationDepartmentId(entity.getDestinationDepartment().getDepartmentId())
+                   .destinationDepartmentName(entity.getDestinationDepartment().getDepartmentName());
         }
 
         if (entity.getCategory() != null) {

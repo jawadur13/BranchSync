@@ -37,8 +37,16 @@ public class TransferRequest {
     private Branch originBranch;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "origin_department_id")
+    private Department originDepartment;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "destination_branch_id", nullable = false)
     private Branch destinationBranch;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "destination_department_id")
+    private Department destinationDepartment;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "initiated_by", nullable = false)

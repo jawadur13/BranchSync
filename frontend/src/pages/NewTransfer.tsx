@@ -20,6 +20,12 @@ interface CategoryOption {
     sensitivityLevel: string;
 }
 
+interface DepartmentOption {
+    departmentId: number;
+    departmentName: string;
+    description: string;
+}
+
 const NewTransfer = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -30,9 +36,11 @@ const NewTransfer = () => {
     const [priority, setPriority] = useState('NORMAL');
     const [requestType, setRequestType] = useState('BRANCH_TO_BRANCH');
     const [destinationBranchId, setDestinationBranchId] = useState('');
+    const [destinationDepartmentId, setDestinationDepartmentId] = useState('');
 
     // Lookup data
     const [branches, setBranches] = useState<BranchOption[]>([]);
+    const [departments, setDepartments] = useState<DepartmentOption[]>([]);
     const [categories, setCategories] = useState<CategoryOption[]>([]);
 
     // UI state
@@ -46,11 +54,13 @@ const NewTransfer = () => {
 
     const fetchLookupData = async () => {
         try {
-            const [branchRes, categoryRes] = await Promise.all([
+            const [branchRes, departmentRes, categoryRes] = await Promise.all([
                 api.get('/lookup/branches'),
+                api.get('/lookup/departments'),
                 api.get('/lookup/categories'),
             ]);
             setBranches(branchRes.data);
+            setDepartments(departmentRes.data);
             setCategories(categoryRes.data);
         } catch (err) {
             setError('Failed to load form data. Please refresh the page.');
@@ -72,7 +82,9 @@ const NewTransfer = () => {
                 priority,
                 requestType,
                 originBranchId: user?.branchId,
+                originDepartmentId: user?.departmentId,
                 destinationBranchId: Number(destinationBranchId),
+                destinationDepartmentId: destinationDepartmentId ? Number(destinationDepartmentId) : null,
             };
 
             await api.post('/transfers', payload);
@@ -236,6 +248,23 @@ const NewTransfer = () => {
                                         </option>
                                     ))
                                 }
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="destDept">Target Department <span className="required">*</span></label>
+                            <select
+                                id="destDept"
+                                value={destinationDepartmentId}
+                                onChange={(e) => setDestinationDepartmentId(e.target.value)}
+                                required
+                            >
+                                <option value="">Select Department</option>
+                                {departments.map(d => (
+                                    <option key={d.departmentId} value={d.departmentId}>
+                                        {d.departmentName}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>

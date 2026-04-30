@@ -48,6 +48,10 @@ public class TransferServiceImpl implements TransferService {
         request.setStatus(needsApproval ? TransferStatus.PENDING_APPROVAL : TransferStatus.APPROVED);
         request.setInitiatedBy(actor);
         request.setRequestedAt(OffsetDateTime.now());
+        
+        // Auto-assign origin from actor session
+        request.setOriginBranch(actor.getBranch());
+        request.setOriginDepartment(actor.getDepartment());
 
         TransferRequest savedRequest = transferRequestRepository.save(request);
 
@@ -153,16 +157,28 @@ public class TransferServiceImpl implements TransferService {
 
         String role = actor.getRole().getRoleName();
 
-        if ("FIRST_EXECUTIVE_OFFICER".equals(role)) {
-            return transferRequestRepository.findByStatusOrderByRequestedAtDesc(TransferStatus.PENDING_APPROVAL);
-        } else if ("BRANCH_MANAGER".equals(role) || "BRANCH_STAFF".equals(role)) {
+        // 1. God Mode Admin
+        if ("SYSTEM_ADMIN".equals(role)) {
+            return transferRequestRepository.findAllByOrderByRequestedAtDesc();
+        }
+
+        // 2. Manager and FEO (Branch Level Access)
+        if ("BRANCH_MANAGER".equals(role) || "FIRST_EXECUTIVE_OFFICER".equals(role)) {
             Long branchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
             if (branchId != null) {
                 return transferRequestRepository.findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(branchId, branchId);
             }
         }
+
+        // 3. Regular Staff (Origin Branch OR Destination Branch + Specific Department)
+        Long branchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
+        Long deptId = actor.getDepartment() != null ? actor.getDepartment().getDepartmentId() : null;
+
+        if (branchId != null) {
+            // Find transfers where I am the sender OR I am the targeted receiver department
+            return transferRequestRepository.findDashboardTransfersForStaff(branchId, deptId);
+        }
         
-        // Fallback for admins or super users
-        return transferRequestRepository.findAllByOrderByRequestedAtDesc();
+        return List.of();
     }
 }

@@ -21,11 +21,14 @@ public class InitiateTransferRequestDto {
     @NotNull(message = "Priority is required")
     private Priority priority;
 
-    @NotNull(message = "Origin Branch ID is required")
     private Long originBranchId;
+    private Long originDepartmentId;
 
     @NotNull(message = "Destination Branch ID is required")
     private Long destinationBranchId;
+
+    @NotNull(message = "Destination Department ID is required")
+    private Long destinationDepartmentId;
 
     @NotBlank(message = "Title is required")
     private String title;

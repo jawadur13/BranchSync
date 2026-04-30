@@ -18,6 +18,7 @@ public class CustomUserDetails implements UserDetails {
     private final String employeeId;
     private final String password;
     private final Long branchId;
+    private final Long departmentId;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public static CustomUserDetails build(User user) {
@@ -31,6 +32,7 @@ public class CustomUserDetails implements UserDetails {
                 user.getEmployeeId(),
                 user.getPasswordHash(),
                 user.getBranch() != null ? user.getBranch().getBranchId() : null,
+                user.getDepartment() != null ? user.getDepartment().getDepartmentId() : null,
                 Collections.singletonList(authority)
         );
     }
