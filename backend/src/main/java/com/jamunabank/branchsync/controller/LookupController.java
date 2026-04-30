@@ -26,7 +26,6 @@ public class LookupController {
     @GetMapping("/branches")
     public ResponseEntity<List<Map<String, Object>>> getAllBranches() {
         List<Map<String, Object>> branches = branchRepository.findAll().stream()
-                .filter(b -> b.getIsActive() != null && b.getIsActive())
                 .map(b -> {
                     java.util.Map<String, Object> map = new java.util.HashMap<>();
                     map.put("id", b.getBranchId());

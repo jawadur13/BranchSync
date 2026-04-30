@@ -50,7 +50,6 @@ public class TransferController {
     }
 
     @PostMapping("/{requestId}/approve")
-    @PreAuthorize("hasAnyRole('BRANCH_MANAGER', 'FIRST_EXECUTIVE_OFFICER')")
     public ResponseEntity<TransferResponseDto> approveTransfer(
             Authentication authentication,
             @PathVariable Long requestId) {
