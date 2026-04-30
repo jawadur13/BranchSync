@@ -18,13 +18,16 @@ public class LookupController {
     private final BranchRepository branchRepository;
     private final ItemCategoryRepository itemCategoryRepository;
     private final com.jamunabank.branchsync.repository.DepartmentRepository departmentRepository;
+    private final com.jamunabank.branchsync.repository.RoleRepository roleRepository;
 
     public LookupController(BranchRepository branchRepository, 
                           ItemCategoryRepository itemCategoryRepository,
-                          com.jamunabank.branchsync.repository.DepartmentRepository departmentRepository) {
+                          com.jamunabank.branchsync.repository.DepartmentRepository departmentRepository,
+                          com.jamunabank.branchsync.repository.RoleRepository roleRepository) {
         this.branchRepository = branchRepository;
         this.itemCategoryRepository = itemCategoryRepository;
         this.departmentRepository = departmentRepository;
+        this.roleRepository = roleRepository;
     }
 
     @GetMapping("/branches")
@@ -54,6 +57,19 @@ public class LookupController {
                 })
                 .collect(Collectors.toList());
         return ResponseEntity.ok(depts);
+    }
+
+    @GetMapping("/roles")
+    public ResponseEntity<List<Map<String, Object>>> getAllRoles() {
+        List<Map<String, Object>> roles = roleRepository.findAll().stream()
+                .map(r -> {
+                    java.util.Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("roleId", r.getRoleId());
+                    map.put("roleName", r.getRoleName());
+                    return map;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(roles);
     }
 
     @GetMapping("/categories")

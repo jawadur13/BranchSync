@@ -53,6 +53,7 @@ CREATE TABLE public.branches (
   phone character varying,
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  email character varying,
   CONSTRAINT branches_pkey PRIMARY KEY (branch_id)
 );
 CREATE TABLE public.cash_transfer_details (
@@ -226,7 +227,11 @@ CREATE TABLE public.transfer_requests (
   requested_at timestamp with time zone NOT NULL DEFAULT now(),
   expected_delivery_date date,
   closed_at timestamp with time zone,
+  destination_department_id bigint,
+  origin_department_id bigint,
   CONSTRAINT transfer_requests_pkey PRIMARY KEY (request_id),
+  CONSTRAINT transfer_requests_destination_department_id_fkey FOREIGN KEY (destination_department_id) REFERENCES public.departments(department_id),
+  CONSTRAINT transfer_requests_origin_department_id_fkey FOREIGN KEY (origin_department_id) REFERENCES public.departments(department_id),
   CONSTRAINT transfer_requests_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.item_categories(category_id),
   CONSTRAINT transfer_requests_destination_branch_id_fkey FOREIGN KEY (destination_branch_id) REFERENCES public.branches(branch_id),
   CONSTRAINT transfer_requests_origin_branch_id_fkey FOREIGN KEY (origin_branch_id) REFERENCES public.branches(branch_id),
