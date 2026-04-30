@@ -5,7 +5,7 @@ import './Layout.css';
 
 const Sidebar: React.FC = () => {
     const { user } = useAuth();
-    const isAdmin = user?.role === 'ROLE_SYSTEM_ADMIN';
+    const isAdmin = user?.role === 'SYSTEM_ADMIN';
 
     return (
         <aside className="sidebar">

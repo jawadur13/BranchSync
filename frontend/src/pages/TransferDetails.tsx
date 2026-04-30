@@ -123,7 +123,7 @@ const TransferDetails = () => {
     const canApprove = () => {
         if (!transfer || !user) return false;
         const isApprovalStatus = transfer.status === 'PENDING_APPROVAL';
-        const isSystemAdmin = user.role === 'ROLE_SYSTEM_ADMIN';
+        const isSystemAdmin = user.role === 'SYSTEM_ADMIN';
         
         // Logic-First: Manager/FEO can approve anything in their branch
         const isBranchBoss = (user.role === 'ROLE_BRANCH_MANAGER' || user.role === 'ROLE_FIRST_EXECUTIVE_OFFICER') 

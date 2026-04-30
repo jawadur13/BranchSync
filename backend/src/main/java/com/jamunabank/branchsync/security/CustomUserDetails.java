@@ -22,8 +22,7 @@ public class CustomUserDetails implements UserDetails {
     private final Collection<? extends GrantedAuthority> authorities;
 
     public static CustomUserDetails build(User user) {
-        // Replace spaces with underscores and prefix with "ROLE_"
-        String roleName = "ROLE_" + user.getRole().getRoleName().replace(" ", "_").toUpperCase();
+        String roleName = user.getRole().getRoleName();
         GrantedAuthority authority = new SimpleGrantedAuthority(roleName);
         System.out.println("DEBUG: Mapping database role '" + user.getRole().getRoleName() + "' to Spring Authority: " + roleName);
 

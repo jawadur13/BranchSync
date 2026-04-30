@@ -59,7 +59,7 @@ const Dashboard = () => {
                 <div>
                     <h1 className="dashboard-title">Overview</h1>
                     <p className="dashboard-subtitle">
-                        {user?.role === 'ROLE_FIRST_EXECUTIVE_OFFICER' 
+                        {user?.role === 'FIRST_EXECUTIVE_OFFICER' 
                             ? 'Pending High-Priority Approvals' 
                             : 'Active transfers for your branch'}
                     </p>
