@@ -17,10 +17,14 @@ public class LookupController {
 
     private final BranchRepository branchRepository;
     private final ItemCategoryRepository itemCategoryRepository;
+    private final com.jamunabank.branchsync.repository.DepartmentRepository departmentRepository;
 
-    public LookupController(BranchRepository branchRepository, ItemCategoryRepository itemCategoryRepository) {
+    public LookupController(BranchRepository branchRepository, 
+                          ItemCategoryRepository itemCategoryRepository,
+                          com.jamunabank.branchsync.repository.DepartmentRepository departmentRepository) {
         this.branchRepository = branchRepository;
         this.itemCategoryRepository = itemCategoryRepository;
+        this.departmentRepository = departmentRepository;
     }
 
     @GetMapping("/branches")
@@ -37,6 +41,19 @@ public class LookupController {
                 })
                 .collect(Collectors.toList());
         return ResponseEntity.ok(branches);
+    }
+
+    @GetMapping("/departments")
+    public ResponseEntity<List<Map<String, Object>>> getAllDepartments() {
+        List<Map<String, Object>> depts = departmentRepository.findAll().stream()
+                .map(d -> {
+                    java.util.Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("departmentId", d.getDepartmentId());
+                    map.put("departmentName", d.getDepartmentName());
+                    return map;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(depts);
     }
 
     @GetMapping("/categories")

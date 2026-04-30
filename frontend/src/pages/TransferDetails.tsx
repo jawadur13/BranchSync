@@ -16,6 +16,10 @@ interface TransferDetail {
     destinationBranchId: number;
     destinationBranchName: string;
     destinationBranchCode: string;
+    originDepartmentId: number | null;
+    originDepartmentName: string | null;
+    destinationDepartmentId: number | null;
+    destinationDepartmentName: string | null;
     categoryName: string;
     requiresDualVerification: boolean;
     requiresHqApproval: boolean;
@@ -119,8 +123,17 @@ const TransferDetails = () => {
     const canApprove = () => {
         if (!transfer || !user) return false;
         const isApprovalStatus = transfer.status === 'PENDING_APPROVAL';
-        const isApprover = user.role === 'ROLE_BRANCH_MANAGER' || user.role === 'ROLE_FIRST_EXECUTIVE_OFFICER';
-        return isApprovalStatus && isApprover;
+        const isSystemAdmin = user.role === 'ROLE_SYSTEM_ADMIN';
+        
+        // Logic-First: Manager/FEO can approve anything in their branch
+        const isBranchBoss = (user.role === 'ROLE_BRANCH_MANAGER' || user.role === 'ROLE_FIRST_EXECUTIVE_OFFICER') 
+                           && user.branchId === transfer.destinationBranchId;
+                           
+        // Logic-First: Users in the target department can approve
+        const isTargetDeptUser = user.branchId === transfer.destinationBranchId 
+                               && user.departmentId === transfer.destinationDepartmentId;
+                               
+        return isApprovalStatus && (isSystemAdmin || isBranchBoss || isTargetDeptUser);
     };
 
     const canVerifyOrigin = () => {
@@ -205,6 +218,7 @@ const TransferDetails = () => {
                                 <div className="route-info">
                                     <span className="route-label">ORIGIN</span>
                                     <span className="route-branch">{transfer.originBranchName}</span>
+                                    <span className="route-dept">{transfer.originDepartmentName || 'Main Branch'}</span>
                                     <span className="route-code">{transfer.originBranchCode}</span>
                                 </div>
                             </div>
@@ -217,6 +231,7 @@ const TransferDetails = () => {
                                 <div className="route-info">
                                     <span className="route-label">DESTINATION</span>
                                     <span className="route-branch">{transfer.destinationBranchName}</span>
+                                    <span className="route-dept">{transfer.destinationDepartmentName || 'General Dept'}</span>
                                     <span className="route-code">{transfer.destinationBranchCode}</span>
                                 </div>
                             </div>
