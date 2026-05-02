@@ -22,6 +22,8 @@ const OrgManagement = () => {
     const [showBranchForm, setShowBranchForm] = useState(false);
     const [showDeptForm, setShowDeptForm] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [viewBranch, setViewBranch] = useState<BranchRow | null>(null);
+    const [viewDept, setViewDept] = useState<DeptRow | null>(null);
 
     const [branchForm, setBranchForm] = useState({
         branchCode: '', branchName: '', branchType: 'BRANCH',
@@ -163,6 +165,7 @@ const OrgManagement = () => {
                                 <th>District</th>
                                 <th>Division</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -177,10 +180,13 @@ const OrgManagement = () => {
                                         <span className={`status-dot ${b.isActive ? 'dot-active' : 'dot-inactive'}`}></span>
                                         {b.isActive ? 'Active' : 'Inactive'}
                                     </td>
+                                    <td>
+                                        <button className="btn-icon" onClick={() => setViewBranch(b)} title="View Profile">👁️</button>
+                                    </td>
                                 </tr>
                             ))}
                             {branches.length === 0 && (
-                                <tr><td colSpan={6} className="empty-row">No branches found.</td></tr>
+                                <tr><td colSpan={7} className="empty-row">No branches found.</td></tr>
                             )}
                         </tbody>
                     </table>
@@ -225,6 +231,7 @@ const OrgManagement = () => {
                                 <th>ID</th>
                                 <th>Department Name</th>
                                 <th>Assigned Branch</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -233,13 +240,102 @@ const OrgManagement = () => {
                                     <td className="fw-semibold">#{d.departmentId}</td>
                                     <td>{d.departmentName}</td>
                                     <td>{d.branchName}</td>
+                                    <td>
+                                        <button className="btn-icon" onClick={() => setViewDept(d)} title="View Profile">👁️</button>
+                                    </td>
                                 </tr>
                             ))}
                             {departments.length === 0 && (
-                                <tr><td colSpan={3} className="empty-row">No departments found.</td></tr>
+                                <tr><td colSpan={4} className="empty-row">No departments found.</td></tr>
                             )}
                         </tbody>
                     </table>
+                </div>
+            )}
+
+            {/* View Branch Modal */}
+            {viewBranch && (
+                <div className="modal-overlay" onClick={() => setViewBranch(null)}>
+                    <div className="modal-content profile-modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Branch Profile</h2>
+                            <button className="modal-close" onClick={() => setViewBranch(null)}>✕</button>
+                        </div>
+                        <div className="profile-details">
+                            <div className="profile-header" style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px', paddingBottom: '15px', borderBottom: '1px solid #e2e8f0' }}>
+                                <div className="profile-avatar" style={{ width: '60px', height: '60px', borderRadius: '8px', backgroundColor: '#e6fffa', color: '#319795', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+                                    🏢
+                                </div>
+                                <div>
+                                    <h3 style={{ margin: '0 0 5px 0', fontSize: '20px', color: '#1a202c' }}>{viewBranch.branchName}</h3>
+                                    <p className="profile-role" style={{ margin: 0, color: '#718096', fontSize: '14px', fontWeight: 500 }}>{viewBranch.branchType}</p>
+                                </div>
+                            </div>
+                            <div className="profile-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Branch Code</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewBranch.branchCode}</span>
+                                </div>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Phone</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewBranch.phone || 'N/A'}</span>
+                                </div>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>District</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewBranch.district}</span>
+                                </div>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Division</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewBranch.division}</span>
+                                </div>
+                                <div className="profile-item" style={{ gridColumn: '1 / -1' }}>
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Address</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewBranch.address}</span>
+                                </div>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Status</span>
+                                    <span className={`status-badge ${viewBranch.isActive ? 'active' : 'inactive'}`} style={{ fontWeight: 'bold', color: viewBranch.isActive ? '#38a169' : '#e53e3e' }}>
+                                        {viewBranch.isActive ? '🟢 Active' : '🔴 Inactive'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-actions" style={{ marginTop: '30px', paddingTop: '15px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button className="btn-ghost" onClick={() => setViewBranch(null)}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* View Dept Modal */}
+            {viewDept && (
+                <div className="modal-overlay" onClick={() => setViewDept(null)}>
+                    <div className="modal-content profile-modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Department Profile</h2>
+                            <button className="modal-close" onClick={() => setViewDept(null)}>✕</button>
+                        </div>
+                        <div className="profile-details">
+                            <div className="profile-header" style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px', paddingBottom: '15px', borderBottom: '1px solid #e2e8f0' }}>
+                                <div className="profile-avatar" style={{ width: '60px', height: '60px', borderRadius: '8px', backgroundColor: '#ebf4ff', color: '#4299e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+                                    🏷️
+                                </div>
+                                <div>
+                                    <h3 style={{ margin: '0 0 5px 0', fontSize: '20px', color: '#1a202c' }}>{viewDept.departmentName}</h3>
+                                    <p className="profile-role" style={{ margin: 0, color: '#718096', fontSize: '14px', fontWeight: 500 }}>ID: #{viewDept.departmentId}</p>
+                                </div>
+                            </div>
+                            <div className="profile-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Assigned Branch</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewDept.branchName}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-actions" style={{ marginTop: '30px', paddingTop: '15px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button className="btn-ghost" onClick={() => setViewDept(null)}>Close</button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
