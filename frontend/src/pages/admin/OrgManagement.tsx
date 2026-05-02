@@ -24,6 +24,9 @@ const OrgManagement = () => {
     const [submitting, setSubmitting] = useState(false);
     const [viewBranch, setViewBranch] = useState<BranchRow | null>(null);
     const [viewDept, setViewDept] = useState<DeptRow | null>(null);
+    const [users, setUsers] = useState<any[]>([]);
+    const [searchBranch, setSearchBranch] = useState('');
+    const [searchDept, setSearchDept] = useState('');
 
     const [branchForm, setBranchForm] = useState({
         branchCode: '', branchName: '', branchType: 'BRANCH',
@@ -36,12 +39,14 @@ const OrgManagement = () => {
     const fetchAll = async () => {
         setLoading(true);
         try {
-            const [bRes, dRes] = await Promise.all([
+            const [bRes, dRes, uRes] = await Promise.all([
                 api.get('/admin/org/branches'),
                 api.get('/admin/org/departments'),
+                api.get('/admin/users'),
             ]);
             setBranches(bRes.data);
             setDepartments(dRes.data);
+            setUsers(uRes.data);
         } catch {
             setError('Failed to load organization data.');
         } finally {
@@ -80,6 +85,16 @@ const OrgManagement = () => {
         } finally { setSubmitting(false); }
     };
 
+    const filteredBranches = branches.filter(b => 
+        b.branchName.toLowerCase().includes(searchBranch.toLowerCase()) || 
+        b.branchCode.toLowerCase().includes(searchBranch.toLowerCase())
+    );
+
+    const filteredDepartments = departments.filter(d => 
+        d.departmentName.toLowerCase().includes(searchDept.toLowerCase()) || 
+        (d.branchName && d.branchName.toLowerCase().includes(searchDept.toLowerCase()))
+    );
+
     if (loading) return <div className="admin-loading">Loading organization data...</div>;
 
     return (
@@ -107,7 +122,14 @@ const OrgManagement = () => {
             {/* Branches Tab */}
             {activeTab === 'branches' && (
                 <div className="admin-card">
-                    <div className="card-toolbar">
+                    <div className="card-toolbar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                        <input 
+                            type="text" 
+                            placeholder="Search branch by Name or Code..." 
+                            value={searchBranch}
+                            onChange={(e) => setSearchBranch(e.target.value)}
+                            style={{ flex: 1, maxWidth: '300px', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}
+                        />
                         <button className="btn-admin-primary" onClick={() => setShowBranchForm(!showBranchForm)}>
                             {showBranchForm ? '✕ Cancel' : '+ Add Branch'}
                         </button>
@@ -169,7 +191,7 @@ const OrgManagement = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {branches.map(b => (
+                            {filteredBranches.map(b => (
                                 <tr key={b.branchId}>
                                     <td className="fw-semibold">{b.branchCode}</td>
                                     <td>{b.branchName}</td>
@@ -185,7 +207,7 @@ const OrgManagement = () => {
                                     </td>
                                 </tr>
                             ))}
-                            {branches.length === 0 && (
+                            {filteredBranches.length === 0 && (
                                 <tr><td colSpan={7} className="empty-row">No branches found.</td></tr>
                             )}
                         </tbody>
@@ -196,7 +218,14 @@ const OrgManagement = () => {
             {/* Departments Tab */}
             {activeTab === 'departments' && (
                 <div className="admin-card">
-                    <div className="card-toolbar">
+                    <div className="card-toolbar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                        <input 
+                            type="text" 
+                            placeholder="Search department by Name or Branch..." 
+                            value={searchDept}
+                            onChange={(e) => setSearchDept(e.target.value)}
+                            style={{ flex: 1, maxWidth: '300px', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}
+                        />
                         <button className="btn-admin-primary" onClick={() => setShowDeptForm(!showDeptForm)}>
                             {showDeptForm ? '✕ Cancel' : '+ Add Department'}
                         </button>
@@ -235,7 +264,7 @@ const OrgManagement = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {departments.map(d => (
+                            {filteredDepartments.map(d => (
                                 <tr key={d.departmentId}>
                                     <td className="fw-semibold">#{d.departmentId}</td>
                                     <td>{d.departmentName}</td>
@@ -245,7 +274,7 @@ const OrgManagement = () => {
                                     </td>
                                 </tr>
                             ))}
-                            {departments.length === 0 && (
+                            {filteredDepartments.length === 0 && (
                                 <tr><td colSpan={4} className="empty-row">No departments found.</td></tr>
                             )}
                         </tbody>
@@ -293,6 +322,18 @@ const OrgManagement = () => {
                                     <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewBranch.address}</span>
                                 </div>
                                 <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Total Employees</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>
+                                        {users.filter(u => u.branchId === viewBranch.branchId).length} Employees
+                                    </span>
+                                </div>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Total Departments</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>
+                                        {departments.filter(d => d.branchId === viewBranch.branchId).length} Departments
+                                    </span>
+                                </div>
+                                <div className="profile-item">
                                     <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Status</span>
                                     <span className={`status-badge ${viewBranch.isActive ? 'active' : 'inactive'}`} style={{ fontWeight: 'bold', color: viewBranch.isActive ? '#38a169' : '#e53e3e' }}>
                                         {viewBranch.isActive ? '🟢 Active' : '🔴 Inactive'}
@@ -329,6 +370,12 @@ const OrgManagement = () => {
                                 <div className="profile-item">
                                     <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Assigned Branch</span>
                                     <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewDept.branchName}</span>
+                                </div>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Total Employees</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>
+                                        {users.filter(u => u.departmentId === viewDept.departmentId).length} Employees
+                                    </span>
                                 </div>
                             </div>
                         </div>
