@@ -34,6 +34,7 @@ const UserManagement = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [viewUser, setViewUser] = useState<UserRow | null>(null);
 
     // Form fields
     const [form, setForm] = useState({
@@ -177,6 +178,7 @@ const UserManagement = () => {
                                 </td>
                                 <td>
                                     <div className="action-group">
+                                        <button className="btn-icon" onClick={() => setViewUser(u)} title="View Profile">👁️</button>
                                         <button className="btn-icon" onClick={() => openEditModal(u)} title="Edit">✏️</button>
                                         <button
                                             className={`btn-toggle ${u.isActive ? 'btn-deactivate' : 'btn-activate'}`}
@@ -195,7 +197,64 @@ const UserManagement = () => {
                 </table>
             </div>
 
-            {/* Modal */}
+            {/* View Profile Modal */}
+            {viewUser && (
+                <div className="modal-overlay" onClick={() => setViewUser(null)}>
+                    <div className="modal-content profile-modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>User Profile</h2>
+                            <button className="modal-close" onClick={() => setViewUser(null)}>✕</button>
+                        </div>
+                        <div className="profile-details">
+                            <div className="profile-header" style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px', paddingBottom: '15px', borderBottom: '1px solid #e2e8f0' }}>
+                                <div className="profile-avatar" style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#f0f4f8', color: '#3182ce', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 'bold' }}>
+                                    {viewUser.fullName.charAt(0)}
+                                </div>
+                                <div>
+                                    <h3 style={{ margin: '0 0 5px 0', fontSize: '20px', color: '#1a202c' }}>{viewUser.fullName}</h3>
+                                    <p className="profile-role" style={{ margin: 0, color: '#718096', fontSize: '14px', fontWeight: 500 }}>{viewUser.roleName?.replace(/_/g, ' ')}</p>
+                                </div>
+                            </div>
+                            <div className="profile-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Employee ID</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewUser.employeeId}</span>
+                                </div>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Email</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewUser.email}</span>
+                                </div>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Phone</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewUser.phoneNumber || 'N/A'}</span>
+                                </div>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Branch</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewUser.branchName}</span>
+                                </div>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Department</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewUser.departmentName || 'None (Branch Level)'}</span>
+                                </div>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Status</span>
+                                    <span className={`status-badge ${viewUser.isActive ? 'active' : 'inactive'}`} style={{ fontWeight: 'bold', color: viewUser.isActive ? '#38a169' : '#e53e3e' }}>
+                                        {viewUser.isActive ? '🟢 Active' : '🔴 Inactive'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-actions" style={{ marginTop: '30px', paddingTop: '15px', borderTop: '1px solid #e2e8f0' }}>
+                            <button className="btn-admin-primary" onClick={() => { setViewUser(null); openEditModal(viewUser); }}>
+                                Edit User
+                            </button>
+                            <button className="btn-ghost" onClick={() => setViewUser(null)}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Create/Edit Modal */}
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
