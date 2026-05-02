@@ -35,6 +35,9 @@ const UserManagement = () => {
     const [success, setSuccess] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [viewUser, setViewUser] = useState<UserRow | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterBranch, setFilterBranch] = useState('');
+    const [filterRole, setFilterRole] = useState('');
 
     // Form fields
     const [form, setForm] = useState({
@@ -132,6 +135,14 @@ const UserManagement = () => {
         }
     };
 
+    const filteredUsers = users.filter(u => {
+        const matchesSearch = u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                              u.employeeId.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesBranch = filterBranch ? u.branchId.toString() === filterBranch : true;
+        const matchesRole = filterRole ? u.roleId.toString() === filterRole : true;
+        return matchesSearch && matchesBranch && matchesRole;
+    });
+
     if (loading) return <div className="admin-loading">Loading user data...</div>;
 
     return (
@@ -149,6 +160,36 @@ const UserManagement = () => {
             {error && <div className="admin-alert admin-alert-error">{error}</div>}
             {success && <div className="admin-alert admin-alert-success">{success}</div>}
 
+            <div className="admin-filters" style={{ display: 'flex', gap: '15px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                <input 
+                    type="text" 
+                    placeholder="Search by Name or ID..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{ flex: 1, minWidth: '200px', padding: '10px 15px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                />
+                <select 
+                    value={filterRole} 
+                    onChange={(e) => setFilterRole(e.target.value)}
+                    style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid #e2e8f0', backgroundColor: 'white' }}
+                >
+                    <option value="">All Roles</option>
+                    {roles.map(r => (
+                        <option key={r.roleId} value={r.roleId}>{r.roleName.replace(/_/g, ' ')}</option>
+                    ))}
+                </select>
+                <select 
+                    value={filterBranch} 
+                    onChange={(e) => setFilterBranch(e.target.value)}
+                    style={{ padding: '10px 15px', borderRadius: '8px', border: '1px solid #e2e8f0', backgroundColor: 'white' }}
+                >
+                    <option value="">All Branches</option>
+                    {branches.map(b => (
+                        <option key={b.branchId} value={b.branchId}>{b.branchName}</option>
+                    ))}
+                </select>
+            </div>
+
             <div className="admin-card">
                 <table className="admin-table">
                     <thead>
@@ -162,7 +203,7 @@ const UserManagement = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {users.map(u => (
+                        {filteredUsers.map(u => (
                             <tr key={u.userId} className={!u.isActive ? 'row-inactive' : ''}>
                                 <td className="fw-semibold">{u.employeeId}</td>
                                 <td>{u.fullName}</td>
@@ -190,7 +231,7 @@ const UserManagement = () => {
                                 </td>
                             </tr>
                         ))}
-                        {users.length === 0 && (
+                        {filteredUsers.length === 0 && (
                             <tr><td colSpan={6} className="empty-row">No users found.</td></tr>
                         )}
                     </tbody>
