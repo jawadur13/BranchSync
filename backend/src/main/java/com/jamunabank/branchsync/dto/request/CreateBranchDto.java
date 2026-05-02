@@ -32,4 +32,6 @@ public class CreateBranchDto {
     private String address;
 
     private String phone;
+    
+    private java.util.List<Long> departmentIds;
 }

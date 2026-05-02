@@ -14,6 +14,4 @@ public class CreateDepartmentDto {
 
     @NotBlank(message = "Department name is required")
     private String departmentName;
-
-    private Long branchId;
 }

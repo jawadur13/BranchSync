@@ -14,9 +14,13 @@ public class Department {
     @Column(name = "department_name", nullable = false, length = 150)
     private String departmentName;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "branch_id")
-    private Branch branch;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "department_item_categories",
+        joinColumns = @JoinColumn(name = "department_id"),
+        inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private java.util.Set<ItemCategory> itemCategories = new java.util.HashSet<>();
 
     // head_user_id omitted — column not in current schema
 
@@ -29,8 +33,8 @@ public class Department {
     public void setDepartmentId(Long departmentId) { this.departmentId = departmentId; }
     public String getDepartmentName() { return departmentName; }
     public void setDepartmentName(String departmentName) { this.departmentName = departmentName; }
-    public Branch getBranch() { return branch; }
-    public void setBranch(Branch branch) { this.branch = branch; }
+    public java.util.Set<ItemCategory> getItemCategories() { return itemCategories; }
+    public void setItemCategories(java.util.Set<ItemCategory> itemCategories) { this.itemCategories = itemCategories; }
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
@@ -39,7 +43,7 @@ public class Department {
         private Department d = new Department();
         public DepartmentBuilder departmentId(Long id) { d.departmentId = id; return this; }
         public DepartmentBuilder departmentName(String n) { d.departmentName = n; return this; }
-        public DepartmentBuilder branch(Branch b) { d.branch = b; return this; }
+
 
         public DepartmentBuilder createdAt(OffsetDateTime c) { d.createdAt = c; return this; }
         public Department build() { return d; }

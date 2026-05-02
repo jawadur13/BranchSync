@@ -39,6 +39,8 @@ public class OrgManagementController {
                     map.put("address", b.getAddress());
                     map.put("phone", b.getPhone());
                     map.put("isActive", b.getIsActive());
+                    map.put("departmentIds", b.getDepartments().stream().map(Department::getDepartmentId).collect(Collectors.toList()));
+                    map.put("departments", b.getDepartments().stream().map(Department::getDepartmentName).collect(Collectors.toList()));
                     return map;
                 })
                 .collect(Collectors.toList());
@@ -66,8 +68,8 @@ public class OrgManagementController {
                     Map<String, Object> map = new java.util.LinkedHashMap<>();
                     map.put("departmentId", d.getDepartmentId());
                     map.put("departmentName", d.getDepartmentName());
-                    map.put("branchName", d.getBranch() != null ? d.getBranch().getBranchName() : "All Branches");
-                    map.put("branchId", d.getBranch() != null ? d.getBranch().getBranchId() : null);
+                    map.put("branchName", "Global (Master List)");
+                    map.put("branchId", null);
                     return map;
                 })
                 .collect(Collectors.toList());

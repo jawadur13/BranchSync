@@ -10,8 +10,4 @@ import java.util.List;
 
 @Repository
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
-    Page<Department> findByBranch_BranchId(Long branchId, Pageable pageable);
-
-    @Query("SELECT d FROM Department d LEFT JOIN FETCH d.branch")
-    List<Department> findAllWithBranch();
 }

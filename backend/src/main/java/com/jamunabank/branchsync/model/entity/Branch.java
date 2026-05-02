@@ -40,6 +40,14 @@ public class Branch {
     @Column(name = "is_active")
     private Boolean isActive;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "branch_departments",
+        joinColumns = @JoinColumn(name = "branch_id"),
+        inverseJoinColumns = @JoinColumn(name = "department_id")
+    )
+    private java.util.Set<Department> departments = new java.util.HashSet<>();
+
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
     private OffsetDateTime createdAt;
 
@@ -65,6 +73,8 @@ public class Branch {
     public void setEmail(String email) { this.email = email; }
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+    public java.util.Set<Department> getDepartments() { return departments; }
+    public void setDepartments(java.util.Set<Department> departments) { this.departments = departments; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 

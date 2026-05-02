@@ -14,6 +14,6 @@ public interface BranchRepository extends JpaRepository<Branch, Long> {
     Optional<Branch> findByBranchCode(String branchCode);
     Page<Branch> findByIsActiveTrue(Pageable pageable);
 
-    @Query("SELECT b FROM Branch b")
+    @Query("SELECT DISTINCT b FROM Branch b LEFT JOIN FETCH b.departments")
     List<Branch> findAllBranches();
 }

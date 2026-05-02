@@ -116,6 +116,10 @@ public class ManagementServiceImpl implements ManagementService {
                     .isActive(true)
                     .createdAt(OffsetDateTime.now())
                     .build();
+            if (dto.getDepartmentIds() != null && !dto.getDepartmentIds().isEmpty()) {
+                List<Department> departments = departmentRepository.findAllById(dto.getDepartmentIds());
+                branch.setDepartments(new java.util.HashSet<>(departments));
+            }
             return branchRepository.save(branch);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid Branch Type: " + dto.getBranchType());
@@ -127,7 +131,7 @@ public class ManagementServiceImpl implements ManagementService {
     @Override
     @Transactional(readOnly = true)
     public List<Department> getAllDepartments() {
-        return departmentRepository.findAllWithBranch();
+        return departmentRepository.findAll();
     }
 
     @Override
@@ -136,11 +140,6 @@ public class ManagementServiceImpl implements ManagementService {
                 .departmentName(dto.getDepartmentName())
                 .createdAt(OffsetDateTime.now())
                 .build();
-
-        if (dto.getBranchId() != null) {
-            department.setBranch(branchRepository.findById(dto.getBranchId()).orElse(null));
-        }
-
         return departmentRepository.save(department);
     }
 
@@ -157,6 +156,10 @@ public class ManagementServiceImpl implements ManagementService {
             branch.setDivision(dto.getDivision().trim());
             branch.setAddress(dto.getAddress().trim());
             branch.setPhone(dto.getPhone() != null ? dto.getPhone().trim() : null);
+            if (dto.getDepartmentIds() != null) {
+                List<Department> departments = departmentRepository.findAllById(dto.getDepartmentIds());
+                branch.setDepartments(new java.util.HashSet<>(departments));
+            }
             
             return branchRepository.save(branch);
         } catch (IllegalArgumentException e) {
@@ -170,13 +173,6 @@ public class ManagementServiceImpl implements ManagementService {
                 .orElseThrow(() -> new RuntimeException("Department not found"));
         
         department.setDepartmentName(dto.getDepartmentName());
-        
-        if (dto.getBranchId() != null) {
-            department.setBranch(branchRepository.findById(dto.getBranchId()).orElse(null));
-        } else {
-            department.setBranch(null);
-        }
-        
         return departmentRepository.save(department);
     }
 }
