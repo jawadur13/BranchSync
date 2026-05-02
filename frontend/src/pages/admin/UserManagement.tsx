@@ -19,7 +19,7 @@ interface UserRow {
 }
 
 interface RoleOption { roleId: number; roleName: string; }
-interface BranchOption { branchId: number; branchName: string; branchCode: string; }
+interface BranchOption { branchId: number; branchName: string; branchCode: string; departmentIds?: number[]; }
 interface DeptOption { departmentId: number; departmentName: string; }
 
 const UserManagement = () => {
@@ -345,12 +345,15 @@ const UserManagement = () => {
                                 </div>
                                 <div className="form-group">
                                     <label>Department</label>
-                                    <select name="departmentId" value={form.departmentId} onChange={handleChange}>
+                                    <select name="departmentId" value={form.departmentId} onChange={handleChange} disabled={!form.branchId}>
                                         <option value="">None</option>
-                                        {departments.map(d => (
+                                        {departments.filter(d => 
+                                            branches.find(b => b.branchId.toString() === form.branchId)?.departmentIds?.includes(d.departmentId)
+                                        ).map(d => (
                                             <option key={d.departmentId} value={d.departmentId}>{d.departmentName}</option>
                                         ))}
                                     </select>
+                                    {!form.branchId && <small style={{ color: '#a0aec0', display: 'block', marginTop: '4px' }}>Select a branch first</small>}
                                 </div>
                             </div>
                             <div className="modal-actions">

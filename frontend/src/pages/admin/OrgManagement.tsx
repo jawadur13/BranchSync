@@ -6,10 +6,10 @@ interface BranchRow {
     branchId: number; branchCode: string; branchName: string;
     branchType: string; district: string; division: string;
     address: string; phone: string | null; isActive: boolean;
+    departmentIds?: number[]; departments?: string[];
 }
 interface DeptRow {
     departmentId: number; departmentName: string;
-    branchName: string; branchId: number | null;
 }
 
 const OrgManagement = () => {
@@ -32,9 +32,9 @@ const OrgManagement = () => {
 
     const [branchForm, setBranchForm] = useState({
         branchCode: '', branchName: '', branchType: 'BRANCH',
-        district: '', division: '', address: '', phone: ''
+        district: '', division: '', address: '', phone: '', departmentIds: [] as number[]
     });
-    const [deptForm, setDeptForm] = useState({ departmentName: '', branchId: '' });
+    const [deptForm, setDeptForm] = useState({ departmentName: '' });
 
     useEffect(() => { fetchAll(); }, []);
 
@@ -65,7 +65,8 @@ const OrgManagement = () => {
             district: b.district,
             division: b.division,
             address: b.address,
-            phone: b.phone || ''
+            phone: b.phone || '',
+            departmentIds: b.departmentIds || []
         });
         setShowBranchForm(true);
     };
@@ -73,8 +74,7 @@ const OrgManagement = () => {
     const openEditDept = (d: DeptRow) => {
         setEditDeptId(d.departmentId);
         setDeptForm({
-            departmentName: d.departmentName,
-            branchId: d.branchId ? d.branchId.toString() : ''
+            departmentName: d.departmentName
         });
         setShowDeptForm(true);
     };
@@ -92,7 +92,7 @@ const OrgManagement = () => {
             }
             setShowBranchForm(false);
             setEditBranchId(null);
-            setBranchForm({ branchCode: '', branchName: '', branchType: 'BRANCH', district: '', division: '', address: '', phone: '' });
+            setBranchForm({ branchCode: '', branchName: '', branchType: 'BRANCH', district: '', division: '', address: '', phone: '', departmentIds: [] });
             fetchAll();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to save branch.');
@@ -104,8 +104,7 @@ const OrgManagement = () => {
         setSubmitting(true); setError(''); setSuccess('');
         try {
             const payload = {
-                departmentName: deptForm.departmentName,
-                branchId: deptForm.branchId ? Number(deptForm.branchId) : null,
+                departmentName: deptForm.departmentName
             };
             if (editDeptId) {
                 await api.put(`/admin/org/departments/${editDeptId}`, payload);
@@ -116,7 +115,7 @@ const OrgManagement = () => {
             }
             setShowDeptForm(false);
             setEditDeptId(null);
-            setDeptForm({ departmentName: '', branchId: '' });
+            setDeptForm({ departmentName: '' });
             fetchAll();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to save department.');
@@ -129,8 +128,7 @@ const OrgManagement = () => {
     );
 
     const filteredDepartments = departments.filter(d => 
-        d.departmentName.toLowerCase().includes(searchDept.toLowerCase()) || 
-        (d.branchName && d.branchName.toLowerCase().includes(searchDept.toLowerCase()))
+        d.departmentName.toLowerCase().includes(searchDept.toLowerCase())
     );
 
     if (loading) return <div className="admin-loading">Loading organization data...</div>;
@@ -171,7 +169,7 @@ const OrgManagement = () => {
                         <button className="btn-admin-primary" onClick={() => {
                             if (!showBranchForm) {
                                 setEditBranchId(null);
-                                setBranchForm({ branchCode: '', branchName: '', branchType: 'BRANCH', district: '', division: '', address: '', phone: '' });
+                                setBranchForm({ branchCode: '', branchName: '', branchType: 'BRANCH', district: '', division: '', address: '', phone: '', departmentIds: [] });
                             }
                             setShowBranchForm(!showBranchForm);
                         }}>
@@ -214,6 +212,25 @@ const OrgManagement = () => {
                                 <div className="form-group full-width">
                                     <label>Address <span className="required">*</span></label>
                                     <input value={branchForm.address} onChange={e => setBranchForm({ ...branchForm, address: e.target.value })} placeholder="Full address" required />
+                                </div>
+                                <div className="form-group full-width">
+                                    <label>Assign Departments to Branch</label>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '10px', marginTop: '8px' }}>
+                                        {departments.map(d => (
+                                            <label key={d.departmentId} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', background: '#f8fafc', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={branchForm.departmentIds.includes(d.departmentId)}
+                                                    onChange={(e) => {
+                                                        const current = branchForm.departmentIds;
+                                                        if (e.target.checked) setBranchForm({ ...branchForm, departmentIds: [...current, d.departmentId] });
+                                                        else setBranchForm({ ...branchForm, departmentIds: current.filter(id => id !== d.departmentId) });
+                                                    }}
+                                                />
+                                                <span style={{ fontSize: '14px', color: '#4a5568' }}>{d.departmentName}</span>
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                             <button type="submit" className="btn-admin-primary" disabled={submitting} style={{ marginTop: '12px' }}>
@@ -276,7 +293,7 @@ const OrgManagement = () => {
                         <button className="btn-admin-primary" onClick={() => {
                             if (!showDeptForm) {
                                 setEditDeptId(null);
-                                setDeptForm({ departmentName: '', branchId: '' });
+                                setDeptForm({ departmentName: '' });
                             }
                             setShowDeptForm(!showDeptForm);
                         }}>
@@ -291,15 +308,7 @@ const OrgManagement = () => {
                                     <label>Department Name <span className="required">*</span></label>
                                     <input value={deptForm.departmentName} onChange={e => setDeptForm({ ...deptForm, departmentName: e.target.value })} placeholder="e.g. Cash Operations" required />
                                 </div>
-                                <div className="form-group">
-                                    <label>Branch (Optional)</label>
-                                    <select value={deptForm.branchId} onChange={e => setDeptForm({ ...deptForm, branchId: e.target.value })}>
-                                        <option value="">All Branches (Global)</option>
-                                        {branches.map(b => (
-                                            <option key={b.branchId} value={b.branchId}>{b.branchName}</option>
-                                        ))}
-                                    </select>
-                                </div>
+
                             </div>
                             <button type="submit" className="btn-admin-primary" disabled={submitting} style={{ marginTop: '12px' }}>
                                 {submitting ? 'Saving...' : (editDeptId ? '💾 Save Changes' : '✅ Create Department')}
@@ -312,7 +321,6 @@ const OrgManagement = () => {
                             <tr>
                                 <th>ID</th>
                                 <th>Department Name</th>
-                                <th>Assigned Branch</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -321,7 +329,6 @@ const OrgManagement = () => {
                                 <tr key={d.departmentId}>
                                     <td className="fw-semibold">#{d.departmentId}</td>
                                     <td>{d.departmentName}</td>
-                                    <td>{d.branchName}</td>
                                     <td>
                                         <div className="action-group" style={{ display: 'flex', gap: '8px' }}>
                                             <button className="btn-icon" onClick={() => setViewDept(d)} title="View Profile">👁️</button>
@@ -331,7 +338,7 @@ const OrgManagement = () => {
                                 </tr>
                             ))}
                             {filteredDepartments.length === 0 && (
-                                <tr><td colSpan={4} className="empty-row">No departments found.</td></tr>
+                                <tr><td colSpan={3} className="empty-row">No departments found.</td></tr>
                             )}
                         </tbody>
                     </table>
@@ -386,8 +393,22 @@ const OrgManagement = () => {
                                 <div className="profile-item">
                                     <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Total Departments</span>
                                     <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>
-                                        {departments.filter(d => d.branchId === viewBranch.branchId).length} Departments
+                                        {viewBranch.departments?.length || 0} Departments
                                     </span>
+                                </div>
+                                <div className="profile-item" style={{ gridColumn: '1 / -1' }}>
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Assigned Departments</span>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                        {viewBranch.departments && viewBranch.departments.length > 0 ? (
+                                            viewBranch.departments.map((dept, i) => (
+                                                <span key={i} style={{ background: '#edf2f7', color: '#4a5568', padding: '4px 10px', borderRadius: '15px', fontSize: '13px', fontWeight: 500 }}>
+                                                    {dept}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <span style={{ fontSize: '14px', color: '#a0aec0' }}>No departments assigned.</span>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="profile-item">
                                     <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Status</span>
@@ -425,8 +446,8 @@ const OrgManagement = () => {
                             </div>
                             <div className="profile-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
                                 <div className="profile-item">
-                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Assigned Branch</span>
-                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewDept.branchName}</span>
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Scope</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>Global (Master List)</span>
                                 </div>
                                 <div className="profile-item">
                                     <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Total Employees</span>
