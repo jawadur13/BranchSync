@@ -18,12 +18,7 @@ public class Department {
     @JoinColumn(name = "branch_id")
     private Branch branch;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "head_user_id", insertable = false, updatable = false)
-    private User headUser;
-
-    @Column(name = "head_user_id")
-    private Long headUserId;
+    // head_user_id omitted — column not in current schema
 
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
     private OffsetDateTime createdAt;
@@ -36,10 +31,7 @@ public class Department {
     public void setDepartmentName(String departmentName) { this.departmentName = departmentName; }
     public Branch getBranch() { return branch; }
     public void setBranch(Branch branch) { this.branch = branch; }
-    public User getHeadUser() { return headUser; }
-    public void setHeadUser(User headUser) { this.headUser = headUser; }
-    public Long getHeadUserId() { return headUserId; }
-    public void setHeadUserId(Long headUserId) { this.headUserId = headUserId; }
+
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 
@@ -48,7 +40,7 @@ public class Department {
         public DepartmentBuilder departmentId(Long id) { d.departmentId = id; return this; }
         public DepartmentBuilder departmentName(String n) { d.departmentName = n; return this; }
         public DepartmentBuilder branch(Branch b) { d.branch = b; return this; }
-        public DepartmentBuilder headUserId(Long id) { d.headUserId = id; return this; }
+
         public DepartmentBuilder createdAt(OffsetDateTime c) { d.createdAt = c; return this; }
         public Department build() { return d; }
     }
