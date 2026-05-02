@@ -22,4 +22,7 @@ public interface ManagementService {
     
     List<Department> getAllDepartments();
     Department createDepartment(CreateDepartmentDto dto);
+    
+    Branch updateBranch(Long branchId, CreateBranchDto dto);
+    Department updateDepartment(Long departmentId, CreateDepartmentDto dto);
 }

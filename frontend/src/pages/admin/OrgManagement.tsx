@@ -27,6 +27,8 @@ const OrgManagement = () => {
     const [users, setUsers] = useState<any[]>([]);
     const [searchBranch, setSearchBranch] = useState('');
     const [searchDept, setSearchDept] = useState('');
+    const [editBranchId, setEditBranchId] = useState<number | null>(null);
+    const [editDeptId, setEditDeptId] = useState<number | null>(null);
 
     const [branchForm, setBranchForm] = useState({
         branchCode: '', branchName: '', branchType: 'BRANCH',
@@ -54,17 +56,46 @@ const OrgManagement = () => {
         }
     };
 
+    const openEditBranch = (b: BranchRow) => {
+        setEditBranchId(b.branchId);
+        setBranchForm({
+            branchCode: b.branchCode,
+            branchName: b.branchName,
+            branchType: b.branchType,
+            district: b.district,
+            division: b.division,
+            address: b.address,
+            phone: b.phone || ''
+        });
+        setShowBranchForm(true);
+    };
+
+    const openEditDept = (d: DeptRow) => {
+        setEditDeptId(d.departmentId);
+        setDeptForm({
+            departmentName: d.departmentName,
+            branchId: d.branchId ? d.branchId.toString() : ''
+        });
+        setShowDeptForm(true);
+    };
+
     const handleBranchSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true); setError(''); setSuccess('');
         try {
-            await api.post('/admin/org/branches', branchForm);
-            setSuccess('Branch created successfully!');
+            if (editBranchId) {
+                await api.put(`/admin/org/branches/${editBranchId}`, branchForm);
+                setSuccess('Branch updated successfully!');
+            } else {
+                await api.post('/admin/org/branches', branchForm);
+                setSuccess('Branch created successfully!');
+            }
             setShowBranchForm(false);
+            setEditBranchId(null);
             setBranchForm({ branchCode: '', branchName: '', branchType: 'BRANCH', district: '', division: '', address: '', phone: '' });
             fetchAll();
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to create branch.');
+            setError(err.response?.data?.message || 'Failed to save branch.');
         } finally { setSubmitting(false); }
     };
 
@@ -72,16 +103,23 @@ const OrgManagement = () => {
         e.preventDefault();
         setSubmitting(true); setError(''); setSuccess('');
         try {
-            await api.post('/admin/org/departments', {
+            const payload = {
                 departmentName: deptForm.departmentName,
                 branchId: deptForm.branchId ? Number(deptForm.branchId) : null,
-            });
-            setSuccess('Department created successfully!');
+            };
+            if (editDeptId) {
+                await api.put(`/admin/org/departments/${editDeptId}`, payload);
+                setSuccess('Department updated successfully!');
+            } else {
+                await api.post('/admin/org/departments', payload);
+                setSuccess('Department created successfully!');
+            }
             setShowDeptForm(false);
+            setEditDeptId(null);
             setDeptForm({ departmentName: '', branchId: '' });
             fetchAll();
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to create department.');
+            setError(err.response?.data?.message || 'Failed to save department.');
         } finally { setSubmitting(false); }
     };
 
@@ -130,7 +168,13 @@ const OrgManagement = () => {
                             onChange={(e) => setSearchBranch(e.target.value)}
                             style={{ flex: 1, maxWidth: '300px', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}
                         />
-                        <button className="btn-admin-primary" onClick={() => setShowBranchForm(!showBranchForm)}>
+                        <button className="btn-admin-primary" onClick={() => {
+                            if (!showBranchForm) {
+                                setEditBranchId(null);
+                                setBranchForm({ branchCode: '', branchName: '', branchType: 'BRANCH', district: '', division: '', address: '', phone: '' });
+                            }
+                            setShowBranchForm(!showBranchForm);
+                        }}>
                             {showBranchForm ? '✕ Cancel' : '+ Add Branch'}
                         </button>
                     </div>
@@ -173,7 +217,7 @@ const OrgManagement = () => {
                                 </div>
                             </div>
                             <button type="submit" className="btn-admin-primary" disabled={submitting} style={{ marginTop: '12px' }}>
-                                {submitting ? 'Creating...' : '✅ Create Branch'}
+                                {submitting ? 'Saving...' : (editBranchId ? '💾 Save Changes' : '✅ Create Branch')}
                             </button>
                         </form>
                     )}
@@ -203,7 +247,10 @@ const OrgManagement = () => {
                                         {b.isActive ? 'Active' : 'Inactive'}
                                     </td>
                                     <td>
-                                        <button className="btn-icon" onClick={() => setViewBranch(b)} title="View Profile">👁️</button>
+                                        <div className="action-group" style={{ display: 'flex', gap: '8px' }}>
+                                            <button className="btn-icon" onClick={() => setViewBranch(b)} title="View Profile">👁️</button>
+                                            <button className="btn-icon" onClick={() => openEditBranch(b)} title="Edit Branch">✏️</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -226,7 +273,13 @@ const OrgManagement = () => {
                             onChange={(e) => setSearchDept(e.target.value)}
                             style={{ flex: 1, maxWidth: '300px', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}
                         />
-                        <button className="btn-admin-primary" onClick={() => setShowDeptForm(!showDeptForm)}>
+                        <button className="btn-admin-primary" onClick={() => {
+                            if (!showDeptForm) {
+                                setEditDeptId(null);
+                                setDeptForm({ departmentName: '', branchId: '' });
+                            }
+                            setShowDeptForm(!showDeptForm);
+                        }}>
                             {showDeptForm ? '✕ Cancel' : '+ Add Department'}
                         </button>
                     </div>
@@ -249,7 +302,7 @@ const OrgManagement = () => {
                                 </div>
                             </div>
                             <button type="submit" className="btn-admin-primary" disabled={submitting} style={{ marginTop: '12px' }}>
-                                {submitting ? 'Creating...' : '✅ Create Department'}
+                                {submitting ? 'Saving...' : (editDeptId ? '💾 Save Changes' : '✅ Create Department')}
                             </button>
                         </form>
                     )}
@@ -270,7 +323,10 @@ const OrgManagement = () => {
                                     <td>{d.departmentName}</td>
                                     <td>{d.branchName}</td>
                                     <td>
-                                        <button className="btn-icon" onClick={() => setViewDept(d)} title="View Profile">👁️</button>
+                                        <div className="action-group" style={{ display: 'flex', gap: '8px' }}>
+                                            <button className="btn-icon" onClick={() => setViewDept(d)} title="View Profile">👁️</button>
+                                            <button className="btn-icon" onClick={() => openEditDept(d)} title="Edit Department">✏️</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -341,7 +397,8 @@ const OrgManagement = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="modal-actions" style={{ marginTop: '30px', paddingTop: '15px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end' }}>
+                        <div className="modal-actions" style={{ marginTop: '30px', paddingTop: '15px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                            <button className="btn-admin-primary" onClick={() => { setViewBranch(null); openEditBranch(viewBranch); }}>Edit Branch</button>
                             <button className="btn-ghost" onClick={() => setViewBranch(null)}>Close</button>
                         </div>
                     </div>
@@ -379,7 +436,8 @@ const OrgManagement = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="modal-actions" style={{ marginTop: '30px', paddingTop: '15px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end' }}>
+                        <div className="modal-actions" style={{ marginTop: '30px', paddingTop: '15px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                            <button className="btn-admin-primary" onClick={() => { setViewDept(null); openEditDept(viewDept); }}>Edit Department</button>
                             <button className="btn-ghost" onClick={() => setViewDept(null)}>Close</button>
                         </div>
                     </div>

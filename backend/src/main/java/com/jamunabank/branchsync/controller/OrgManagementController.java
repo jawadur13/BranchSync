@@ -101,4 +101,30 @@ public class OrgManagementController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(roles);
     }
+
+    @PutMapping("/branches/{id}")
+    public ResponseEntity<Map<String, Object>> updateBranch(@PathVariable Long id, @Valid @RequestBody CreateBranchDto dto) {
+        try {
+            Branch saved = managementService.updateBranch(id, dto);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Branch updated successfully",
+                    "branchId", saved.getBranchId()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: " + e.getMessage()));
+        }
+    }
+
+    @PutMapping("/departments/{id}")
+    public ResponseEntity<Map<String, Object>> updateDepartment(@PathVariable Long id, @Valid @RequestBody CreateDepartmentDto dto) {
+        try {
+            Department saved = managementService.updateDepartment(id, dto);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Department updated successfully",
+                    "departmentId", saved.getDepartmentId()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 }

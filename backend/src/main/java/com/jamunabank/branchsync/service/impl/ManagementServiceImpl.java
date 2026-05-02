@@ -143,4 +143,40 @@ public class ManagementServiceImpl implements ManagementService {
 
         return departmentRepository.save(department);
     }
+
+    @Override
+    public Branch updateBranch(Long branchId, CreateBranchDto dto) {
+        Branch branch = branchRepository.findById(branchId)
+                .orElseThrow(() -> new RuntimeException("Branch not found"));
+        
+        try {
+            branch.setBranchCode(dto.getBranchCode().trim());
+            branch.setBranchName(dto.getBranchName().trim());
+            branch.setBranchType(BranchType.valueOf(dto.getBranchType().toUpperCase().trim()));
+            branch.setDistrict(dto.getDistrict().trim());
+            branch.setDivision(dto.getDivision().trim());
+            branch.setAddress(dto.getAddress().trim());
+            branch.setPhone(dto.getPhone() != null ? dto.getPhone().trim() : null);
+            
+            return branchRepository.save(branch);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid Branch Type: " + dto.getBranchType());
+        }
+    }
+
+    @Override
+    public Department updateDepartment(Long departmentId, CreateDepartmentDto dto) {
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new RuntimeException("Department not found"));
+        
+        department.setDepartmentName(dto.getDepartmentName());
+        
+        if (dto.getBranchId() != null) {
+            department.setBranch(branchRepository.findById(dto.getBranchId()).orElse(null));
+        } else {
+            department.setBranch(null);
+        }
+        
+        return departmentRepository.save(department);
+    }
 }
