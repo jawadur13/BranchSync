@@ -40,8 +40,15 @@ public class ManagementServiceImpl implements ManagementService {
 
         Role role = roleRepository.findById(dto.getRoleId())
                 .orElseThrow(() -> new RuntimeException("Role not found"));
-        Branch branch = branchRepository.findById(dto.getBranchId())
-                .orElseThrow(() -> new RuntimeException("Branch not found"));
+        
+        Branch branch = null;
+        if (dto.getBranchId() != null) {
+            branch = branchRepository.findById(dto.getBranchId())
+                    .orElseThrow(() -> new RuntimeException("Branch not found"));
+        } else if (!role.getRoleName().equals("DELIVERY_PERSON") && !role.getRoleName().equals("SYSTEM_ADMIN")) {
+            // SYSTEM_ADMIN and DELIVERY_PERSON can have no branch
+            throw new RuntimeException("Branch is required for this role");
+        }
 
         User user = User.builder()
                 .employeeId(dto.getEmployeeId())
@@ -76,8 +83,14 @@ public class ManagementServiceImpl implements ManagementService {
             user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
         }
 
-        user.setRole(roleRepository.findById(dto.getRoleId()).orElse(user.getRole()));
-        user.setBranch(branchRepository.findById(dto.getBranchId()).orElse(user.getBranch()));
+        Role role = roleRepository.findById(dto.getRoleId()).orElse(user.getRole());
+        user.setRole(role);
+        
+        if (dto.getBranchId() != null) {
+            user.setBranch(branchRepository.findById(dto.getBranchId()).orElse(user.getBranch()));
+        } else if (role.getRoleName().equals("DELIVERY_PERSON") || role.getRoleName().equals("SYSTEM_ADMIN")) {
+            user.setBranch(null);
+        }
         
         if (dto.getDepartmentId() != null) {
             user.setDepartment(departmentRepository.findById(dto.getDepartmentId()).orElse(null));

@@ -13,26 +13,17 @@ public interface TransferService {
      */
     TransferRequest initiateTransfer(TransferRequest request, Long actorId);
 
-    /**
-     * Approves a transfer request.
-     * Logic:
-     * 1. Verify Role (FEO or Branch Manager)
-     * 2. Move to APPROVED
-     * 3. Log Audit
-     */
-    TransferRequest approveTransfer(Long requestId, Long approverId);
+    // Step 2: Approve & Assign Delivery (Source Branch Manager/FEO)
+    TransferRequest approveAndAssignDelivery(Long requestId, Long approverId, Long deliveryPersonId);
 
-    /**
-     * Handles dual-verification confirmation.
-     * Logic:
-     * 1. Verify if actor belongs to the correct branch (Origin vs Dest)
-     * 2. Update ReceiptRecord
-     * 3. If both confirmed, move status to SUCCESSFUL (or CONFIRMED in your enum)
-     */
-    TransferRequest processDualVerification(Long requestId, Long actorId, boolean isOriginConfirmation);
+    // Step 3: Handoff to Delivery (Delivery Person)
+    TransferRequest markAsInTransit(Long requestId, Long actorId);
 
-    /**
-     * Gets a list of transfers relevant to the user's role and branch for the dashboard.
-     */
+    // Step 4: Mark as Arrived (Delivery Person)
+    TransferRequest markAsArrived(Long requestId, Long actorId);
+
+    // Step 5: Confirm Receipt (Destination Branch Manager/FEO)
+    TransferRequest confirmReceipt(Long requestId, Long actorId, String finalNote);
+
     List<TransferRequest> getDashboardTransfers(Long actorId);
 }

@@ -3,13 +3,10 @@ package com.jamunabank.branchsync.model.enums;
 public enum TransferStatus {
     DRAFT,
     PENDING_APPROVAL,
-    APPROVED,
-    DISPATCHED,
+    PENDING_DELIVERY,
     IN_TRANSIT,
-    RECEIVED,
-    CONFIRMED,
-    CLOSED,
+    ARRIVED,
+    COMPLETED,
     REJECTED,
-    ESCALATED,
     CANCELLED
 }

@@ -74,4 +74,11 @@ public class TransferRequest {
 
     @Column(name = "closed_at")
     private OffsetDateTime closedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivery_person_id")
+    private User deliveryPerson;
+
+    @Column(name = "final_note", columnDefinition = "TEXT")
+    private String finalNote;
 }

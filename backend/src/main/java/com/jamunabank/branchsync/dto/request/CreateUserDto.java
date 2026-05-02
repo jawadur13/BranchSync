@@ -32,7 +32,6 @@ public class CreateUserDto {
     @NotNull(message = "Role ID is required")
     private Long roleId;
 
-    @NotNull(message = "Branch ID is required")
     private Long branchId;
 
     private Long departmentId;

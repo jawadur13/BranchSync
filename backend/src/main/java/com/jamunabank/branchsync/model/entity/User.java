@@ -31,7 +31,7 @@ public class User {
     private Role role;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "branch_id", nullable = false)
+    @JoinColumn(name = "branch_id", nullable = true)
     private Branch branch;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -52,32 +52,55 @@ public class TransferController {
     @PostMapping("/{requestId}/approve")
     public ResponseEntity<TransferResponseDto> approveTransfer(
             Authentication authentication,
-            @PathVariable Long requestId) {
+            @PathVariable Long requestId,
+            @Valid @RequestBody com.jamunabank.branchsync.dto.request.ApprovalRequestDto approvalDto) {
         
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         Long approverId = userDetails.getUserId();
 
-        TransferRequest approvedRequest = transferService.approveTransfer(requestId, approverId);
+        TransferRequest approvedRequest = transferService.approveAndAssignDelivery(requestId, approverId, approvalDto.getDeliveryPersonId());
         
         return ResponseEntity.ok(transferMapper.toResponseDto(approvedRequest));
     }
 
-    @PostMapping("/{requestId}/verify")
-    public ResponseEntity<TransferResponseDto> verifyTransfer(
+    @PostMapping("/{requestId}/handoff")
+    public ResponseEntity<TransferResponseDto> handoffToDelivery(
             Authentication authentication,
-            @PathVariable Long requestId,
-            @Valid @RequestBody VerificationRequestDto verificationDto) {
+            @PathVariable Long requestId) {
         
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         Long actorId = userDetails.getUserId();
 
-        TransferRequest verifiedRequest = transferService.processDualVerification(
-                requestId, 
-                actorId, 
-                verificationDto.getIsOriginConfirmation()
-        );
+        TransferRequest updated = transferService.markAsInTransit(requestId, actorId);
         
-        return ResponseEntity.ok(transferMapper.toResponseDto(verifiedRequest));
+        return ResponseEntity.ok(transferMapper.toResponseDto(updated));
+    }
+
+    @PostMapping("/{requestId}/arrive")
+    public ResponseEntity<TransferResponseDto> markAsArrived(
+            Authentication authentication,
+            @PathVariable Long requestId) {
+        
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long actorId = userDetails.getUserId();
+
+        TransferRequest updated = transferService.markAsArrived(requestId, actorId);
+        
+        return ResponseEntity.ok(transferMapper.toResponseDto(updated));
+    }
+
+    @PostMapping("/{requestId}/confirm")
+    public ResponseEntity<TransferResponseDto> confirmReceipt(
+            Authentication authentication,
+            @PathVariable Long requestId,
+            @Valid @RequestBody com.jamunabank.branchsync.dto.request.CompletionRequestDto completionDto) {
+        
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long actorId = userDetails.getUserId();
+
+        TransferRequest updated = transferService.confirmReceipt(requestId, actorId, completionDto.getFinalNote());
+        
+        return ResponseEntity.ok(transferMapper.toResponseDto(updated));
     }
 
     @GetMapping

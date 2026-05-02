@@ -34,18 +34,14 @@ public class TransferServiceImpl implements TransferService {
         User actor = userRepository.findById(actorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Actor not found"));
 
-        // 1. Generate Request Code (Global Sequence Mock)
+        // 1. Generate Request Code
         long count = transferRequestRepository.count();
         String year = String.valueOf(OffsetDateTime.now().getYear());
         String requestCode = String.format("REQ-%s-%04d", year, count + 1);
         request.setRequestCode(requestCode);
 
-        // 2. Set Status based on logic
-        boolean needsApproval = request.getPriority() == Priority.HIGH || 
-                                request.getPriority() == Priority.CRITICAL ||
-                                request.getCategory().getCategoryName() == CategoryName.CASH;
-        
-        request.setStatus(needsApproval ? TransferStatus.PENDING_APPROVAL : TransferStatus.APPROVED);
+        // 2. Set Status (Initial status is always PENDING_APPROVAL)
+        request.setStatus(TransferStatus.PENDING_APPROVAL);
         request.setInitiatedBy(actor);
         request.setRequestedAt(OffsetDateTime.now());
         
@@ -55,99 +51,97 @@ public class TransferServiceImpl implements TransferService {
 
         TransferRequest savedRequest = transferRequestRepository.save(request);
 
-        // 3. Log Audit
-        auditService.logAction(
-            savedRequest, actor, AuditAction.CREATE, 
-            "transfer_requests", savedRequest.getRequestId(), 
-            null, savedRequest.getStatus().name(), 
-            "127.0.0.1", "System"
-        );
-
+        auditService.logAction(savedRequest, actor, AuditAction.CREATE, "transfer_requests", savedRequest.getRequestId(), null, savedRequest.getStatus().name(), "127.0.0.1", "System");
         return savedRequest;
     }
 
     @Override
     @Transactional
-    public TransferRequest approveTransfer(Long requestId, Long approverId) {
+    public TransferRequest approveAndAssignDelivery(Long requestId, Long approverId, Long deliveryPersonId) {
         TransferRequest request = transferRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
-        
         User approver = userRepository.findById(approverId)
                 .orElseThrow(() -> new ResourceNotFoundException("Approver not found"));
+        User deliveryPerson = userRepository.findById(deliveryPersonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Delivery person not found"));
 
-        // 1. Role Check (FEO or Branch Manager)
-        String roleName = approver.getRole().getRoleName();
-        if (!"BRANCH_MANAGER".equals(roleName) && !"FIRST_EXECUTIVE_OFFICER".equals(roleName)) {
-            throw new UnauthorizedRoleException("Unauthorized: Only Branch Manager or FEO can approve.");
+        // Security: Approver must be Manager/FEO of Source Branch
+        String role = approver.getRole().getRoleName();
+        boolean isAuthorizedRole = role.equals("BRANCH_MANAGER") || role.equals("OPERATION_MANAGER") || role.equals("FIRST_EXECUTIVE_OFFICER");
+        
+        if (!isAuthorizedRole || (approver.getBranch() != null && !approver.getBranch().getBranchId().equals(request.getOriginBranch().getBranchId()))) {
+            throw new UnauthorizedRoleException("Only Manager/FEO of Source Branch can approve and assign delivery.");
         }
 
         String oldStatus = request.getStatus().name();
-        request.setStatus(TransferStatus.APPROVED);
+        request.setStatus(TransferStatus.PENDING_DELIVERY);
+        request.setDeliveryPerson(deliveryPerson);
         
-        TransferRequest updatedRequest = transferRequestRepository.save(request);
-
-        // 2. Log Audit
-        auditService.logAction(
-            updatedRequest, approver, AuditAction.APPROVE, 
-            "transfer_requests", updatedRequest.getRequestId(), 
-            oldStatus, updatedRequest.getStatus().name(), 
-            "127.0.0.1", "System"
-        );
-
-        return updatedRequest;
+        TransferRequest updated = transferRequestRepository.save(request);
+        auditService.logAction(updated, approver, AuditAction.APPROVE, "transfer_requests", updated.getRequestId(), oldStatus, updated.getStatus().name(), "127.0.0.1", "System");
+        return updated;
     }
 
     @Override
     @Transactional
-    public TransferRequest processDualVerification(Long requestId, Long actorId, boolean isOriginConfirmation) {
+    public TransferRequest markAsInTransit(Long requestId, Long actorId) {
         TransferRequest request = transferRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
         
+        if (request.getDeliveryPerson() == null || !request.getDeliveryPerson().getUserId().equals(actorId)) {
+            throw new UnauthorizedRoleException("Only the assigned delivery person can mark this as In Transit.");
+        }
+
+        String oldStatus = request.getStatus().name();
+        request.setStatus(TransferStatus.IN_TRANSIT);
+        
+        TransferRequest updated = transferRequestRepository.save(request);
+        auditService.logAction(updated, request.getDeliveryPerson(), AuditAction.UPDATE, "transfer_requests", updated.getRequestId(), oldStatus, updated.getStatus().name(), "127.0.0.1", "System");
+        return updated;
+    }
+
+    @Override
+    @Transactional
+    public TransferRequest markAsArrived(Long requestId, Long actorId) {
+        TransferRequest request = transferRequestRepository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
+        
+        if (request.getDeliveryPerson() == null || !request.getDeliveryPerson().getUserId().equals(actorId)) {
+            throw new UnauthorizedRoleException("Only the assigned delivery person can mark this as Arrived.");
+        }
+
+        String oldStatus = request.getStatus().name();
+        request.setStatus(TransferStatus.ARRIVED);
+        
+        TransferRequest updated = transferRequestRepository.save(request);
+        auditService.logAction(updated, request.getDeliveryPerson(), AuditAction.UPDATE, "transfer_requests", updated.getRequestId(), oldStatus, updated.getStatus().name(), "127.0.0.1", "System");
+        return updated;
+    }
+
+    @Override
+    @Transactional
+    public TransferRequest confirmReceipt(Long requestId, Long actorId, String finalNote) {
+        TransferRequest request = transferRequestRepository.findById(requestId)
+                .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
         User actor = userRepository.findById(actorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Actor not found"));
 
-        ReceiptRecord record = receiptRecordRepository.findByTransferRequest_RequestId(requestId)
-                .orElseGet(() -> ReceiptRecord.builder()
-                        .transferRequest(request)
-                        .receivedBy(actor) // Default to current actor if record doesn't exist
-                        .conditionNoted(com.jamunabank.branchsync.model.enums.Condition.GOOD)
-                        .receivedAt(OffsetDateTime.now())
-                        .build());
-
-        // 1. Branch Check Logic
-        if (isOriginConfirmation) {
-            if (!actor.getBranch().getBranchId().equals(request.getOriginBranch().getBranchId())) {
-                throw new UnauthorizedRoleException("Unauthorized: Origin confirmation must be done by origin branch staff.");
-            }
-            record.setOriginConfirmationBy(actor);
-            record.setOriginConfirmedAt(OffsetDateTime.now());
-        } else {
-            if (!actor.getBranch().getBranchId().equals(request.getDestinationBranch().getBranchId())) {
-                throw new UnauthorizedRoleException("Unauthorized: Destination confirmation must be done by destination branch staff.");
-            }
-            record.setDestinationConfirmationBy(actor);
-            record.setDestinationConfirmedAt(OffsetDateTime.now());
+        // Security: Actor must be Manager/FEO of Destination Branch
+        String role = actor.getRole().getRoleName();
+        boolean isAuthorizedRole = role.equals("BRANCH_MANAGER") || role.equals("OPERATION_MANAGER") || role.equals("FIRST_EXECUTIVE_OFFICER");
+        
+        if (!isAuthorizedRole || (actor.getBranch() != null && !actor.getBranch().getBranchId().equals(request.getDestinationBranch().getBranchId()))) {
+            throw new UnauthorizedRoleException("Only Manager/FEO of Destination Branch can confirm receipt.");
         }
 
-        // Trigger logic for dual_verification_complete is in DB, 
-        // but let's check here to update status if complete
-        if (record.getOriginConfirmationBy() != null && record.getDestinationConfirmationBy() != null) {
-            record.setDualVerificationComplete(true);
-            request.setStatus(TransferStatus.CONFIRMED); // Maps to 'Successful' in requirements
-        }
-
-        receiptRecordRepository.save(record);
-        TransferRequest updatedRequest = transferRequestRepository.save(request);
-
-        // 3. Log Audit
-        auditService.logAction(
-            updatedRequest, actor, AuditAction.CONFIRM, 
-            "receipt_records", record.getReceiptId(), 
-            "PENDING", record.getDualVerificationComplete() ? "COMPLETED" : "PARTIAL", 
-            "127.0.0.1", "System"
-        );
-
-        return updatedRequest;
+        String oldStatus = request.getStatus().name();
+        request.setStatus(TransferStatus.COMPLETED);
+        request.setFinalNote(finalNote);
+        request.setClosedAt(OffsetDateTime.now());
+        
+        TransferRequest updated = transferRequestRepository.save(request);
+        auditService.logAction(updated, actor, AuditAction.CONFIRM, "transfer_requests", updated.getRequestId(), oldStatus, updated.getStatus().name(), "127.0.0.1", "System");
+        return updated;
     }
 
     @Override
@@ -162,23 +156,31 @@ public class TransferServiceImpl implements TransferService {
             return transferRequestRepository.findAllByOrderByRequestedAtDesc();
         }
 
-        // 2. Manager and FEO (Branch Level Access)
-        if ("BRANCH_MANAGER".equals(role) || "FIRST_EXECUTIVE_OFFICER".equals(role)) {
+        // 2. Delivery Person Mode
+        if ("DELIVERY_PERSON".equals(role)) {
+            // See tasks assigned to me or unassigned tasks?
+            // User requirement: "can watch all activity" - actually Admin can watch.
+            // Delivery Person should see their assigned tasks.
+            return transferRequestRepository.findByDeliveryPerson_UserIdOrderByRequestedAtDesc(actorId);
+        }
+
+        // 3. Manager and FEO (Branch Level Access)
+        if ("BRANCH_MANAGER".equals(role) || "OPERATION_MANAGER".equals(role) || "FIRST_EXECUTIVE_OFFICER".equals(role)) {
             Long branchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
             if (branchId != null) {
                 return transferRequestRepository.findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(branchId, branchId);
             }
         }
 
-        // 3. Regular Staff (Origin Branch OR Destination Branch + Specific Department)
+        // 4. Regular Staff (Origin Branch OR Destination Branch + Specific Department)
         Long branchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
         Long deptId = actor.getDepartment() != null ? actor.getDepartment().getDepartmentId() : null;
 
         if (branchId != null) {
-            // Find transfers where I am the sender OR I am the targeted receiver department
             return transferRequestRepository.findDashboardTransfersForStaff(branchId, deptId);
         }
         
         return List.of();
     }
+}
 }

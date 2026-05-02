@@ -138,7 +138,7 @@ const UserManagement = () => {
     const filteredUsers = users.filter(u => {
         const matchesSearch = u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || 
                               u.employeeId.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesBranch = filterBranch ? u.branchId.toString() === filterBranch : true;
+        const matchesBranch = filterBranch ? (u.branchId && u.branchId.toString() === filterBranch) : true;
         const matchesRole = filterRole ? u.roleId.toString() === filterRole : true;
         return matchesSearch && matchesBranch && matchesRole;
     });
@@ -212,7 +212,7 @@ const UserManagement = () => {
                                         {u.roleName?.replace(/_/g, ' ')}
                                     </span>
                                 </td>
-                                <td>{u.branchName}</td>
+                                <td>{u.branchName || 'None (Floating)'}</td>
                                 <td>
                                     <span className={`status-dot ${u.isActive ? 'dot-active' : 'dot-inactive'}`}></span>
                                     {u.isActive ? 'Active' : 'Inactive'}
@@ -271,7 +271,7 @@ const UserManagement = () => {
                                 </div>
                                 <div className="profile-item">
                                     <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Branch</span>
-                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewUser.branchName}</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewUser.branchName || 'None (Floating Staff)'}</span>
                                 </div>
                                 <div className="profile-item">
                                     <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Department</span>
@@ -335,9 +335,15 @@ const UserManagement = () => {
                                     </select>
                                 </div>
                                 <div className="form-group">
-                                    <label>Branch <span className="required">*</span></label>
-                                    <select name="branchId" value={form.branchId} onChange={handleChange} required>
-                                        <option value="">Select Branch</option>
+                                    <label>Branch {!(roles.find(r => r.roleId.toString() === form.roleId)?.roleName === 'DELIVERY_PERSON' || roles.find(r => r.roleId.toString() === form.roleId)?.roleName === 'SYSTEM_ADMIN') && <span className="required">*</span>}</label>
+                                    <select 
+                                        name="branchId" 
+                                        value={form.branchId} 
+                                        onChange={handleChange} 
+                                        required={!(roles.find(r => r.roleId.toString() === form.roleId)?.roleName === 'DELIVERY_PERSON' || roles.find(r => r.roleId.toString() === form.roleId)?.roleName === 'SYSTEM_ADMIN')}
+                                        disabled={roles.find(r => r.roleId.toString() === form.roleId)?.roleName === 'DELIVERY_PERSON'}
+                                    >
+                                        <option value="">{roles.find(r => r.roleId.toString() === form.roleId)?.roleName === 'DELIVERY_PERSON' ? 'N/A (Floating)' : 'Select Branch'}</option>
                                         {branches.map(b => (
                                             <option key={b.branchId} value={b.branchId}>{b.branchName} ({b.branchCode})</option>
                                         ))}
