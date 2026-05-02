@@ -33,6 +33,10 @@ public class ItemCategory {
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
     private OffsetDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department;
+
     public ItemCategory() {}
 
     public Long getCategoryId() { return categoryId; }
@@ -49,6 +53,8 @@ public class ItemCategory {
     public void setSensitivityLevel(SensitivityLevel s) { this.sensitivityLevel = s; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime c) { this.createdAt = c; }
+    public Department getDepartment() { return department; }
+    public void setDepartment(Department d) { this.department = d; }
 
     public static class ItemCategoryBuilder {
         private ItemCategory c = new ItemCategory();
@@ -59,6 +65,7 @@ public class ItemCategory {
         public ItemCategoryBuilder requiresHqApproval(Boolean r) { c.requiresHqApproval = r; return this; }
         public ItemCategoryBuilder sensitivityLevel(SensitivityLevel s) { c.sensitivityLevel = s; return this; }
         public ItemCategoryBuilder createdAt(OffsetDateTime cat) { c.createdAt = cat; return this; }
+        public ItemCategoryBuilder department(Department d) { c.department = d; return this; }
         public ItemCategory build() { return c; }
     }
     public static ItemCategoryBuilder builder() { return new ItemCategoryBuilder(); }

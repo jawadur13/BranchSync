@@ -32,6 +32,9 @@ interface TransferDetail {
     requestedAt: string;
     expectedDeliveryDate: string | null;
     closedAt: string | null;
+    deliveryPersonId: number | null;
+    deliveryPersonFullName: string | null;
+    finalNote: string | null;
 }
 
 const TransferDetails = () => {
@@ -44,6 +47,9 @@ const TransferDetails = () => {
     const [actionLoading, setActionLoading] = useState(false);
     const [error, setError] = useState('');
     const [actionSuccess, setActionSuccess] = useState('');
+    const [availableDeliveryPersons, setAvailableDeliveryPersons] = useState<any[]>([]);
+    const [selectedDeliveryPersonId, setSelectedDeliveryPersonId] = useState('');
+    const [finalNote, setFinalNote] = useState('');
 
     useEffect(() => {
         fetchTransferDetails();
@@ -54,6 +60,12 @@ const TransferDetails = () => {
             setLoading(true);
             const response = await api.get(`/transfers/${id}`);
             setTransfer(response.data);
+            
+            // If manager and needs approval, fetch available delivery persons
+            if (response.data.status === 'PENDING_APPROVAL') {
+                const delRes = await api.get('/admin/org/delivery-persons/available');
+                setAvailableDeliveryPersons(delRes.data);
+            }
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to load transfer details.');
         } finally {
@@ -62,13 +74,15 @@ const TransferDetails = () => {
     };
 
     const handleApprove = async () => {
-        if (!confirm('Are you sure you want to approve this transfer?')) return;
-        setActionLoading(true);
-        setActionSuccess('');
-        setError('');
+        if (!selectedDeliveryPersonId) {
+            setError('Please select a delivery person.');
+            return;
+        }
+        if (!confirm('Are you sure you want to approve and assign this delivery?')) return;
+        setActionLoading(true); setActionSuccess(''); setError('');
         try {
-            await api.post(`/transfers/${id}/approve`);
-            setActionSuccess('Transfer approved successfully!');
+            await api.post(`/transfers/${id}/approve`, { deliveryPersonId: Number(selectedDeliveryPersonId) });
+            setActionSuccess('Transfer approved and delivery assigned!');
             fetchTransferDetails();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Approval failed.');
@@ -77,18 +91,47 @@ const TransferDetails = () => {
         }
     };
 
-    const handleVerify = async (isOriginConfirmation: boolean) => {
-        const side = isOriginConfirmation ? 'Origin' : 'Destination';
-        if (!confirm(`Confirm ${side} verification for this transfer?`)) return;
-        setActionLoading(true);
-        setActionSuccess('');
-        setError('');
+    const handleHandoff = async () => {
+        if (!confirm('Mark as In Transit? Both parties should verify the items now.')) return;
+        setActionLoading(true); setActionSuccess(''); setError('');
         try {
-            await api.post(`/transfers/${id}/verify`, { isOriginConfirmation });
-            setActionSuccess(`${side} verification completed successfully!`);
+            await api.post(`/transfers/${id}/handoff`);
+            setActionSuccess('Items are now In Transit!');
             fetchTransferDetails();
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Verification failed.');
+            setError(err.response?.data?.message || 'Action failed.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleArrive = async () => {
+        if (!confirm('Mark as Arrived at destination?')) return;
+        setActionLoading(true); setActionSuccess(''); setError('');
+        try {
+            await api.post(`/transfers/${id}/arrive`);
+            setActionSuccess('Items marked as Arrived!');
+            fetchTransferDetails();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Action failed.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleConfirmReceipt = async () => {
+        if (!finalNote) {
+            setError('Please provide a final confirmation note.');
+            return;
+        }
+        if (!confirm('Confirm final receipt of items? This will close the transfer.')) return;
+        setActionLoading(true); setActionSuccess(''); setError('');
+        try {
+            await api.post(`/transfers/${id}/confirm`, { finalNote });
+            setActionSuccess('Transfer completed successfully!');
+            fetchTransferDetails();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Confirmation failed.');
         } finally {
             setActionLoading(false);
         }
@@ -106,14 +149,11 @@ const TransferDetails = () => {
         const configs: Record<string, { class: string; icon: string }> = {
             'DRAFT': { class: 'status-draft', icon: '📝' },
             'PENDING_APPROVAL': { class: 'status-pending', icon: '⏳' },
-            'APPROVED': { class: 'status-approved', icon: '✅' },
-            'DISPATCHED': { class: 'status-dispatched', icon: '📦' },
+            'PENDING_DELIVERY': { class: 'status-approved', icon: '📦' },
             'IN_TRANSIT': { class: 'status-transit', icon: '🚚' },
-            'RECEIVED': { class: 'status-received', icon: '📬' },
-            'CONFIRMED': { class: 'status-confirmed', icon: '✔️' },
-            'CLOSED': { class: 'status-closed', icon: '🔒' },
+            'ARRIVED': { class: 'status-received', icon: '📍' },
+            'COMPLETED': { class: 'status-confirmed', icon: '✔️' },
             'REJECTED': { class: 'status-rejected', icon: '❌' },
-            'ESCALATED': { class: 'status-escalated', icon: '⚡' },
             'CANCELLED': { class: 'status-cancelled', icon: '🚫' },
         };
         return configs[status] || { class: 'status-draft', icon: '📄' };
@@ -122,28 +162,24 @@ const TransferDetails = () => {
     // Determine which actions the current user can take
     const canApprove = () => {
         if (!transfer || !user) return false;
-        const isApprovalStatus = transfer.status === 'PENDING_APPROVAL';
-        const isSystemAdmin = user.role === 'SYSTEM_ADMIN';
-        
-        // Logic-First: Manager/FEO can approve anything in their branch
-        const isBranchBoss = (user.role === 'ROLE_BRANCH_MANAGER' || user.role === 'ROLE_FIRST_EXECUTIVE_OFFICER') 
-                           && user.branchId === transfer.destinationBranchId;
-                           
-        // Logic-First: Users in the target department can approve
-        const isTargetDeptUser = user.branchId === transfer.destinationBranchId 
-                               && user.departmentId === transfer.destinationDepartmentId;
-                               
-        return isApprovalStatus && (isSystemAdmin || isBranchBoss || isTargetDeptUser);
+        const isBoss = user.role === 'BRANCH_MANAGER' || user.role === 'OPERATION_MANAGER' || user.role === 'FIRST_EXECUTIVE_OFFICER';
+        return transfer.status === 'PENDING_APPROVAL' && isBoss && user.branchId === transfer.originBranchId;
     };
 
-    const canVerifyOrigin = () => {
+    const canHandoff = () => {
         if (!transfer || !user) return false;
-        return transfer.status === 'APPROVED' && user.branchId === transfer.originBranchId;
+        return transfer.status === 'PENDING_DELIVERY' && user.userId === transfer.deliveryPersonId;
     };
 
-    const canVerifyDestination = () => {
+    const canMarkArrived = () => {
         if (!transfer || !user) return false;
-        return transfer.status === 'APPROVED' && user.branchId === transfer.destinationBranchId;
+        return transfer.status === 'IN_TRANSIT' && user.userId === transfer.deliveryPersonId;
+    };
+
+    const canConfirmReceipt = () => {
+        if (!transfer || !user) return false;
+        const isBoss = user.role === 'BRANCH_MANAGER' || user.role === 'OPERATION_MANAGER' || user.role === 'FIRST_EXECUTIVE_OFFICER';
+        return transfer.status === 'ARRIVED' && isBoss && user.branchId === transfer.destinationBranchId;
     };
 
     if (loading) {
@@ -267,6 +303,27 @@ const TransferDetails = () => {
                         </div>
                     </div>
 
+                    {/* Delivery Info */}
+                    {(transfer.deliveryPersonFullName || transfer.finalNote) && (
+                        <div className="detail-card">
+                            <h3 className="card-title">🚛 Delivery Details</h3>
+                            <div className="classification-grid">
+                                {transfer.deliveryPersonFullName && (
+                                    <div className="classification-item">
+                                        <span className="cl-label">Assigned Agent</span>
+                                        <span className="cl-value">{transfer.deliveryPersonFullName}</span>
+                                    </div>
+                                )}
+                                {transfer.finalNote && (
+                                    <div className="classification-item" style={{ gridColumn: '1 / -1' }}>
+                                        <span className="cl-label">Receiver's Note</span>
+                                        <span className="cl-value" style={{ fontStyle: 'italic' }}>"{transfer.finalNote}"</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Description */}
                     {transfer.description && (
                         <div className="detail-card">
@@ -279,43 +336,70 @@ const TransferDetails = () => {
                 {/* Right Column: Actions & Timeline */}
                 <div className="details-sidebar">
                     {/* Action Panel */}
-                    {(canApprove() || canVerifyOrigin() || canVerifyDestination()) && (
+                    {(canApprove() || canHandoff() || canMarkArrived() || canConfirmReceipt()) && (
                         <div className="detail-card action-card">
                             <h3 className="card-title">⚡ Actions Required</h3>
                             <div className="action-buttons">
                                 {canApprove() && (
-                                    <button
-                                        className="action-btn action-approve"
-                                        onClick={handleApprove}
-                                        disabled={actionLoading}
-                                    >
-                                        {actionLoading ? 'Processing...' : '✅ Approve Transfer'}
-                                    </button>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                        <label style={{ fontSize: '13px', fontWeight: 600, color: '#4a5568' }}>Select Delivery Agent</label>
+                                        <select 
+                                            value={selectedDeliveryPersonId} 
+                                            onChange={(e) => setSelectedDeliveryPersonId(e.target.value)}
+                                            style={{ padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                                        >
+                                            <option value="">Select Agent...</option>
+                                            {availableDeliveryPersons.map(p => (
+                                                <option key={p.userId} value={p.userId}>{p.fullName} (Available)</option>
+                                            ))}
+                                        </select>
+                                        <button
+                                            className="action-btn action-approve"
+                                            onClick={handleApprove}
+                                            disabled={actionLoading || !selectedDeliveryPersonId}
+                                        >
+                                            {actionLoading ? 'Processing...' : '✅ Approve & Assign'}
+                                        </button>
+                                    </div>
                                 )}
-                                {canVerifyOrigin() && (
+                                {canHandoff() && (
                                     <button
                                         className="action-btn action-verify-origin"
-                                        onClick={() => handleVerify(true)}
+                                        onClick={handleHandoff}
                                         disabled={actionLoading}
                                     >
-                                        {actionLoading ? 'Processing...' : '📤 Confirm Origin Dispatch'}
+                                        {actionLoading ? 'Processing...' : '🚚 Mark as In Transit'}
                                     </button>
                                 )}
-                                {canVerifyDestination() && (
+                                {canMarkArrived() && (
                                     <button
                                         className="action-btn action-verify-dest"
-                                        onClick={() => handleVerify(false)}
+                                        onClick={handleArrive}
                                         disabled={actionLoading}
                                     >
-                                        {actionLoading ? 'Processing...' : '📥 Confirm Destination Receipt'}
+                                        {actionLoading ? 'Processing...' : '📍 Mark as Arrived'}
                                     </button>
                                 )}
+                                {canConfirmReceipt() && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                        <label style={{ fontSize: '13px', fontWeight: 600, color: '#4a5568' }}>Confirmation Note</label>
+                                        <textarea 
+                                            value={finalNote}
+                                            onChange={(e) => setFinalNote(e.target.value)}
+                                            placeholder="Condition of items, total amount verified, etc."
+                                            style={{ padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0', minHeight: '80px' }}
+                                        />
+                                        <button
+                                            className="action-btn action-confirmed"
+                                            onClick={handleConfirmReceipt}
+                                            disabled={actionLoading || !finalNote}
+                                            style={{ background: '#38a169', color: 'white' }}
+                                        >
+                                            {actionLoading ? 'Processing...' : '✔️ Confirm Receipt'}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                            <p className="action-hint">
-                                {canApprove() && 'Review the transfer details above before approving.'}
-                                {canVerifyOrigin() && 'Confirm that the items have been dispatched from your branch.'}
-                                {canVerifyDestination() && 'Confirm that the items have been received at your branch.'}
-                            </p>
                         </div>
                     )}
 

@@ -82,6 +82,7 @@ public class LookupController {
                     map.put("requiresDualVerification", c.getRequiresDualVerification());
                     map.put("requiresHqApproval", c.getRequiresHqApproval());
                     map.put("sensitivityLevel", c.getSensitivityLevel() != null ? c.getSensitivityLevel().name() : null);
+                    map.put("departmentId", c.getDepartment() != null ? c.getDepartment().getDepartmentId() : null);
                     return map;
                 })
                 .collect(Collectors.toList());

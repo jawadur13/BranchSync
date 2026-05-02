@@ -11,11 +11,15 @@ interface BranchRow {
 interface DeptRow {
     departmentId: number; departmentName: string;
 }
+interface CategoryRow {
+    id: number; name: string; departmentId: number | null;
+}
 
 const OrgManagement = () => {
     const [branches, setBranches] = useState<BranchRow[]>([]);
     const [departments, setDepartments] = useState<DeptRow[]>([]);
-    const [activeTab, setActiveTab] = useState<'branches' | 'departments'>('branches');
+    const [categories, setCategories] = useState<CategoryRow[]>([]);
+    const [activeTab, setActiveTab] = useState<'branches' | 'departments' | 'items'>('branches');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -41,14 +45,16 @@ const OrgManagement = () => {
     const fetchAll = async () => {
         setLoading(true);
         try {
-            const [bRes, dRes, uRes] = await Promise.all([
+            const [bRes, dRes, uRes, cRes] = await Promise.all([
                 api.get('/admin/org/branches'),
                 api.get('/admin/org/departments'),
                 api.get('/admin/users'),
+                api.get('/lookup/categories'),
             ]);
             setBranches(bRes.data);
             setDepartments(dRes.data);
             setUsers(uRes.data);
+            setCategories(cRes.data);
         } catch {
             setError('Failed to load organization data.');
         } finally {
@@ -122,6 +128,17 @@ const OrgManagement = () => {
         } finally { setSubmitting(false); }
     };
 
+    const handleItemMap = async (categoryId: number, departmentId: string) => {
+        setSubmitting(true); setError(''); setSuccess('');
+        try {
+            await api.put(`/admin/org/items/${categoryId}/map`, { departmentId: departmentId ? Number(departmentId) : null });
+            setSuccess('Item mapping updated!');
+            fetchAll();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Failed to map item.');
+        } finally { setSubmitting(false); }
+    };
+
     const filteredBranches = branches.filter(b => 
         b.branchName.toLowerCase().includes(searchBranch.toLowerCase()) || 
         b.branchCode.toLowerCase().includes(searchBranch.toLowerCase())
@@ -152,6 +169,9 @@ const OrgManagement = () => {
                 </button>
                 <button className={`tab-btn ${activeTab === 'departments' ? 'tab-active' : ''}`} onClick={() => setActiveTab('departments')}>
                     🏷️ Departments ({departments.length})
+                </button>
+                <button className={`tab-btn ${activeTab === 'items' ? 'tab-active' : ''}`} onClick={() => setActiveTab('items')}>
+                    📦 Items & Depts ({categories.length})
                 </button>
             </div>
 
@@ -340,6 +360,43 @@ const OrgManagement = () => {
                             {filteredDepartments.length === 0 && (
                                 <tr><td colSpan={3} className="empty-row">No departments found.</td></tr>
                             )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            {/* Items Tab */}
+            {activeTab === 'items' && (
+                <div className="admin-card">
+                    <p style={{ marginBottom: '20px', color: '#718096', fontSize: '14px' }}>
+                        Assign which department is responsible for each item category. Regular employees can only request items belonging to their department.
+                    </p>
+                    <table className="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Category Name</th>
+                                <th>Responsible Department</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {categories.map(cat => (
+                                <tr key={cat.id}>
+                                    <td className="fw-semibold">{cat.name.replace(/_/g, ' ')}</td>
+                                    <td>
+                                        <select 
+                                            value={cat.departmentId || ''} 
+                                            onChange={(e) => handleItemMap(cat.id, e.target.value)}
+                                            style={{ padding: '8px', borderRadius: '6px', border: '1px solid #e2e8f0', width: '250px' }}
+                                            disabled={submitting}
+                                        >
+                                            <option value="">Unassigned (Open Access)</option>
+                                            {departments.map(d => (
+                                                <option key={d.departmentId} value={d.departmentId}>{d.departmentName}</option>
+                                            ))}
+                                        </select>
+                                    </td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
                 </div>

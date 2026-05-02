@@ -18,6 +18,7 @@ interface CategoryOption {
     requiresDualVerification: boolean;
     requiresHqApproval: boolean;
     sensitivityLevel: string;
+    departmentId: number | null;
 }
 
 interface DepartmentOption {
@@ -66,6 +67,14 @@ const NewTransfer = () => {
             setError('Failed to load form data. Please refresh the page.');
         }
     };
+
+    const isHigherRole = user?.role === 'BRANCH_MANAGER' || user?.role === 'OPERATION_MANAGER' || user?.role === 'FIRST_EXECUTIVE_OFFICER' || user?.role === 'SYSTEM_ADMIN';
+    
+    const filteredCategories = categories.filter(c => {
+        if (isHigherRole) return true;
+        // Regular employees can only request items assigned to their department
+        return c.departmentId === user?.departmentId;
+    });
 
     const selectedCategory = categories.find(c => c.id === Number(categoryId));
 
@@ -150,7 +159,7 @@ const NewTransfer = () => {
                                 required
                             >
                                 <option value="">Select Category</option>
-                                {categories.map(c => (
+                                {filteredCategories.map(c => (
                                     <option key={c.id} value={c.id}>{c.name.replace(/_/g, ' ')}</option>
                                 ))}
                             </select>
