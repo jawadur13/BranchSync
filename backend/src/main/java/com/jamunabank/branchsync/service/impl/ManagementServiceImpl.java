@@ -24,6 +24,7 @@ public class ManagementServiceImpl implements ManagementService {
     private final RoleRepository roleRepository;
     private final BranchRepository branchRepository;
     private final DepartmentRepository departmentRepository;
+    private final ItemCategoryRepository itemCategoryRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -187,5 +188,20 @@ public class ManagementServiceImpl implements ManagementService {
         
         department.setDepartmentName(dto.getDepartmentName());
         return departmentRepository.save(department);
+    }
+
+    @Override
+    public void mapItemCategoryToDepartment(Long categoryId, Long departmentId) {
+        ItemCategory category = itemCategoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Item Category not found"));
+        
+        Department department = null;
+        if (departmentId != null) {
+            department = departmentRepository.findById(departmentId)
+                    .orElseThrow(() -> new RuntimeException("Department not found"));
+        }
+        
+        category.setDepartment(department);
+        itemCategoryRepository.save(category);
     }
 }

@@ -21,17 +21,16 @@ interface TransferDetail {
     destinationDepartmentId: number | null;
     destinationDepartmentName: string | null;
     categoryName: string;
-    requiresDualVerification: boolean;
-    requiresHqApproval: boolean;
     sensitivityLevel: string;
     priority: string;
-    requestType: string;
+    initiatedByUserId: number;
     initiatedByFullName: string;
     initiatedByEmployeeId: string;
     initiatedByBranchId: number;
     requestedAt: string;
-    expectedDeliveryDate: string | null;
     closedAt: string | null;
+    pickedUpAt: string | null;
+    deliveredAt: string | null;
     deliveryPersonId: number | null;
     deliveryPersonFullName: string | null;
     finalNote: string | null;
@@ -61,9 +60,9 @@ const TransferDetails = () => {
             const response = await api.get(`/transfers/${id}`);
             setTransfer(response.data);
             
-            // If manager and needs approval, fetch available delivery persons
-            if (response.data.status === 'PENDING_APPROVAL') {
-                const delRes = await api.get('/admin/org/delivery-persons/available');
+            // If in Step 2, fetch available delivery persons
+            if (response.data.status === 'PENDING_ASSIGNMENT') {
+                const delRes = await api.get('/lookup/users/delivery-persons/available');
                 setAvailableDeliveryPersons(delRes.data);
             }
         } catch (err: any) {
@@ -73,30 +72,32 @@ const TransferDetails = () => {
         }
     };
 
-    const handleApprove = async () => {
+    // Step 1 Gate: Internal Approval
+    const handleApproveInternal = async () => {
+        if (!confirm('Approve this request internally for your branch?')) return;
+        setActionLoading(true); setActionSuccess(''); setError('');
+        try {
+            await api.post(`/transfers/${id}/approve-internal`);
+            setActionSuccess('Internally approved! Now waiting for destination acceptance.');
+            fetchTransferDetails();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Action failed.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Step 2: Accept and Assign
+    const handleAcceptAndAssign = async () => {
         if (!selectedDeliveryPersonId) {
             setError('Please select a delivery person.');
             return;
         }
-        if (!confirm('Are you sure you want to approve and assign this delivery?')) return;
+        if (!confirm('Accept this request and assign the selected driver?')) return;
         setActionLoading(true); setActionSuccess(''); setError('');
         try {
-            await api.post(`/transfers/${id}/approve`, { deliveryPersonId: Number(selectedDeliveryPersonId) });
-            setActionSuccess('Transfer approved and delivery assigned!');
-            fetchTransferDetails();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Approval failed.');
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    const handleHandoff = async () => {
-        if (!confirm('Mark as In Transit? Both parties should verify the items now.')) return;
-        setActionLoading(true); setActionSuccess(''); setError('');
-        try {
-            await api.post(`/transfers/${id}/handoff`);
-            setActionSuccess('Items are now In Transit!');
+            await api.post(`/transfers/${id}/accept`, { deliveryPersonId: Number(selectedDeliveryPersonId) });
+            setActionSuccess('Request accepted and driver assigned!');
             fetchTransferDetails();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Action failed.');
@@ -105,12 +106,13 @@ const TransferDetails = () => {
         }
     };
 
-    const handleArrive = async () => {
-        if (!confirm('Mark as Arrived at destination?')) return;
+    // Step 3: Final Release
+    const handleRelease = async () => {
+        if (!confirm('Give final green light for this transfer?')) return;
         setActionLoading(true); setActionSuccess(''); setError('');
         try {
-            await api.post(`/transfers/${id}/arrive`);
-            setActionSuccess('Items marked as Arrived!');
+            await api.post(`/transfers/${id}/release`);
+            setActionSuccess('Final release granted! Driver can now pick up.');
             fetchTransferDetails();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Action failed.');
@@ -119,19 +121,52 @@ const TransferDetails = () => {
         }
     };
 
-    const handleConfirmReceipt = async () => {
-        if (!finalNote) {
-            setError('Please provide a final confirmation note.');
+    // Step 4: Pickup
+    const handlePickup = async () => {
+        if (!confirm('Confirm pickup of items?')) return;
+        setActionLoading(true); setActionSuccess(''); setError('');
+        try {
+            await api.post(`/transfers/${id}/pickup`);
+            setActionSuccess('Items marked as Picked Up!');
+            fetchTransferDetails();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Action failed.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Step 5: Deliver
+    const handleDeliver = async () => {
+        if (!confirm('Confirm delivery at destination?')) return;
+        setActionLoading(true); setActionSuccess(''); setError('');
+        try {
+            await api.post(`/transfers/${id}/deliver`);
+            setActionSuccess('Items marked as Delivered!');
+            fetchTransferDetails();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Action failed.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    // Step 6: Close (Accept/Reject)
+    const handleClose = async (accepted: boolean) => {
+        if (!finalNote && !accepted) {
+            setError('Please provide a reason for rejection.');
             return;
         }
-        if (!confirm('Confirm final receipt of items? This will close the transfer.')) return;
+        const actionText = accepted ? 'Complete' : 'Reject';
+        if (!confirm(`Are you sure you want to ${actionText} this transfer?`)) return;
+        
         setActionLoading(true); setActionSuccess(''); setError('');
         try {
-            await api.post(`/transfers/${id}/confirm`, { finalNote });
-            setActionSuccess('Transfer completed successfully!');
+            await api.post(`/transfers/${id}/close`, { finalNote, accepted });
+            setActionSuccess(`Transfer ${accepted ? 'Completed' : 'Rejected'} successfully!`);
             fetchTransferDetails();
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Confirmation failed.');
+            setError(err.response?.data?.message || 'Action failed.');
         } finally {
             setActionLoading(false);
         }
@@ -147,87 +182,73 @@ const TransferDetails = () => {
 
     const getStatusConfig = (status: string) => {
         const configs: Record<string, { class: string; icon: string }> = {
-            'DRAFT': { class: 'status-draft', icon: '📝' },
-            'PENDING_APPROVAL': { class: 'status-pending', icon: '⏳' },
-            'PENDING_DELIVERY': { class: 'status-approved', icon: '📦' },
+            'PENDING_INTERNAL': { class: 'status-pending', icon: '⏳' },
+            'PENDING_ASSIGNMENT': { class: 'status-pending', icon: '🤝' },
+            'PENDING_FINAL_RELEASE': { class: 'status-approved', icon: '🚦' },
+            'READY_FOR_PICKUP': { class: 'status-approved', icon: '📦' },
             'IN_TRANSIT': { class: 'status-transit', icon: '🚚' },
-            'ARRIVED': { class: 'status-received', icon: '📍' },
+            'DELIVERED': { class: 'status-received', icon: '📍' },
             'COMPLETED': { class: 'status-confirmed', icon: '✔️' },
-            'REJECTED': { class: 'status-rejected', icon: '❌' },
+            'REJECTED_ON_RECEIPT': { class: 'status-rejected', icon: '❌' },
             'CANCELLED': { class: 'status-cancelled', icon: '🚫' },
         };
         return configs[status] || { class: 'status-draft', icon: '📄' };
     };
 
-    // Determine which actions the current user can take
-    const canApprove = () => {
-        if (!transfer || !user) return false;
-        const isBoss = user.role === 'BRANCH_MANAGER' || user.role === 'OPERATION_MANAGER' || user.role === 'FIRST_EXECUTIVE_OFFICER';
-        return transfer.status === 'PENDING_APPROVAL' && isBoss && user.branchId === transfer.originBranchId;
+    // Role-based logic
+    const isManager = user?.role === 'BRANCH_MANAGER' || user?.role === 'OPERATION_MANAGER' || user?.role === 'FIRST_EXECUTIVE_OFFICER';
+    
+    const canApproveInternal = () => {
+        return transfer?.status === 'PENDING_INTERNAL' && isManager && user?.branchId === transfer?.originBranchId;
     };
 
-    const canHandoff = () => {
-        if (!transfer || !user) return false;
-        return transfer.status === 'PENDING_DELIVERY' && user.userId === transfer.deliveryPersonId;
+    const canAcceptAndAssign = () => {
+        // Staff at destination department
+        return transfer?.status === 'PENDING_ASSIGNMENT' && user?.branchId === transfer?.destinationBranchId;
     };
 
-    const canMarkArrived = () => {
-        if (!transfer || !user) return false;
-        return transfer.status === 'IN_TRANSIT' && user.userId === transfer.deliveryPersonId;
+    const canRelease = () => {
+        return transfer?.status === 'PENDING_FINAL_RELEASE' && isManager && user?.branchId === transfer?.destinationBranchId;
     };
 
-    const canConfirmReceipt = () => {
-        if (!transfer || !user) return false;
-        const isBoss = user.role === 'BRANCH_MANAGER' || user.role === 'OPERATION_MANAGER' || user.role === 'FIRST_EXECUTIVE_OFFICER';
-        return transfer.status === 'ARRIVED' && isBoss && user.branchId === transfer.destinationBranchId;
+    const canPickup = () => {
+        return transfer?.status === 'READY_FOR_PICKUP' && user?.userId === transfer?.deliveryPersonId;
+    };
+
+    const canDeliver = () => {
+        return transfer?.status === 'IN_TRANSIT' && user?.userId === transfer?.deliveryPersonId;
+    };
+
+    const canClose = () => {
+        // Only original requester
+        return transfer?.status === 'DELIVERED' && user?.userId === transfer?.initiatedByUserId;
     };
 
     if (loading) {
-        return (
-            <div className="details-loading">
-                <div className="loading-spinner"></div>
-                <p>Loading transfer details...</p>
-            </div>
-        );
+        return <div className="details-loading"><div className="loading-spinner"></div><p>Loading...</p></div>;
     }
 
-    if (!transfer) {
-        return (
-            <div className="details-error-page">
-                <span className="error-icon">🔍</span>
-                <h2>Transfer Not Found</h2>
-                <p>The transfer you are looking for does not exist or has been removed.</p>
-                <Link to="/" className="btn-ghost">← Back to Dashboard</Link>
-            </div>
-        );
-    }
+    if (!transfer) return <div className="details-error-page"><h2>Not Found</h2><Link to="/">Back</Link></div>;
 
     const statusConfig = getStatusConfig(transfer.status);
 
     return (
         <div className="transfer-details-container">
-            {/* Top Navigation */}
             <div className="details-nav">
-                <button className="btn-ghost" onClick={() => navigate('/')}>← Back to Dashboard</button>
+                <button className="btn-ghost" onClick={() => navigate('/')}>← Back</button>
             </div>
 
-            {/* Alerts */}
             {error && <div className="detail-alert detail-alert-error">{error}</div>}
             {actionSuccess && <div className="detail-alert detail-alert-success">{actionSuccess}</div>}
 
-            {/* Hero Header */}
             <div className="details-hero">
                 <div className="hero-left">
                     <div className="hero-code">{transfer.requestCode}</div>
                     <h1 className="hero-title">{transfer.title}</h1>
                     <div className="hero-meta">
-                        <span className="meta-item">
-                            👤 {transfer.initiatedByFullName} ({transfer.initiatedByEmployeeId})
-                        </span>
+                        <span>👤 {transfer.initiatedByFullName}</span>
                         <span className="meta-separator">•</span>
-                        <span className="meta-item">
-                            🕐 {formatDate(transfer.requestedAt)}
-                        </span>
+                        <span>🕐 {formatDate(transfer.requestedAt)}</span>
                     </div>
                 </div>
                 <div className="hero-right">
@@ -241,11 +262,8 @@ const TransferDetails = () => {
                 </div>
             </div>
 
-            {/* Content Grid */}
             <div className="details-grid">
-                {/* Left Column: Info */}
                 <div className="details-main">
-                    {/* Route Card */}
                     <div className="detail-card">
                         <h3 className="card-title">📍 Transfer Route</h3>
                         <div className="route-display">
@@ -255,26 +273,20 @@ const TransferDetails = () => {
                                     <span className="route-label">ORIGIN</span>
                                     <span className="route-branch">{transfer.originBranchName}</span>
                                     <span className="route-dept">{transfer.originDepartmentName || 'Main Branch'}</span>
-                                    <span className="route-code">{transfer.originBranchCode}</span>
                                 </div>
                             </div>
-                            <div className="route-connector">
-                                <div className="connector-line"></div>
-                                <span className="connector-type">{transfer.requestType.replace(/_/g, ' ')}</span>
-                            </div>
+                            <div className="route-connector"><div className="connector-line"></div></div>
                             <div className="route-point">
                                 <div className="route-marker destination"></div>
                                 <div className="route-info">
                                     <span className="route-label">DESTINATION</span>
                                     <span className="route-branch">{transfer.destinationBranchName}</span>
                                     <span className="route-dept">{transfer.destinationDepartmentName || 'General Dept'}</span>
-                                    <span className="route-code">{transfer.destinationBranchCode}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Category & Classification */}
                     <div className="detail-card">
                         <h3 className="card-title">📋 Classification</h3>
                         <div className="classification-grid">
@@ -288,43 +300,9 @@ const TransferDetails = () => {
                                     {transfer.sensitivityLevel}
                                 </span>
                             </div>
-                            <div className="classification-item">
-                                <span className="cl-label">Dual Verification</span>
-                                <span className={`cl-flag ${transfer.requiresDualVerification ? 'flag-active' : 'flag-inactive'}`}>
-                                    {transfer.requiresDualVerification ? '✅ Required' : '— Not Required'}
-                                </span>
-                            </div>
-                            <div className="classification-item">
-                                <span className="cl-label">HQ Approval</span>
-                                <span className={`cl-flag ${transfer.requiresHqApproval ? 'flag-active' : 'flag-inactive'}`}>
-                                    {transfer.requiresHqApproval ? '✅ Required' : '— Not Required'}
-                                </span>
-                            </div>
                         </div>
                     </div>
 
-                    {/* Delivery Info */}
-                    {(transfer.deliveryPersonFullName || transfer.finalNote) && (
-                        <div className="detail-card">
-                            <h3 className="card-title">🚛 Delivery Details</h3>
-                            <div className="classification-grid">
-                                {transfer.deliveryPersonFullName && (
-                                    <div className="classification-item">
-                                        <span className="cl-label">Assigned Agent</span>
-                                        <span className="cl-value">{transfer.deliveryPersonFullName}</span>
-                                    </div>
-                                )}
-                                {transfer.finalNote && (
-                                    <div className="classification-item" style={{ gridColumn: '1 / -1' }}>
-                                        <span className="cl-label">Receiver's Note</span>
-                                        <span className="cl-value" style={{ fontStyle: 'italic' }}>"{transfer.finalNote}"</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Description */}
                     {transfer.description && (
                         <div className="detail-card">
                             <h3 className="card-title">📝 Description</h3>
@@ -333,124 +311,78 @@ const TransferDetails = () => {
                     )}
                 </div>
 
-                {/* Right Column: Actions & Timeline */}
                 <div className="details-sidebar">
-                    {/* Action Panel */}
-                    {(canApprove() || canHandoff() || canMarkArrived() || canConfirmReceipt()) && (
-                        <div className="detail-card action-card">
-                            <h3 className="card-title">⚡ Actions Required</h3>
-                            <div className="action-buttons">
-                                {canApprove() && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                        <label style={{ fontSize: '13px', fontWeight: 600, color: '#4a5568' }}>Select Delivery Agent</label>
-                                        <select 
-                                            value={selectedDeliveryPersonId} 
-                                            onChange={(e) => setSelectedDeliveryPersonId(e.target.value)}
-                                            style={{ padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
-                                        >
-                                            <option value="">Select Agent...</option>
-                                            {availableDeliveryPersons.map(p => (
-                                                <option key={p.userId} value={p.userId}>{p.fullName} (Available)</option>
-                                            ))}
-                                        </select>
-                                        <button
-                                            className="action-btn action-approve"
-                                            onClick={handleApprove}
-                                            disabled={actionLoading || !selectedDeliveryPersonId}
-                                        >
-                                            {actionLoading ? 'Processing...' : '✅ Approve & Assign'}
-                                        </button>
-                                    </div>
-                                )}
-                                {canHandoff() && (
-                                    <button
-                                        className="action-btn action-verify-origin"
-                                        onClick={handleHandoff}
-                                        disabled={actionLoading}
+                    <div className="detail-card action-card">
+                        <h3 className="card-title">⚡ Actions</h3>
+                        <div className="action-buttons">
+                            {canApproveInternal() && (
+                                <button className="action-btn action-approve" onClick={handleApproveInternal} disabled={actionLoading}>
+                                    {actionLoading ? '...' : '✅ Approve Internally'}
+                                </button>
+                            )}
+                            {canAcceptAndAssign() && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    <select 
+                                        value={selectedDeliveryPersonId} 
+                                        onChange={(e) => setSelectedDeliveryPersonId(e.target.value)}
+                                        style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
                                     >
-                                        {actionLoading ? 'Processing...' : '🚚 Mark as In Transit'}
+                                        <option value="">Select Delivery Driver...</option>
+                                        {availableDeliveryPersons.map(p => (
+                                            <option key={p.userId} value={p.userId}>{p.fullName}</option>
+                                        ))}
+                                    </select>
+                                    <button className="action-btn action-approve" onClick={handleAcceptAndAssign} disabled={actionLoading || !selectedDeliveryPersonId}>
+                                        Accept & Assign Driver
                                     </button>
-                                )}
-                                {canMarkArrived() && (
-                                    <button
-                                        className="action-btn action-verify-dest"
-                                        onClick={handleArrive}
-                                        disabled={actionLoading}
-                                    >
-                                        {actionLoading ? 'Processing...' : '📍 Mark as Arrived'}
-                                    </button>
-                                )}
-                                {canConfirmReceipt() && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                        <label style={{ fontSize: '13px', fontWeight: 600, color: '#4a5568' }}>Confirmation Note</label>
-                                        <textarea 
-                                            value={finalNote}
-                                            onChange={(e) => setFinalNote(e.target.value)}
-                                            placeholder="Condition of items, total amount verified, etc."
-                                            style={{ padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0', minHeight: '80px' }}
-                                        />
-                                        <button
-                                            className="action-btn action-confirmed"
-                                            onClick={handleConfirmReceipt}
-                                            disabled={actionLoading || !finalNote}
-                                            style={{ background: '#38a169', color: 'white' }}
-                                        >
-                                            {actionLoading ? 'Processing...' : '✔️ Confirm Receipt'}
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Key Dates */}
-                    <div className="detail-card">
-                        <h3 className="card-title">🗓️ Timeline</h3>
-                        <div className="timeline-list">
-                            <div className="timeline-item">
-                                <div className="timeline-dot active"></div>
-                                <div className="timeline-content">
-                                    <span className="timeline-label">Requested</span>
-                                    <span className="timeline-date">{formatDate(transfer.requestedAt)}</span>
                                 </div>
-                            </div>
-                            {transfer.expectedDeliveryDate && (
-                                <div className="timeline-item">
-                                    <div className="timeline-dot pending"></div>
-                                    <div className="timeline-content">
-                                        <span className="timeline-label">Expected Delivery</span>
-                                        <span className="timeline-date">{transfer.expectedDeliveryDate}</span>
+                            )}
+                            {canRelease() && (
+                                <button className="action-btn action-verify-dest" onClick={handleRelease} disabled={actionLoading}>
+                                    🟢 Final Green Light (Release)
+                                </button>
+                            )}
+                            {canPickup() && (
+                                <button className="action-btn action-verify-origin" onClick={handlePickup} disabled={actionLoading}>
+                                    📦 Confirm Pickup
+                                </button>
+                            )}
+                            {canDeliver() && (
+                                <button className="action-btn action-verify-dest" onClick={handleDeliver} disabled={actionLoading}>
+                                    📍 Confirm Delivery
+                                </button>
+                            )}
+                            {canClose() && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                                    <textarea 
+                                        value={finalNote}
+                                        onChange={(e) => setFinalNote(e.target.value)}
+                                        placeholder="Final remarks (required for rejection)"
+                                        style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd', minHeight: '80px' }}
+                                    />
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <button className="action-btn action-confirmed" onClick={() => handleClose(true)} disabled={actionLoading} style={{ flex: 1, background: '#38a169' }}>
+                                            ✅ Accept
+                                        </button>
+                                        <button className="action-btn action-rejected" onClick={() => handleClose(false)} disabled={actionLoading} style={{ flex: 1, background: '#e53e3e' }}>
+                                            ❌ Reject
+                                        </button>
                                     </div>
                                 </div>
                             )}
-                            {transfer.closedAt && (
-                                <div className="timeline-item">
-                                    <div className="timeline-dot completed"></div>
-                                    <div className="timeline-content">
-                                        <span className="timeline-label">Closed</span>
-                                        <span className="timeline-date">{formatDate(transfer.closedAt)}</span>
-                                    </div>
-                                </div>
+                            {!canApproveInternal() && !canAcceptAndAssign() && !canRelease() && !canPickup() && !canDeliver() && transfer.status !== 'DELIVERED' && (
+                                <p style={{ fontSize: '13px', color: '#718096', textAlign: 'center' }}>No actions available for your role at this stage.</p>
                             )}
                         </div>
                     </div>
 
-                    {/* Quick Info */}
                     <div className="detail-card">
-                        <h3 className="card-title">📊 Quick Info</h3>
-                        <div className="quick-info-list">
-                            <div className="quick-info-item">
-                                <span className="qi-label">Request ID</span>
-                                <span className="qi-value">#{transfer.requestId}</span>
-                            </div>
-                            <div className="quick-info-item">
-                                <span className="qi-label">Request Type</span>
-                                <span className="qi-value">{transfer.requestType.replace(/_/g, ' ')}</span>
-                            </div>
-                            <div className="quick-info-item">
-                                <span className="qi-label">Initiated By</span>
-                                <span className="qi-value">{transfer.initiatedByEmployeeId}</span>
-                            </div>
+                        <h3 className="card-title">🗓️ Timeline</h3>
+                        <div className="timeline-list">
+                            <div className="timeline-item"><div className="timeline-dot active"></div><div className="timeline-content"><span className="timeline-label">Requested</span><span className="timeline-date">{formatDate(transfer.requestedAt)}</span></div></div>
+                            {transfer.pickedUpAt && <div className="timeline-item"><div className="timeline-dot active"></div><div className="timeline-content"><span className="timeline-label">Picked Up</span><span className="timeline-date">{formatDate(transfer.pickedUpAt)}</span></div></div>}
+                            {transfer.deliveredAt && <div className="timeline-item"><div className="timeline-dot active"></div><div className="timeline-content"><span className="timeline-label">Delivered</span><span className="timeline-date">{formatDate(transfer.deliveredAt)}</span></div></div>}
+                            {transfer.closedAt && <div className="timeline-item"><div className="timeline-dot completed"></div><div className="timeline-content"><span className="timeline-label">Closed</span><span className="timeline-date">{formatDate(transfer.closedAt)}</span></div></div>}
                         </div>
                     </div>
                 </div>

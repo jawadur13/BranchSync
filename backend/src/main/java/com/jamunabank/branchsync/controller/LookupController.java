@@ -4,6 +4,7 @@ import com.jamunabank.branchsync.model.entity.Branch;
 import com.jamunabank.branchsync.model.entity.ItemCategory;
 import com.jamunabank.branchsync.repository.BranchRepository;
 import com.jamunabank.branchsync.repository.ItemCategoryRepository;
+import com.jamunabank.branchsync.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,15 +20,18 @@ public class LookupController {
     private final ItemCategoryRepository itemCategoryRepository;
     private final com.jamunabank.branchsync.repository.DepartmentRepository departmentRepository;
     private final com.jamunabank.branchsync.repository.RoleRepository roleRepository;
+    private final UserRepository userRepository;
 
     public LookupController(BranchRepository branchRepository, 
                           ItemCategoryRepository itemCategoryRepository,
                           com.jamunabank.branchsync.repository.DepartmentRepository departmentRepository,
-                          com.jamunabank.branchsync.repository.RoleRepository roleRepository) {
+                          com.jamunabank.branchsync.repository.RoleRepository roleRepository,
+                          UserRepository userRepository) {
         this.branchRepository = branchRepository;
         this.itemCategoryRepository = itemCategoryRepository;
         this.departmentRepository = departmentRepository;
         this.roleRepository = roleRepository;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/branches")
@@ -78,14 +82,26 @@ public class LookupController {
                 .map(c -> {
                     java.util.Map<String, Object> map = new java.util.HashMap<>();
                     map.put("id", c.getCategoryId());
-                    map.put("name", c.getCategoryName() != null ? c.getCategoryName().name() : null);
-                    map.put("requiresDualVerification", c.getRequiresDualVerification());
-                    map.put("requiresHqApproval", c.getRequiresHqApproval());
-                    map.put("sensitivityLevel", c.getSensitivityLevel() != null ? c.getSensitivityLevel().name() : null);
+                    map.put("name", c.getCategoryName());
+                    map.put("sensitivityLevel", c.getSensitivityLevel());
                     map.put("departmentId", c.getDepartment() != null ? c.getDepartment().getDepartmentId() : null);
                     return map;
                 })
                 .collect(Collectors.toList());
         return ResponseEntity.ok(categories);
+    }
+
+    @GetMapping("/users/delivery-persons/available")
+    public ResponseEntity<List<Map<String, Object>>> getAvailableDeliveryPersons() {
+        List<Map<String, Object>> users = userRepository.findAvailableDeliveryPersons().stream()
+                .map(u -> {
+                    java.util.Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("userId", u.getUserId());
+                    map.put("fullName", u.getFullName());
+                    map.put("employeeId", u.getEmployeeId());
+                    return map;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(users);
     }
 }

@@ -15,8 +15,6 @@ interface BranchOption {
 interface CategoryOption {
     id: number;
     name: string;
-    requiresDualVerification: boolean;
-    requiresHqApproval: boolean;
     sensitivityLevel: string;
     departmentId: number | null;
 }
@@ -24,7 +22,6 @@ interface CategoryOption {
 interface DepartmentOption {
     departmentId: number;
     departmentName: string;
-    description: string;
 }
 
 const NewTransfer = () => {
@@ -33,9 +30,9 @@ const NewTransfer = () => {
 
     // Form state
     const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
     const [categoryId, setCategoryId] = useState('');
     const [priority, setPriority] = useState('NORMAL');
-    const [requestType, setRequestType] = useState('BRANCH_TO_BRANCH');
     const [destinationBranchId, setDestinationBranchId] = useState('');
     const [destinationDepartmentId, setDestinationDepartmentId] = useState('');
 
@@ -87,11 +84,9 @@ const NewTransfer = () => {
         try {
             const payload = {
                 title,
+                description,
                 categoryId: Number(categoryId),
                 priority,
-                requestType,
-                originBranchId: user?.branchId,
-                originDepartmentId: user?.departmentId,
                 destinationBranchId: Number(destinationBranchId),
                 destinationDepartmentId: destinationDepartmentId ? Number(destinationDepartmentId) : null,
             };
@@ -150,6 +145,17 @@ const NewTransfer = () => {
                             />
                         </div>
 
+                        <div className="form-group full-width">
+                            <label htmlFor="description">Description</label>
+                            <textarea
+                                id="description"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder="Describe the reason and details of the transfer..."
+                                rows={3}
+                            />
+                        </div>
+
                         <div className="form-group">
                             <label htmlFor="category">Category <span className="required">*</span></label>
                             <select
@@ -190,18 +196,6 @@ const NewTransfer = () => {
                                     {selectedCategory.sensitivityLevel}
                                 </span>
                             </div>
-                            {selectedCategory.requiresDualVerification && (
-                                <div className="info-card-row">
-                                    <span className="info-icon">🔐</span>
-                                    <span className="info-text">This category requires <strong>Dual Verification</strong> (both origin and destination must confirm).</span>
-                                </div>
-                            )}
-                            {selectedCategory.requiresHqApproval && (
-                                <div className="info-card-row">
-                                    <span className="info-icon">🏛️</span>
-                                    <span className="info-text">This category requires <strong>HQ Approval</strong> from a First Executive Officer.</span>
-                                </div>
-                            )}
                         </div>
                     )}
                 </div>
@@ -217,20 +211,6 @@ const NewTransfer = () => {
                     </div>
 
                     <div className="form-grid">
-                        <div className="form-group">
-                            <label htmlFor="requestType">Request Type <span className="required">*</span></label>
-                            <select
-                                id="requestType"
-                                value={requestType}
-                                onChange={(e) => setRequestType(e.target.value)}
-                                required
-                            >
-                                <option value="BRANCH_TO_BRANCH">Branch → Branch</option>
-                                <option value="BRANCH_TO_HQ">Branch → HQ</option>
-                                <option value="HQ_TO_BRANCH">HQ → Branch</option>
-                            </select>
-                        </div>
-
                         <div className="form-group">
                             <label>Origin Branch</label>
                             <div className="readonly-field">
@@ -261,14 +241,13 @@ const NewTransfer = () => {
                         </div>
 
                         <div className="form-group">
-                            <label htmlFor="destDept">Target Department <span className="required">*</span></label>
+                            <label htmlFor="destDept">Target Department</label>
                             <select
                                 id="destDept"
                                 value={destinationDepartmentId}
                                 onChange={(e) => setDestinationDepartmentId(e.target.value)}
-                                required
                             >
-                                <option value="">Select Department</option>
+                                <option value="">Select Department (Optional)</option>
                                 {departments.map(d => (
                                     <option key={d.departmentId} value={d.departmentId}>
                                         {d.departmentName}
@@ -301,7 +280,7 @@ const NewTransfer = () => {
                 {/* Priority Warning */}
                 {priority === 'CRITICAL' && (
                     <div className="form-alert form-alert-warning">
-                        ⚠️ CRITICAL priority requests are flagged for immediate executive review and may require additional documentation.
+                        ⚠️ CRITICAL priority requests are flagged for immediate executive review.
                     </div>
                 )}
 

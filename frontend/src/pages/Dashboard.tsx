@@ -31,17 +31,18 @@ const Dashboard = () => {
     const getStatusBadgeClass = (status: string) => {
         switch (status) {
             case 'COMPLETED':
-            case 'CONFIRMED':
                 return 'badge-success';
-            case 'PENDING_APPROVAL':
-            case 'PENDING_DELIVERY':
+            case 'PENDING_INTERNAL':
+            case 'PENDING_ASSIGNMENT':
                 return 'badge-warning';
-            case 'IN_TRANSIT':
-            case 'ARRIVED':
+            case 'PENDING_FINAL_RELEASE':
+            case 'READY_FOR_PICKUP':
                 return 'badge-info';
-            case 'DRAFT':
-                return 'badge-neutral';
-            case 'REJECTED':
+            case 'IN_TRANSIT':
+                return 'badge-transit';
+            case 'DELIVERED':
+                return 'badge-received';
+            case 'REJECTED_ON_RECEIPT':
             case 'CANCELLED':
                 return 'badge-danger';
             default:

@@ -1,14 +1,12 @@
 package com.jamunabank.branchsync.repository;
 
 import com.jamunabank.branchsync.model.entity.AuditLog;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import java.util.List;
 
 @Repository
 public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
-    Page<AuditLog> findByEntityNameAndEntityIdOrderByActedAtDesc(String entityName, Long entityId, Pageable pageable);
-    Page<AuditLog> findByTransferRequest_RequestIdOrderByActedAtDesc(Long requestId, Pageable pageable);
-    Page<AuditLog> findByActor_UserIdOrderByActedAtDesc(Long userId, Pageable pageable);
+    List<AuditLog> findByTransferRequest_RequestIdOrderByActedAtDesc(Long requestId);
+    List<AuditLog> findByActor_UserIdOrderByActedAtDesc(Long userId);
 }

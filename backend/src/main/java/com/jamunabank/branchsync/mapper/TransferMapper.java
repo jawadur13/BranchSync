@@ -4,6 +4,7 @@ import com.jamunabank.branchsync.dto.request.InitiateTransferRequestDto;
 import com.jamunabank.branchsync.dto.response.TransferDetailDto;
 import com.jamunabank.branchsync.dto.response.TransferResponseDto;
 import com.jamunabank.branchsync.model.entity.Branch;
+import com.jamunabank.branchsync.model.entity.Department;
 import com.jamunabank.branchsync.model.entity.ItemCategory;
 import com.jamunabank.branchsync.model.entity.TransferRequest;
 import org.springframework.stereotype.Component;
@@ -12,95 +13,83 @@ import org.springframework.stereotype.Component;
 public class TransferMapper {
 
     public TransferRequest toEntity(InitiateTransferRequestDto dto) {
-        if (dto == null) {
-            return null;
-        }
-
+        if (dto == null) return null;
         return TransferRequest.builder()
                 .title(dto.getTitle())
-                .priority(dto.getPriority())
-                .requestType(dto.getRequestType())
-                // Use proxy-like entity instances for relationships
-                .originBranch(Branch.builder().branchId(dto.getOriginBranchId()).build())
-                .originDepartment(dto.getOriginDepartmentId() != null ? com.jamunabank.branchsync.model.entity.Department.builder().departmentId(dto.getOriginDepartmentId()).build() : null)
+                .description(dto.getDescription())
+                .priority(dto.getPriority() != null ? dto.getPriority() : "NORMAL")
                 .destinationBranch(Branch.builder().branchId(dto.getDestinationBranchId()).build())
-                .destinationDepartment(dto.getDestinationDepartmentId() != null ? com.jamunabank.branchsync.model.entity.Department.builder().departmentId(dto.getDestinationDepartmentId()).build() : null)
+                .destinationDepartment(dto.getDestinationDepartmentId() != null
+                        ? Department.builder().departmentId(dto.getDestinationDepartmentId()).build() : null)
                 .category(ItemCategory.builder().categoryId(dto.getCategoryId()).build())
                 .build();
     }
 
-    public TransferResponseDto toResponseDto(TransferRequest entity) {
-        if (entity == null) {
-            return null;
-        }
-
+    public TransferResponseDto toResponseDto(TransferRequest e) {
+        if (e == null) return null;
         return TransferResponseDto.builder()
-                .requestId(entity.getRequestId())
-                .requestCode(entity.getRequestCode())
-                .status(entity.getStatus())
-                .title(entity.getTitle())
-                .priority(entity.getPriority())
-                .requestType(entity.getRequestType())
-                .requestedAt(entity.getRequestedAt())
-                .originBranchName(entity.getOriginBranch() != null ? entity.getOriginBranch().getBranchName() : null)
-                .destinationBranchName(entity.getDestinationBranch() != null ? entity.getDestinationBranch().getBranchName() : null)
-                .categoryName(entity.getCategory() != null && entity.getCategory().getCategoryName() != null ? entity.getCategory().getCategoryName().name() : null)
-                .initiatedByFullName(entity.getInitiatedBy() != null ? entity.getInitiatedBy().getFullName() : null)
+                .requestId(e.getRequestId())
+                .requestCode(e.getRequestCode())
+                .status(e.getStatus())
+                .title(e.getTitle())
+                .priority(e.getPriority())
+                .requestedAt(e.getRequestedAt())
+                .originBranchName(e.getOriginBranch() != null ? e.getOriginBranch().getBranchName() : null)
+                .destinationBranchName(e.getDestinationBranch() != null ? e.getDestinationBranch().getBranchName() : null)
+                .categoryName(e.getCategory() != null ? e.getCategory().getCategoryName() : null)
+                .initiatedByFullName(e.getInitiatedBy() != null ? e.getInitiatedBy().getFullName() : null)
+                .deliveryPersonId(e.getDeliveryPerson() != null ? e.getDeliveryPerson().getUserId() : null)
+                .deliveryPersonFullName(e.getDeliveryPerson() != null ? e.getDeliveryPerson().getFullName() : null)
                 .build();
     }
 
-    public TransferDetailDto toDetailDto(TransferRequest entity) {
-        if (entity == null) {
-            return null;
+    public TransferDetailDto toDetailDto(TransferRequest e) {
+        if (e == null) return null;
+        TransferDetailDto.TransferDetailDtoBuilder b = TransferDetailDto.builder()
+                .requestId(e.getRequestId())
+                .requestCode(e.getRequestCode())
+                .status(e.getStatus())
+                .title(e.getTitle())
+                .description(e.getDescription())
+                .priority(e.getPriority())
+                .requestedAt(e.getRequestedAt())
+                .closedAt(e.getClosedAt())
+                .pickedUpAt(e.getPickedUpAt())
+                .deliveredAt(e.getDeliveredAt())
+                .finalNote(e.getFinalNote());
+
+        if (e.getOriginBranch() != null) {
+            b.originBranchId(e.getOriginBranch().getBranchId())
+             .originBranchName(e.getOriginBranch().getBranchName())
+             .originBranchCode(e.getOriginBranch().getBranchCode());
         }
-
-        TransferDetailDto.TransferDetailDtoBuilder builder = TransferDetailDto.builder()
-                .requestId(entity.getRequestId())
-                .requestCode(entity.getRequestCode())
-                .status(entity.getStatus())
-                .title(entity.getTitle())
-                .description(entity.getDescription())
-                .priority(entity.getPriority())
-                .requestType(entity.getRequestType())
-                .requestedAt(entity.getRequestedAt())
-                .expectedDeliveryDate(entity.getExpectedDeliveryDate())
-                .closedAt(entity.getClosedAt());
-
-        if (entity.getOriginBranch() != null) {
-            builder.originBranchId(entity.getOriginBranch().getBranchId())
-                   .originBranchName(entity.getOriginBranch().getBranchName())
-                   .originBranchCode(entity.getOriginBranch().getBranchCode());
+        if (e.getDestinationBranch() != null) {
+            b.destinationBranchId(e.getDestinationBranch().getBranchId())
+             .destinationBranchName(e.getDestinationBranch().getBranchName())
+             .destinationBranchCode(e.getDestinationBranch().getBranchCode());
         }
-
-        if (entity.getDestinationBranch() != null) {
-            builder.destinationBranchId(entity.getDestinationBranch().getBranchId())
-                   .destinationBranchName(entity.getDestinationBranch().getBranchName())
-                   .destinationBranchCode(entity.getDestinationBranch().getBranchCode());
+        if (e.getOriginDepartment() != null) {
+            b.originDepartmentId(e.getOriginDepartment().getDepartmentId())
+             .originDepartmentName(e.getOriginDepartment().getDepartmentName());
         }
-
-        if (entity.getOriginDepartment() != null) {
-            builder.originDepartmentId(entity.getOriginDepartment().getDepartmentId())
-                   .originDepartmentName(entity.getOriginDepartment().getDepartmentName());
+        if (e.getDestinationDepartment() != null) {
+            b.destinationDepartmentId(e.getDestinationDepartment().getDepartmentId())
+             .destinationDepartmentName(e.getDestinationDepartment().getDepartmentName());
         }
-
-        if (entity.getDestinationDepartment() != null) {
-            builder.destinationDepartmentId(entity.getDestinationDepartment().getDepartmentId())
-                   .destinationDepartmentName(entity.getDestinationDepartment().getDepartmentName());
+        if (e.getCategory() != null) {
+            b.categoryName(e.getCategory().getCategoryName())
+             .sensitivityLevel(e.getCategory().getSensitivityLevel());
         }
-
-        if (entity.getCategory() != null) {
-            builder.categoryName(entity.getCategory().getCategoryName() != null ? entity.getCategory().getCategoryName().name() : null)
-                   .requiresDualVerification(entity.getCategory().getRequiresDualVerification())
-                   .requiresHqApproval(entity.getCategory().getRequiresHqApproval())
-                   .sensitivityLevel(entity.getCategory().getSensitivityLevel() != null ? entity.getCategory().getSensitivityLevel().name() : null);
+        if (e.getInitiatedBy() != null) {
+            b.initiatedByUserId(e.getInitiatedBy().getUserId())
+             .initiatedByFullName(e.getInitiatedBy().getFullName())
+             .initiatedByEmployeeId(e.getInitiatedBy().getEmployeeId())
+             .initiatedByBranchId(e.getInitiatedBy().getBranch() != null ? e.getInitiatedBy().getBranch().getBranchId() : null);
         }
-
-        if (entity.getInitiatedBy() != null) {
-            builder.initiatedByFullName(entity.getInitiatedBy().getFullName())
-                   .initiatedByEmployeeId(entity.getInitiatedBy().getEmployeeId())
-                   .initiatedByBranchId(entity.getInitiatedBy().getBranch() != null ? entity.getInitiatedBy().getBranch().getBranchId() : null);
+        if (e.getDeliveryPerson() != null) {
+            b.deliveryPersonId(e.getDeliveryPerson().getUserId())
+             .deliveryPersonFullName(e.getDeliveryPerson().getFullName());
         }
-
-        return builder.build();
+        return b.build();
     }
 }

@@ -1,7 +1,5 @@
 package com.jamunabank.branchsync.model.entity;
 
-import com.jamunabank.branchsync.model.enums.CategoryName;
-import com.jamunabank.branchsync.model.enums.SensitivityLevel;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
@@ -13,59 +11,45 @@ public class ItemCategory {
     @Column(name = "category_id")
     private Long categoryId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "category_name", nullable = false, unique = true)
-    private CategoryName categoryName;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @Column(name = "requires_dual_verification", nullable = false)
-    private Boolean requiresDualVerification = false;
-
-    @Column(name = "requires_hq_approval", nullable = false)
-    private Boolean requiresHqApproval = false;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "sensitivity_level", nullable = false)
-    private SensitivityLevel sensitivityLevel = SensitivityLevel.LOW;
-
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
-    private OffsetDateTime createdAt;
+    @Column(name = "category_name", nullable = false, unique = true, length = 255)
+    private String categoryName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
     private Department department;
 
+    @Column(name = "sensitivity_level", nullable = false, length = 50)
+    private String sensitivityLevel = "LOW";
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
     public ItemCategory() {}
 
     public Long getCategoryId() { return categoryId; }
     public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
-    public CategoryName getCategoryName() { return categoryName; }
-    public void setCategoryName(CategoryName categoryName) { this.categoryName = categoryName; }
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+    public Department getDepartment() { return department; }
+    public void setDepartment(Department department) { this.department = department; }
+    public String getSensitivityLevel() { return sensitivityLevel; }
+    public void setSensitivityLevel(String sensitivityLevel) { this.sensitivityLevel = sensitivityLevel; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
-    public Boolean getRequiresDualVerification() { return requiresDualVerification; }
-    public void setRequiresDualVerification(Boolean r) { this.requiresDualVerification = r; }
-    public Boolean getRequiresHqApproval() { return requiresHqApproval; }
-    public void setRequiresHqApproval(Boolean r) { this.requiresHqApproval = r; }
-    public SensitivityLevel getSensitivityLevel() { return sensitivityLevel; }
-    public void setSensitivityLevel(SensitivityLevel s) { this.sensitivityLevel = s; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(OffsetDateTime c) { this.createdAt = c; }
-    public Department getDepartment() { return department; }
-    public void setDepartment(Department d) { this.department = d; }
+    public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 
     public static class ItemCategoryBuilder {
         private ItemCategory c = new ItemCategory();
         public ItemCategoryBuilder categoryId(Long id) { c.categoryId = id; return this; }
-        public ItemCategoryBuilder categoryName(CategoryName n) { c.categoryName = n; return this; }
-        public ItemCategoryBuilder description(String d) { c.description = d; return this; }
-        public ItemCategoryBuilder requiresDualVerification(Boolean r) { c.requiresDualVerification = r; return this; }
-        public ItemCategoryBuilder requiresHqApproval(Boolean r) { c.requiresHqApproval = r; return this; }
-        public ItemCategoryBuilder sensitivityLevel(SensitivityLevel s) { c.sensitivityLevel = s; return this; }
-        public ItemCategoryBuilder createdAt(OffsetDateTime cat) { c.createdAt = cat; return this; }
+        public ItemCategoryBuilder categoryName(String n) { c.categoryName = n; return this; }
         public ItemCategoryBuilder department(Department d) { c.department = d; return this; }
+        public ItemCategoryBuilder sensitivityLevel(String s) { c.sensitivityLevel = s; return this; }
+        public ItemCategoryBuilder description(String d) { c.description = d; return this; }
+        public ItemCategoryBuilder createdAt(OffsetDateTime t) { c.createdAt = t; return this; }
         public ItemCategory build() { return c; }
     }
     public static ItemCategoryBuilder builder() { return new ItemCategoryBuilder(); }

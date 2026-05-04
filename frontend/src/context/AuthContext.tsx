@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 
 export interface User {
     id: number;
+    userId: number;
     employeeId: string;
     role: string;
     branchId: number;

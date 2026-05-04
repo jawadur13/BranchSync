@@ -22,9 +22,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
-    @Query("SELECT u FROM User u WHERE u.role.roleName = 'DELIVERY_PERSON' " +
-           "AND u.isActive = true " +
-           "AND u.userId NOT IN (SELECT COALESCE(tr.deliveryPerson.userId, 0) FROM TransferRequest tr WHERE tr.status IN ('DISPATCHED', 'IN_TRANSIT'))")
+    @Query("SELECT u FROM User u WHERE u.role.roleName = 'DELIVERY_PERSON' AND u.isActive = true AND u.isAvailable = true")
     List<User> findAvailableDeliveryPersons();
 
     Page<User> findByRole_RoleName(String roleName, Pageable pageable);

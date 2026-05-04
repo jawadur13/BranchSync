@@ -7,20 +7,20 @@ import java.time.OffsetDateTime;
 @Table(name = "users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_seq")
-    @SequenceGenerator(name = "users_seq", sequenceName = "users_user_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long userId;
 
     @Column(name = "employee_id", nullable = false, unique = true, length = 50)
     private String employeeId;
 
-    @Column(name = "full_name", nullable = false, length = 150)
+    @Column(name = "full_name", nullable = false, length = 255)
     private String fullName;
 
-    @Column(nullable = false, unique = true, length = 150)
+    @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "phone_number", length = 20)
+    @Column(name = "phone_number", length = 30)
     private String phoneNumber;
 
     @Column(name = "password_hash", nullable = false, columnDefinition = "TEXT")
@@ -31,20 +31,23 @@ public class User {
     private Role role;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "branch_id", nullable = true)
+    @JoinColumn(name = "branch_id")
     private Branch branch;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
     private Department department;
 
+    @Column(name = "is_available", nullable = false)
+    private Boolean isAvailable = true;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
+    @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
     @Column(name = "last_login_at")
@@ -70,6 +73,8 @@ public class User {
     public void setBranch(Branch branch) { this.branch = branch; }
     public Department getDepartment() { return department; }
     public void setDepartment(Department department) { this.department = department; }
+    public Boolean getIsAvailable() { return isAvailable; }
+    public void setIsAvailable(Boolean isAvailable) { this.isAvailable = isAvailable; }
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
@@ -90,6 +95,7 @@ public class User {
         public UserBuilder role(Role r) { u.role = r; return this; }
         public UserBuilder branch(Branch b) { u.branch = b; return this; }
         public UserBuilder department(Department d) { u.department = d; return this; }
+        public UserBuilder isAvailable(Boolean a) { u.isAvailable = a; return this; }
         public UserBuilder isActive(Boolean a) { u.isActive = a; return this; }
         public UserBuilder createdAt(OffsetDateTime c) { u.createdAt = c; return this; }
         public UserBuilder updatedAt(OffsetDateTime uat) { u.updatedAt = uat; return this; }

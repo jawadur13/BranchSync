@@ -69,55 +69,95 @@ class TransferServiceTest {
     }
 
     @Test
-    void whenApproveByManager_thenStatusIsApproved() {
+    void whenApproveAndAssign_thenStatusIsPendingDelivery() {
         // Given
         Role managerRole = Role.builder().roleName("BRANCH_MANAGER").build();
-        User manager = User.builder().userId(2L).role(managerRole).build();
+        User manager = User.builder().userId(2L).role(managerRole).branch(branch).build();
+        User deliveryPerson = User.builder().userId(3L).fullName("Courier Dave").build();
+        
         TransferRequest request = TransferRequest.builder()
                 .requestId(1001L)
+                .originBranch(branch)
                 .status(TransferStatus.PENDING_APPROVAL)
                 .build();
 
         when(transferRequestRepository.findById(1001L)).thenReturn(Optional.of(request));
         when(userRepository.findById(2L)).thenReturn(Optional.of(manager));
+        when(userRepository.findById(3L)).thenReturn(Optional.of(deliveryPerson));
         when(transferRequestRepository.save(any(TransferRequest.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // When
-        TransferRequest result = transferService.approveTransfer(1001L, 2L);
+        TransferRequest result = transferService.approveAndAssignDelivery(1001L, 2L, 3L);
 
         // Then
-        assertThat(result.getStatus()).isEqualTo(TransferStatus.APPROVED);
+        assertThat(result.getStatus()).isEqualTo(TransferStatus.PENDING_DELIVERY);
+        assertThat(result.getDeliveryPerson()).isEqualTo(deliveryPerson);
         verify(auditService).logAction(any(), eq(manager), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
-    void whenDualVerificationComplete_thenStatusIsConfirmed() {
+    void whenHandoffByDelivery_thenStatusIsInTransit() {
         // Given
-        Branch destBranch = Branch.builder().branchId(2L).build();
-        User destUser = User.builder().userId(3L).branch(destBranch).build();
-        
+        User deliveryPerson = User.builder().userId(3L).build();
         TransferRequest request = TransferRequest.builder()
                 .requestId(1001L)
-                .originBranch(branch)
-                .destinationBranch(destBranch)
-                .status(TransferStatus.RECEIVED)
-                .build();
-
-        ReceiptRecord existingRecord = ReceiptRecord.builder()
-                .receiptId(500L)
-                .originConfirmationBy(actor) // Origin already confirmed
+                .deliveryPerson(deliveryPerson)
+                .status(TransferStatus.PENDING_DELIVERY)
                 .build();
 
         when(transferRequestRepository.findById(1001L)).thenReturn(Optional.of(request));
-        when(userRepository.findById(3L)).thenReturn(Optional.of(destUser));
-        when(receiptRecordRepository.findByTransferRequest_RequestId(1001L)).thenReturn(Optional.of(existingRecord));
         when(transferRequestRepository.save(any(TransferRequest.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // When
-        TransferRequest result = transferService.processDualVerification(1001L, 3L, false);
+        TransferRequest result = transferService.markAsInTransit(1001L, 3L);
 
         // Then
-        assertThat(result.getStatus()).isEqualTo(TransferStatus.CONFIRMED);
-        verify(receiptRecordRepository).save(argThat(r -> r.getDualVerificationComplete()));
+        assertThat(result.getStatus()).isEqualTo(TransferStatus.IN_TRANSIT);
+    }
+
+    @Test
+    void whenArriveByDelivery_thenStatusIsArrived() {
+        // Given
+        User deliveryPerson = User.builder().userId(3L).build();
+        TransferRequest request = TransferRequest.builder()
+                .requestId(1001L)
+                .deliveryPerson(deliveryPerson)
+                .status(TransferStatus.IN_TRANSIT)
+                .build();
+
+        when(transferRequestRepository.findById(1001L)).thenReturn(Optional.of(request));
+        when(transferRequestRepository.save(any(TransferRequest.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        // When
+        TransferRequest result = transferService.markAsArrived(1001L, 3L);
+
+        // Then
+        assertThat(result.getStatus()).isEqualTo(TransferStatus.ARRIVED);
+    }
+
+    @Test
+    void whenConfirmByDestManager_thenStatusIsCompleted() {
+        // Given
+        Branch destBranch = Branch.builder().branchId(2L).build();
+        Role managerRole = Role.builder().roleName("BRANCH_MANAGER").build();
+        User destManager = User.builder().userId(4L).role(managerRole).branch(destBranch).build();
+        
+        TransferRequest request = TransferRequest.builder()
+                .requestId(1001L)
+                .destinationBranch(destBranch)
+                .status(TransferStatus.ARRIVED)
+                .build();
+
+        when(transferRequestRepository.findById(1001L)).thenReturn(Optional.of(request));
+        when(userRepository.findById(4L)).thenReturn(Optional.of(destManager));
+        when(transferRequestRepository.save(any(TransferRequest.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        // When
+        TransferRequest result = transferService.confirmReceipt(1001L, 4L, "Received all boxes intact.");
+
+        // Then
+        assertThat(result.getStatus()).isEqualTo(TransferStatus.COMPLETED);
+        assertThat(result.getFinalNote()).isEqualTo("Received all boxes intact.");
+        assertThat(result.getClosedAt()).isNotNull();
     }
 }

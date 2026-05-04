@@ -17,9 +17,11 @@ const Sidebar: React.FC = () => {
                 <NavLink to="/" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'} end>
                     <span className="nav-icon">📊</span> Dashboard
                 </NavLink>
-                <NavLink to="/transfers/new" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                    <span className="nav-icon">➕</span> New Request
-                </NavLink>
+                {user?.role !== 'DELIVERY_PERSON' && (
+                    <NavLink to="/transfers/new" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                        <span className="nav-icon">➕</span> New Request
+                    </NavLink>
+                )}
                 <NavLink to="/transfers/history" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                     <span className="nav-icon">📜</span> History
                 </NavLink>

@@ -25,4 +25,6 @@ public interface ManagementService {
     
     Branch updateBranch(Long branchId, CreateBranchDto dto);
     Department updateDepartment(Long departmentId, CreateDepartmentDto dto);
+    
+    void mapItemCategoryToDepartment(Long categoryId, Long departmentId);
 }

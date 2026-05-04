@@ -96,8 +96,6 @@ public class OrgManagementController {
                     Map<String, Object> map = new java.util.LinkedHashMap<>();
                     map.put("roleId", r.getRoleId());
                     map.put("roleName", r.getRoleName());
-                    map.put("roleLevel", r.getRoleLevel());
-                    map.put("description", r.getDescription());
                     return map;
                 })
                 .collect(Collectors.toList());
@@ -128,5 +126,13 @@ public class OrgManagementController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
+    }
+
+    @PutMapping("/items/{categoryId}/map")
+    public ResponseEntity<Map<String, String>> mapItemToDepartment(
+            @PathVariable Long categoryId,
+            @RequestBody Map<String, Long> payload) {
+        managementService.mapItemCategoryToDepartment(categoryId, payload.get("departmentId"));
+        return ResponseEntity.ok(Map.of("message", "Item mapped successfully"));
     }
 }

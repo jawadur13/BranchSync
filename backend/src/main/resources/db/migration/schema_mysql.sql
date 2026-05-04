@@ -1,286 +1,164 @@
--- MySQL compatible schema
--- Order is important due to foreign key dependencies
+-- ============================================================
+-- BranchSync: Final Schema (MySQL)
+-- 6-Step Restricted Workflow
+-- Run on a fresh empty database.
+-- ============================================================
 
+-- ============================================================
+-- 1. ROLES
+-- ============================================================
 CREATE TABLE roles (
-  role_id BIGINT NOT NULL AUTO_INCREMENT,
-  role_name VARCHAR(255) NOT NULL UNIQUE,
-  role_level INT NOT NULL CHECK (role_level >= 1),
-  description TEXT,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  role_id   BIGINT       NOT NULL AUTO_INCREMENT,
+  role_name VARCHAR(100) NOT NULL UNIQUE COMMENT 'SYSTEM_ADMIN | BRANCH_MANAGER | OPERATION_MANAGER | FIRST_EXECUTIVE_OFFICER | OFFICER | DELIVERY_PERSON',
   PRIMARY KEY (role_id)
 );
 
+-- ============================================================
+-- 2. BRANCHES
+-- ============================================================
 CREATE TABLE branches (
-  branch_id BIGINT NOT NULL AUTO_INCREMENT,
-  branch_code VARCHAR(255) NOT NULL UNIQUE,
+  branch_id   BIGINT       NOT NULL AUTO_INCREMENT,
+  branch_code VARCHAR(50)  NOT NULL UNIQUE,
   branch_name VARCHAR(255) NOT NULL,
-  branch_type VARCHAR(255) NOT NULL,
-  district VARCHAR(255) NOT NULL,
-  division VARCHAR(255) NOT NULL,
-  address TEXT NOT NULL,
-  phone VARCHAR(255),
-  is_active BOOLEAN NOT NULL DEFAULT TRUE,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  email VARCHAR(255),
+  branch_type VARCHAR(50)  NOT NULL COMMENT 'AD_BRANCH | SUB_BRANCH | HQ',
+  district    VARCHAR(100) NOT NULL,
+  division    VARCHAR(100) NOT NULL,
+  address     TEXT         NOT NULL,
+  phone       VARCHAR(30),
+  email       VARCHAR(255),
+  is_active   BOOLEAN      NOT NULL DEFAULT TRUE,
+  created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (branch_id)
 );
 
-CREATE TABLE item_categories (
-  category_id BIGINT NOT NULL AUTO_INCREMENT,
-  category_name VARCHAR(255) NOT NULL UNIQUE,
-  requires_dual_verification BOOLEAN NOT NULL DEFAULT FALSE,
-  requires_hq_approval BOOLEAN NOT NULL DEFAULT FALSE,
-  sensitivity_level VARCHAR(255) NOT NULL DEFAULT 'LOW',
-  description TEXT,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (category_id)
-);
-
-CREATE TABLE permissions (
-  permission_id BIGINT NOT NULL AUTO_INCREMENT,
-  permission_name VARCHAR(255) NOT NULL UNIQUE,
-  module VARCHAR(255) NOT NULL,
-  description TEXT,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (permission_id)
-);
-
-CREATE TABLE role_permissions (
-  role_permission_id BIGINT NOT NULL AUTO_INCREMENT,
-  role_id BIGINT NOT NULL,
-  permission_id BIGINT NOT NULL,
-  PRIMARY KEY (role_permission_id),
-  FOREIGN KEY (permission_id) REFERENCES permissions(permission_id),
-  FOREIGN KEY (role_id) REFERENCES roles(role_id)
-);
-
+-- ============================================================
+-- 3. DEPARTMENTS (Global Master List)
+-- ============================================================
 CREATE TABLE departments (
-  department_id BIGINT NOT NULL AUTO_INCREMENT,
-  department_name VARCHAR(255) NOT NULL,
-  branch_id BIGINT,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (department_id),
-  FOREIGN KEY (branch_id) REFERENCES branches(branch_id)
+  department_id   BIGINT       NOT NULL AUTO_INCREMENT,
+  department_name VARCHAR(255) NOT NULL UNIQUE,
+  created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (department_id)
 );
 
+-- ============================================================
+-- 4. BRANCH_DEPARTMENTS (Which dept exists in which branch)
+-- ============================================================
+CREATE TABLE branch_departments (
+  branch_id     BIGINT NOT NULL,
+  department_id BIGINT NOT NULL,
+  PRIMARY KEY (branch_id, department_id),
+  FOREIGN KEY (branch_id)     REFERENCES branches(branch_id),
+  FOREIGN KEY (department_id) REFERENCES departments(department_id)
+);
+
+-- ============================================================
+-- 5. ITEM_CATEGORIES (Each mapped to one responsible department)
+-- ============================================================
+CREATE TABLE item_categories (
+  category_id       BIGINT       NOT NULL AUTO_INCREMENT,
+  category_name     VARCHAR(255) NOT NULL UNIQUE,
+  department_id     BIGINT       NULL COMMENT 'NULL = open access for all roles',
+  sensitivity_level VARCHAR(50)  NOT NULL DEFAULT 'LOW' COMMENT 'LOW | MEDIUM | HIGH | CRITICAL',
+  description       TEXT,
+  created_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (category_id),
+  FOREIGN KEY (department_id) REFERENCES departments(department_id)
+);
+
+-- ============================================================
+-- 6. USERS
+-- ============================================================
 CREATE TABLE users (
-  user_id BIGINT NOT NULL AUTO_INCREMENT,
-  employee_id VARCHAR(255) NOT NULL UNIQUE,
-  full_name VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  phone_number VARCHAR(255),
-  password_hash TEXT NOT NULL,
-  role_id BIGINT NOT NULL,
-  branch_id BIGINT NOT NULL,
-  department_id BIGINT,
-  is_active BOOLEAN NOT NULL DEFAULT TRUE,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  last_login_at TIMESTAMP NULL,
+  user_id        BIGINT       NOT NULL AUTO_INCREMENT,
+  employee_id    VARCHAR(50)  NOT NULL UNIQUE,
+  full_name      VARCHAR(255) NOT NULL,
+  email          VARCHAR(255) NOT NULL UNIQUE,
+  phone_number   VARCHAR(30),
+  password_hash  TEXT         NOT NULL,
+  role_id        BIGINT       NOT NULL,
+  branch_id      BIGINT       NULL COMMENT 'NULL for SYSTEM_ADMIN and DELIVERY_PERSON (floating)',
+  department_id  BIGINT       NULL COMMENT 'NULL for Manager-level roles and Delivery Person',
+  is_available   BOOLEAN      NOT NULL DEFAULT TRUE COMMENT 'For DELIVERY_PERSON: TRUE=Available, FALSE=Busy',
+  is_active      BOOLEAN      NOT NULL DEFAULT TRUE,
+  created_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  last_login_at  TIMESTAMP    NULL,
   PRIMARY KEY (user_id),
-  FOREIGN KEY (branch_id) REFERENCES branches(branch_id),
-  FOREIGN KEY (department_id) REFERENCES departments(department_id),
-  FOREIGN KEY (role_id) REFERENCES roles(role_id)
+  FOREIGN KEY (role_id)       REFERENCES roles(role_id),
+  FOREIGN KEY (branch_id)     REFERENCES branches(branch_id),
+  FOREIGN KEY (department_id) REFERENCES departments(department_id)
 );
 
+-- ============================================================
+-- 7. TRANSFER_REQUESTS (Core workflow engine)
+-- ============================================================
 CREATE TABLE transfer_requests (
-  request_id BIGINT NOT NULL AUTO_INCREMENT,
-  request_code VARCHAR(255) NOT NULL UNIQUE,
-  category_id BIGINT NOT NULL,
-  request_type VARCHAR(255) NOT NULL,
-  origin_branch_id BIGINT NOT NULL,
-  destination_branch_id BIGINT NOT NULL,
-  initiated_by BIGINT NOT NULL,
-  priority VARCHAR(255) NOT NULL DEFAULT 'NORMAL',
-  status VARCHAR(255) NOT NULL DEFAULT 'DRAFT',
-  title VARCHAR(255) NOT NULL,
-  description TEXT,
-  requested_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  expected_delivery_date DATE,
-  closed_at TIMESTAMP NULL,
-  destination_department_id BIGINT,
-  origin_department_id BIGINT,
+  request_id                BIGINT       NOT NULL AUTO_INCREMENT,
+  request_code              VARCHAR(50)  NOT NULL UNIQUE COMMENT 'e.g. REQ-2026-001',
+  title                     VARCHAR(255) NOT NULL,
+  description               TEXT,
+  category_id               BIGINT       NOT NULL,
+  priority                  VARCHAR(50)  NOT NULL DEFAULT 'NORMAL' COMMENT 'NORMAL | HIGH | URGENT | CRITICAL',
+  status                    VARCHAR(50)  NOT NULL DEFAULT 'PENDING_INTERNAL'
+                            COMMENT 'PENDING_INTERNAL | PENDING_ASSIGNMENT | READY_FOR_PICKUP | IN_TRANSIT | DELIVERED | COMPLETED | REJECTED_ON_RECEIPT | CANCELLED',
+
+  -- Source
+  origin_branch_id          BIGINT       NOT NULL,
+  origin_department_id      BIGINT       NULL,
+  initiated_by_id           BIGINT       NOT NULL COMMENT 'Original requester — enforces Step 6 restriction',
+
+  -- Step 1: Internal gatekeeper at source branch
+  internal_approver_id      BIGINT       NULL COMMENT 'Manager/FEO who approved internally. NULL if bypassed.',
+
+  -- Destination
+  destination_branch_id     BIGINT       NOT NULL,
+  destination_department_id BIGINT       NULL,
+
+  -- Step 2: Dept staff at destination who accepts and assigns driver
+  dept_acceptor_id          BIGINT       NULL,
+
+  -- Step 3: Manager/FEO at destination who gives final green light
+  final_releaser_id         BIGINT       NULL,
+
+  -- Step 4 & 5: Logistics
+  delivery_person_id        BIGINT       NULL,
+  picked_up_at              TIMESTAMP    NULL,
+  delivered_at              TIMESTAMP    NULL,
+
+  -- Step 6: Closing
+  final_note                TEXT         NULL COMMENT 'Required when status = REJECTED_ON_RECEIPT',
+  closed_at                 TIMESTAMP    NULL,
+
+  requested_at              TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
   PRIMARY KEY (request_id),
+  FOREIGN KEY (category_id)               REFERENCES item_categories(category_id),
+  FOREIGN KEY (origin_branch_id)          REFERENCES branches(branch_id),
+  FOREIGN KEY (origin_department_id)      REFERENCES departments(department_id),
+  FOREIGN KEY (destination_branch_id)     REFERENCES branches(branch_id),
   FOREIGN KEY (destination_department_id) REFERENCES departments(department_id),
-  FOREIGN KEY (origin_department_id) REFERENCES departments(department_id),
-  FOREIGN KEY (category_id) REFERENCES item_categories(category_id),
-  FOREIGN KEY (destination_branch_id) REFERENCES branches(branch_id),
-  FOREIGN KEY (origin_branch_id) REFERENCES branches(branch_id),
-  FOREIGN KEY (initiated_by) REFERENCES users(user_id)
+  FOREIGN KEY (initiated_by_id)           REFERENCES users(user_id),
+  FOREIGN KEY (internal_approver_id)      REFERENCES users(user_id),
+  FOREIGN KEY (dept_acceptor_id)          REFERENCES users(user_id),
+  FOREIGN KEY (final_releaser_id)         REFERENCES users(user_id),
+  FOREIGN KEY (delivery_person_id)        REFERENCES users(user_id)
 );
 
-CREATE TABLE approval_chains (
-  chain_id BIGINT NOT NULL AUTO_INCREMENT,
-  category_id BIGINT NOT NULL,
-  priority_level VARCHAR(255) NOT NULL DEFAULT 'NORMAL',
-  step_number INT NOT NULL CHECK (step_number >= 1),
-  required_role_id BIGINT NOT NULL,
-  approval_scope VARCHAR(255) NOT NULL,
-  description TEXT,
-  PRIMARY KEY (chain_id),
-  FOREIGN KEY (category_id) REFERENCES item_categories(category_id),
-  FOREIGN KEY (required_role_id) REFERENCES roles(role_id)
-);
-
-CREATE TABLE approval_logs (
-  approval_log_id BIGINT NOT NULL AUTO_INCREMENT,
-  request_id BIGINT NOT NULL,
-  step_number INT NOT NULL CHECK (step_number >= 1),
-  approver_id BIGINT NOT NULL,
-  action VARCHAR(255) NOT NULL,
-  comments TEXT,
-  acted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  ip_address VARCHAR(255),
-  PRIMARY KEY (approval_log_id),
-  FOREIGN KEY (request_id) REFERENCES transfer_requests(request_id),
-  FOREIGN KEY (approver_id) REFERENCES users(user_id)
-);
-
+-- ============================================================
+-- 8. AUDIT_LOGS (Immutable event trail)
+-- ============================================================
 CREATE TABLE audit_logs (
-  audit_id BIGINT NOT NULL AUTO_INCREMENT,
-  request_id BIGINT,
-  actor_user_id BIGINT,
-  action_type VARCHAR(255) NOT NULL,
-  entity_name VARCHAR(255) NOT NULL,
-  entity_id BIGINT NOT NULL,
-  old_value JSON,
-  new_value JSON,
-  ip_address VARCHAR(255),
-  user_agent TEXT,
-  acted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  audit_id    BIGINT       NOT NULL AUTO_INCREMENT,
+  request_id  BIGINT       NULL,
+  actor_id    BIGINT       NULL,
+  action      VARCHAR(100) NOT NULL COMMENT 'CREATED | APPROVED_INTERNAL | ASSIGNED_DRIVER | RELEASED | PICKED_UP | DELIVERED | COMPLETED | REJECTED',
+  from_status VARCHAR(50)  NULL,
+  to_status   VARCHAR(50)  NULL,
+  remarks     TEXT,
+  ip_address  VARCHAR(50),
+  acted_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (audit_id),
   FOREIGN KEY (request_id) REFERENCES transfer_requests(request_id),
-  FOREIGN KEY (actor_user_id) REFERENCES users(user_id)
-);
-
-CREATE TABLE cash_transfer_details (
-  cash_detail_id BIGINT NOT NULL AUTO_INCREMENT,
-  request_id BIGINT NOT NULL UNIQUE,
-  total_amount_bdt DECIMAL(15,2) NOT NULL CHECK (total_amount_bdt > 0),
-  denomination_1000 INT NOT NULL DEFAULT 0 CHECK (denomination_1000 >= 0),
-  denomination_500 INT NOT NULL DEFAULT 0 CHECK (denomination_500 >= 0),
-  denomination_200 INT NOT NULL DEFAULT 0 CHECK (denomination_200 >= 0),
-  denomination_100 INT NOT NULL DEFAULT 0 CHECK (denomination_100 >= 0),
-  denomination_50 INT NOT NULL DEFAULT 0 CHECK (denomination_50 >= 0),
-  denomination_20 INT NOT NULL DEFAULT 0 CHECK (denomination_20 >= 0),
-  denomination_10 INT NOT NULL DEFAULT 0 CHECK (denomination_10 >= 0),
-  denomination_5 INT NOT NULL DEFAULT 0 CHECK (denomination_5 >= 0),
-  denomination_2 INT NOT NULL DEFAULT 0 CHECK (denomination_2 >= 0),
-  denomination_1 INT NOT NULL DEFAULT 0 CHECK (denomination_1 >= 0),
-  sealed_bag_count INT NOT NULL DEFAULT 0 CHECK (sealed_bag_count >= 0),
-  bag_serial_numbers TEXT,
-  cit_agent_name VARCHAR(255),
-  cit_company VARCHAR(255),
-  PRIMARY KEY (cash_detail_id),
-  FOREIGN KEY (request_id) REFERENCES transfer_requests(request_id)
-);
-
-CREATE TABLE dispatch_records (
-  dispatch_id BIGINT NOT NULL AUTO_INCREMENT,
-  request_id BIGINT NOT NULL UNIQUE,
-  dispatched_by BIGINT NOT NULL,
-  dispatched_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  carrier_type VARCHAR(255) NOT NULL,
-  carrier_name VARCHAR(255) NOT NULL,
-  carrier_phone VARCHAR(255),
-  vehicle_number VARCHAR(255),
-  estimated_arrival TIMESTAMP NULL,
-  dispatch_notes TEXT,
-  witness_user_id BIGINT,
-  PRIMARY KEY (dispatch_id),
-  FOREIGN KEY (request_id) REFERENCES transfer_requests(request_id),
-  FOREIGN KEY (witness_user_id) REFERENCES users(user_id),
-  FOREIGN KEY (dispatched_by) REFERENCES users(user_id)
-);
-
-CREATE TABLE escalation_logs (
-  escalation_id BIGINT NOT NULL AUTO_INCREMENT,
-  request_id BIGINT NOT NULL,
-  escalated_from_user_id BIGINT,
-  escalated_to_user_id BIGINT NOT NULL,
-  reason VARCHAR(255) NOT NULL,
-  escalated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  resolved_at TIMESTAMP NULL,
-  resolution_notes TEXT,
-  PRIMARY KEY (escalation_id),
-  FOREIGN KEY (request_id) REFERENCES transfer_requests(request_id),
-  FOREIGN KEY (escalated_from_user_id) REFERENCES users(user_id),
-  FOREIGN KEY (escalated_to_user_id) REFERENCES users(user_id)
-);
-
-CREATE TABLE notifications (
-  notification_id BIGINT NOT NULL AUTO_INCREMENT,
-  recipient_user_id BIGINT NOT NULL,
-  request_id BIGINT,
-  type VARCHAR(255) NOT NULL,
-  title VARCHAR(255) NOT NULL,
-  message TEXT NOT NULL,
-  is_read BOOLEAN NOT NULL DEFAULT FALSE,
-  sent_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  read_at TIMESTAMP NULL,
-  PRIMARY KEY (notification_id),
-  FOREIGN KEY (request_id) REFERENCES transfer_requests(request_id),
-  FOREIGN KEY (recipient_user_id) REFERENCES users(user_id)
-);
-
-CREATE TABLE receipt_records (
-  receipt_id BIGINT NOT NULL AUTO_INCREMENT,
-  request_id BIGINT NOT NULL UNIQUE,
-  received_by BIGINT NOT NULL,
-  received_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  condition_noted VARCHAR(255) NOT NULL,
-  receiver_notes TEXT,
-  origin_confirmation_by BIGINT,
-  origin_confirmed_at TIMESTAMP NULL,
-  destination_confirmation_by BIGINT,
-  destination_confirmed_at TIMESTAMP NULL,
-  dual_verification_complete BOOLEAN NOT NULL DEFAULT FALSE,
-  PRIMARY KEY (receipt_id),
-  FOREIGN KEY (request_id) REFERENCES transfer_requests(request_id),
-  FOREIGN KEY (destination_confirmation_by) REFERENCES users(user_id),
-  FOREIGN KEY (origin_confirmation_by) REFERENCES users(user_id),
-  FOREIGN KEY (received_by) REFERENCES users(user_id)
-);
-
-CREATE TABLE sla_policies (
-  sla_id BIGINT NOT NULL AUTO_INCREMENT,
-  category_id BIGINT NOT NULL,
-  priority_level VARCHAR(255) NOT NULL,
-  max_approval_hours INT NOT NULL CHECK (max_approval_hours > 0),
-  max_transit_hours INT NOT NULL CHECK (max_transit_hours > 0),
-  max_confirmation_hours INT NOT NULL CHECK (max_confirmation_hours > 0),
-  escalation_role_id BIGINT NOT NULL,
-  is_active BOOLEAN NOT NULL DEFAULT TRUE,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (sla_id),
-  FOREIGN KEY (category_id) REFERENCES item_categories(category_id),
-  FOREIGN KEY (escalation_role_id) REFERENCES roles(role_id)
-);
-
-CREATE TABLE transfer_items (
-  item_id BIGINT NOT NULL AUTO_INCREMENT,
-  request_id BIGINT NOT NULL,
-  item_name VARCHAR(255) NOT NULL,
-  item_description TEXT,
-  quantity DECIMAL(15,2) NOT NULL CHECK (quantity > 0),
-  unit VARCHAR(255) NOT NULL,
-  serial_number VARCHAR(255),
-  condition_on_send VARCHAR(255) NOT NULL DEFAULT 'GOOD',
-  condition_on_receive VARCHAR(255),
-  notes TEXT,
-  PRIMARY KEY (item_id),
-  FOREIGN KEY (request_id) REFERENCES transfer_requests(request_id)
-);
-
-CREATE TABLE transit_checkpoints (
-  checkpoint_id BIGINT NOT NULL AUTO_INCREMENT,
-  dispatch_id BIGINT NOT NULL,
-  checked_by BIGINT NOT NULL,
-  checkpoint_location VARCHAR(255) NOT NULL,
-  status VARCHAR(255) NOT NULL,
-  checked_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  notes TEXT,
-  PRIMARY KEY (checkpoint_id),
-  FOREIGN KEY (dispatch_id) REFERENCES dispatch_records(dispatch_id),
-  FOREIGN KEY (checked_by) REFERENCES users(user_id)
+  FOREIGN KEY (actor_id)   REFERENCES users(user_id)
 );
