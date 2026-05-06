@@ -198,6 +198,7 @@ const UserManagement = () => {
                             <th>Full Name</th>
                             <th>Role</th>
                             <th>Branch</th>
+                            <th>Department</th>
                             <th>Status</th>
                             <th>Action</th>
                         </tr>
@@ -213,6 +214,7 @@ const UserManagement = () => {
                                     </span>
                                 </td>
                                 <td>{u.branchName || 'None (Floating)'}</td>
+                                <td>{u.departmentName || '—'}</td>
                                 <td>
                                     <span className={`status-dot ${u.isActive ? 'dot-active' : 'dot-inactive'}`}></span>
                                     {u.isActive ? 'Active' : 'Inactive'}
@@ -221,18 +223,12 @@ const UserManagement = () => {
                                     <div className="action-group">
                                         <button className="btn-icon" onClick={() => setViewUser(u)} title="View Profile">👁️</button>
                                         <button className="btn-icon" onClick={() => openEditModal(u)} title="Edit">✏️</button>
-                                        <button
-                                            className={`btn-toggle ${u.isActive ? 'btn-deactivate' : 'btn-activate'}`}
-                                            onClick={() => handleToggleActive(u.userId)}
-                                        >
-                                            {u.isActive ? 'Deactivate' : 'Activate'}
-                                        </button>
                                     </div>
                                 </td>
                             </tr>
                         ))}
                         {filteredUsers.length === 0 && (
-                            <tr><td colSpan={6} className="empty-row">No users found.</td></tr>
+                            <tr><td colSpan={7} className="empty-row">No users found.</td></tr>
                         )}
                     </tbody>
                 </table>
@@ -363,6 +359,20 @@ const UserManagement = () => {
                                 </div>
                             </div>
                             <div className="modal-actions">
+                                {editMode && selectedUserId && (
+                                    <button 
+                                        type="button" 
+                                        className={`btn-toggle ${users.find(u => u.userId === selectedUserId)?.isActive ? 'btn-deactivate' : 'btn-activate'}`}
+                                        onClick={() => {
+                                            handleToggleActive(selectedUserId);
+                                            // Refreshing visual state inside the modal if needed, 
+                                            // though fetchAll() will trigger a re-render.
+                                        }}
+                                        style={{ marginRight: 'auto' }}
+                                    >
+                                        {users.find(u => u.userId === selectedUserId)?.isActive ? 'Deactivate Account' : 'Activate Account'}
+                                    </button>
+                                )}
                                 <button type="button" className="btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>
                                 <button type="submit" className="btn-admin-primary" disabled={submitting}>
                                     {submitting ? 'Saving...' : (editMode ? '💾 Save Changes' : '✅ Create Employee')}

@@ -33,8 +33,14 @@ const Sidebar: React.FC = () => {
                         <NavLink to="/admin/users" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                             <span className="nav-icon">👥</span> User Management
                         </NavLink>
-                        <NavLink to="/admin/org" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                            <span className="nav-icon">🏛️</span> Branches & Depts
+                        <NavLink to="/admin/branches" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                            <span className="nav-icon">🏢</span> Branches
+                        </NavLink>
+                        <NavLink to="/admin/departments" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                            <span className="nav-icon">🏷️</span> Departments
+                        </NavLink>
+                        <NavLink to="/admin/items" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                            <span className="nav-icon">📦</span> Items & Depts
                         </NavLink>
                     </>
                 )}

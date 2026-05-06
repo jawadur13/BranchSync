@@ -32,7 +32,9 @@ function App() {
 
           {/* Admin Routes */}
           <Route path="admin/users" element={<UserManagement />} />
-          <Route path="admin/org" element={<OrgManagement />} />
+          <Route path="admin/branches" element={<OrgManagement defaultTab="branches" />} />
+          <Route path="admin/departments" element={<OrgManagement defaultTab="departments" />} />
+          <Route path="admin/items" element={<OrgManagement defaultTab="items" />} />
         </Route>
 
         {/* Fallback */}

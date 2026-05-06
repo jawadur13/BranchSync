@@ -20,11 +20,11 @@ interface CategoryRow {
     departmentName: string;
 }
 
-const OrgManagement = () => {
+const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 'departments' | 'items' }) => {
     const [branches, setBranches] = useState<BranchRow[]>([]);
     const [departments, setDepartments] = useState<DeptRow[]>([]);
     const [categories, setCategories] = useState<CategoryRow[]>([]);
-    const [activeTab, setActiveTab] = useState<'branches' | 'departments' | 'items'>('branches');
+    const activeTab = defaultTab;
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -207,26 +207,29 @@ const OrgManagement = () => {
         <div className="admin-container">
             <div className="admin-header">
                 <div>
-                    <h1 className="admin-title">🏛️ Organization Management</h1>
-                    <p className="admin-subtitle">Manage branches and departments</p>
+                    {activeTab === 'branches' && (
+                        <>
+                            <h1 className="admin-title">🏢 Branches</h1>
+                            <p className="admin-subtitle">Manage branch locations and assignments</p>
+                        </>
+                    )}
+                    {activeTab === 'departments' && (
+                        <>
+                            <h1 className="admin-title">🏷️ Departments</h1>
+                            <p className="admin-subtitle">Manage organizational departments</p>
+                        </>
+                    )}
+                    {activeTab === 'items' && (
+                        <>
+                            <h1 className="admin-title">📦 Item Categories</h1>
+                            <p className="admin-subtitle">Manage inventory items and routing rules</p>
+                        </>
+                    )}
                 </div>
             </div>
 
             {error && <div className="admin-alert admin-alert-error">{error}</div>}
             {success && <div className="admin-alert admin-alert-success">{success}</div>}
-
-            {/* Tabs */}
-            <div className="admin-tabs">
-                <button className={`tab-btn ${activeTab === 'branches' ? 'tab-active' : ''}`} onClick={() => setActiveTab('branches')}>
-                    🏢 Branches ({branches.length})
-                </button>
-                <button className={`tab-btn ${activeTab === 'departments' ? 'tab-active' : ''}`} onClick={() => setActiveTab('departments')}>
-                    🏷️ Departments ({departments.length})
-                </button>
-                <button className={`tab-btn ${activeTab === 'items' ? 'tab-active' : ''}`} onClick={() => setActiveTab('items')}>
-                    📦 Items & Depts ({categories.length})
-                </button>
-            </div>
 
             {/* Branches Tab */}
             {activeTab === 'branches' && (
