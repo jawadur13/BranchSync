@@ -405,6 +405,96 @@
     line-height: 1.5;
 }
 
+/* Confirmed / Rejected close buttons */
+.action-confirmed {
+    background: #059669;
+    color: white;
+    flex: 1;
+}
+
+.action-confirmed:hover:not(:disabled) {
+    background: #047857;
+}
+
+.action-rejected {
+    background: #dc2626;
+    color: white;
+    flex: 1;
+}
+
+.action-rejected:hover:not(:disabled) {
+    background: #b91c1c;
+}
+
+/* Close step wrapper */
+.action-close-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-close-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+/* Final note textarea */
+.action-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-neutral-300);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+    color: var(--color-neutral-800);
+    min-height: 80px;
+    resize: vertical;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.action-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary-blue);
+    box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
+}
+
+/* Driver assignment dropdown */
+.action-driver-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-neutral-300);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family-sans);
+    color: var(--color-neutral-700);
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.action-select:focus {
+    outline: none;
+    border-color: var(--color-primary-blue);
+    box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
+}
+
+/* No-action hint */
+.action-no-action {
+    font-size: var(--font-size-xs);
+    color: var(--color-neutral-400);
+    text-align: center;
+    padding: var(--spacing-3) 0;
+    line-height: 1.5;
+}
+
 /* Timeline */
 .timeline-list {
     display: flex;

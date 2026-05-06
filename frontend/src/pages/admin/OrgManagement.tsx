@@ -110,7 +110,7 @@ const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 
             }
             setShowBranchForm(false);
             setEditBranchId(null);
-            setBranchForm({ branchCode: '', branchName: '', branchType: 'BRANCH', district: '', division: '', address: '', phone: '', departmentIds: [] });
+            setBranchForm({ branchCode: '', branchName: '', branchType: 'AD_BRANCH', district: '', division: '', address: '', phone: '', departmentIds: [] });
             fetchAll();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to save branch.');
@@ -245,7 +245,7 @@ const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 
                         <button className="btn-admin-primary" onClick={() => {
                             if (!showBranchForm) {
                                 setEditBranchId(null);
-                                setBranchForm({ branchCode: '', branchName: '', branchType: 'BRANCH', district: '', division: '', address: '', phone: '', departmentIds: [] });
+                                setBranchForm({ branchCode: '', branchName: '', branchType: 'AD_BRANCH', district: '', division: '', address: '', phone: '', departmentIds: [] });
                             }
                             setShowBranchForm(!showBranchForm);
                         }}>
@@ -268,9 +268,8 @@ const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 
                                     <label>Type <span className="required">*</span></label>
                                     <select value={branchForm.branchType} onChange={e => setBranchForm({ ...branchForm, branchType: e.target.value })}>
                                         <option value="HQ">HQ</option>
-                                        <option value="REGIONAL">Regional</option>
-                                        <option value="BRANCH">Branch</option>
-                                        <option value="SUB_BRANCH">Sub-Branch</option>
+                                        <option value="AD_BRANCH">AD_BRANCH</option>
+                                        <option value="SUB_BRANCH">SUB_BRANCH</option>
                                     </select>
                                 </div>
                                 <div className="form-group">

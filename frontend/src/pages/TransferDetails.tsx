@@ -321,11 +321,11 @@ const TransferDetails = () => {
                                 </button>
                             )}
                             {canAcceptAndAssign() && (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                    <select 
-                                        value={selectedDeliveryPersonId} 
+                                <div className="action-driver-group">
+                                    <select
+                                        className="action-select"
+                                        value={selectedDeliveryPersonId}
                                         onChange={(e) => setSelectedDeliveryPersonId(e.target.value)}
-                                        style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
                                     >
                                         <option value="">Select Delivery Driver...</option>
                                         {availableDeliveryPersons.map(p => (
@@ -333,7 +333,7 @@ const TransferDetails = () => {
                                         ))}
                                     </select>
                                     <button className="action-btn action-approve" onClick={handleAcceptAndAssign} disabled={actionLoading || !selectedDeliveryPersonId}>
-                                        Accept & Assign Driver
+                                        Accept &amp; Assign Driver
                                     </button>
                                 </div>
                             )}
@@ -353,25 +353,25 @@ const TransferDetails = () => {
                                 </button>
                             )}
                             {canClose() && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                                    <textarea 
+                                <div className="action-close-group">
+                                    <textarea
+                                        className="action-textarea"
                                         value={finalNote}
                                         onChange={(e) => setFinalNote(e.target.value)}
                                         placeholder="Final remarks (required for rejection)"
-                                        style={{ padding: '10px', borderRadius: '8px', border: '1px solid #ddd', minHeight: '80px' }}
                                     />
-                                    <div style={{ display: 'flex', gap: '10px' }}>
-                                        <button className="action-btn action-confirmed" onClick={() => handleClose(true)} disabled={actionLoading} style={{ flex: 1, background: '#38a169' }}>
+                                    <div className="action-close-buttons">
+                                        <button className="action-btn action-confirmed" onClick={() => handleClose(true)} disabled={actionLoading}>
                                             ✅ Accept
                                         </button>
-                                        <button className="action-btn action-rejected" onClick={() => handleClose(false)} disabled={actionLoading} style={{ flex: 1, background: '#e53e3e' }}>
+                                        <button className="action-btn action-rejected" onClick={() => handleClose(false)} disabled={actionLoading}>
                                             ❌ Reject
                                         </button>
                                     </div>
                                 </div>
                             )}
                             {!canApproveInternal() && !canAcceptAndAssign() && !canRelease() && !canPickup() && !canDeliver() && transfer.status !== 'DELIVERED' && (
-                                <p style={{ fontSize: '13px', color: '#718096', textAlign: 'center' }}>No actions available for your role at this stage.</p>
+                                <p className="action-no-action">No actions available for your role at this stage.</p>
                             )}
                         </div>
                     </div>
