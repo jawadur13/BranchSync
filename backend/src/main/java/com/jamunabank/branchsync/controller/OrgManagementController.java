@@ -2,8 +2,10 @@ package com.jamunabank.branchsync.controller;
 
 import com.jamunabank.branchsync.dto.request.CreateBranchDto;
 import com.jamunabank.branchsync.dto.request.CreateDepartmentDto;
+import com.jamunabank.branchsync.dto.request.CreateItemCategoryDto;
 import com.jamunabank.branchsync.model.entity.Branch;
 import com.jamunabank.branchsync.model.entity.Department;
+import com.jamunabank.branchsync.model.entity.ItemCategory;
 import com.jamunabank.branchsync.repository.RoleRepository;
 import com.jamunabank.branchsync.service.ManagementService;
 import jakarta.validation.Valid;
@@ -134,5 +136,52 @@ public class OrgManagementController {
             @RequestBody Map<String, Long> payload) {
         managementService.mapItemCategoryToDepartment(categoryId, payload.get("departmentId"));
         return ResponseEntity.ok(Map.of("message", "Item mapped successfully"));
+    }
+
+    // ── Item Category CRUD ─────────────────────────────────────────────────────
+
+    @GetMapping("/items")
+    public ResponseEntity<List<Map<String, Object>>> listItemCategories() {
+        List<Map<String, Object>> items = managementService.getAllItemCategories().stream()
+                .map(c -> {
+                    Map<String, Object> map = new java.util.LinkedHashMap<>();
+                    map.put("categoryId", c.getCategoryId());
+                    map.put("categoryName", c.getCategoryName());
+                    map.put("sensitivityLevel", c.getSensitivityLevel());
+                    map.put("description", c.getDescription());
+                    map.put("departmentId", c.getDepartment() != null ? c.getDepartment().getDepartmentId() : null);
+                    map.put("departmentName", c.getDepartment() != null ? c.getDepartment().getDepartmentName() : "Open Access");
+                    return map;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(items);
+    }
+
+    @PostMapping("/items")
+    public ResponseEntity<Map<String, Object>> createItemCategory(@Valid @RequestBody CreateItemCategoryDto dto) {
+        try {
+            ItemCategory saved = managementService.createItemCategory(dto);
+            return new ResponseEntity<>(Map.of(
+                    "message", "Item category created successfully",
+                    "categoryId", saved.getCategoryId()
+            ), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/items/{categoryId}")
+    public ResponseEntity<Map<String, Object>> updateItemCategory(
+            @PathVariable Long categoryId,
+            @Valid @RequestBody CreateItemCategoryDto dto) {
+        try {
+            ItemCategory saved = managementService.updateItemCategory(categoryId, dto);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Item category updated successfully",
+                    "categoryId", saved.getCategoryId()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
     }
 }

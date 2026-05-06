@@ -2,6 +2,7 @@ package com.jamunabank.branchsync.service.impl;
 
 import com.jamunabank.branchsync.dto.request.CreateBranchDto;
 import com.jamunabank.branchsync.dto.request.CreateDepartmentDto;
+import com.jamunabank.branchsync.dto.request.CreateItemCategoryDto;
 import com.jamunabank.branchsync.dto.request.CreateUserDto;
 import com.jamunabank.branchsync.model.entity.*;
 import com.jamunabank.branchsync.model.enums.BranchType;
@@ -203,5 +204,47 @@ public class ManagementServiceImpl implements ManagementService {
         
         category.setDepartment(department);
         itemCategoryRepository.save(category);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ItemCategory> getAllItemCategories() {
+        return itemCategoryRepository.findAll();
+    }
+
+    @Override
+    public ItemCategory createItemCategory(CreateItemCategoryDto dto) {
+        if (itemCategoryRepository.findByCategoryName(dto.getCategoryName()).isPresent()) {
+            throw new RuntimeException("Category name already exists: " + dto.getCategoryName());
+        }
+        ItemCategory category = ItemCategory.builder()
+                .categoryName(dto.getCategoryName().trim())
+                .sensitivityLevel(dto.getSensitivityLevel() != null ? dto.getSensitivityLevel() : "LOW")
+                .description(dto.getDescription())
+                .createdAt(OffsetDateTime.now())
+                .build();
+        if (dto.getDepartmentId() != null) {
+            Department dept = departmentRepository.findById(dto.getDepartmentId())
+                    .orElseThrow(() -> new RuntimeException("Department not found"));
+            category.setDepartment(dept);
+        }
+        return itemCategoryRepository.save(category);
+    }
+
+    @Override
+    public ItemCategory updateItemCategory(Long categoryId, CreateItemCategoryDto dto) {
+        ItemCategory category = itemCategoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Item Category not found: " + categoryId));
+        category.setCategoryName(dto.getCategoryName().trim());
+        category.setSensitivityLevel(dto.getSensitivityLevel() != null ? dto.getSensitivityLevel() : "LOW");
+        category.setDescription(dto.getDescription());
+        if (dto.getDepartmentId() != null) {
+            Department dept = departmentRepository.findById(dto.getDepartmentId())
+                    .orElseThrow(() -> new RuntimeException("Department not found"));
+            category.setDepartment(dept);
+        } else {
+            category.setDepartment(null);
+        }
+        return itemCategoryRepository.save(category);
     }
 }
