@@ -5,6 +5,7 @@ export interface User {
     id: number;
     userId: number;
     employeeId: string;
+    fullName: string;
     role: string;
     branchId: number;
     departmentId: number;

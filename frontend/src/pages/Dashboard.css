@@ -2,6 +2,30 @@
     animation: fadeIn 0.4s ease-out;
 }
 
+.welcome-banner {
+    background: white;
+    padding: var(--spacing-6);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-neutral-200);
+    margin-bottom: var(--spacing-6);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    background-image: linear-gradient(to right, rgba(0, 51, 102, 0.02), transparent);
+}
+
+.welcome-text h2 {
+    font-size: 1.5rem;
+    color: var(--color-neutral-900);
+    margin: 0 0 4px 0;
+}
+
+.welcome-text p {
+    color: var(--color-neutral-500);
+    margin: 0;
+    font-size: var(--font-size-sm);
+}
+
 .dashboard-header {
     display: flex;
     justify-content: space-between;

@@ -54,12 +54,30 @@ const Dashboard = () => {
         return priority === 'CRITICAL' ? 'badge-danger-outline' : 'badge-neutral-outline';
     };
 
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Good Morning';
+        if (hour < 17) return 'Good Afternoon';
+        return 'Good Evening';
+    };
+
     if (loading) {
         return <div className="dashboard-loading">Loading transfers...</div>;
     }
 
     return (
         <div className="dashboard-container">
+            <div className="welcome-banner">
+                <div className="welcome-text">
+                    <h2>{getGreeting()}, {user?.fullName || user?.employeeId}! 👋</h2>
+                    <p>
+                        {user?.role === 'SYSTEM_ADMIN' 
+                            ? "You're logged in as System Administrator. Monitoring all inter-branch activities."
+                            : `Welcome back to the ${user?.role?.replace('ROLE_', '').replace('_', ' ')} dashboard.`}
+                    </p>
+                </div>
+            </div>
+
             <div className="dashboard-header">
                 <div>
                     <h1 className="dashboard-title">Overview</h1>

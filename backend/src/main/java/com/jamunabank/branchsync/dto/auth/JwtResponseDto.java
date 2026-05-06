@@ -12,6 +12,7 @@ public class JwtResponseDto {
     private String type = "Bearer";
     private Long id;
     private String employeeId;
+    private String fullName;
     private String role;
     private Long branchId;
     private Long departmentId;

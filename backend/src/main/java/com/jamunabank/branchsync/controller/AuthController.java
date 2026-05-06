@@ -38,8 +38,12 @@ public class AuthController {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         String role = userDetails.getAuthorities().iterator().next().getAuthority();
+        
+        // Fetch full user to get name
+        User user = userRepository.findByEmployeeId(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         return ResponseEntity.ok(new JwtResponseDto(jwt, "Bearer", userDetails.getUserId(),
-                userDetails.getUsername(), role, userDetails.getBranchId(), userDetails.getDepartmentId()));
+                userDetails.getUsername(), user.getFullName(), role, userDetails.getBranchId(), userDetails.getDepartmentId()));
     }
 }
