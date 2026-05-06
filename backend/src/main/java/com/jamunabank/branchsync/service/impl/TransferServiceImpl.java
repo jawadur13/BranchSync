@@ -216,12 +216,12 @@ public class TransferServiceImpl implements TransferService {
 
         if ("SYSTEM_ADMIN".equals(role)) {
             return transferRequestRepository.findAllByOrderByRequestedAtDesc().stream()
-                    .filter(t -> terminalStatuses.contains(t.getStatus().name()))
+                    .filter(t -> terminalStatuses.contains(t.getStatus()))
                     .toList();
         }
         if ("DELIVERY_PERSON".equals(role)) {
             return transferRequestRepository.findByDeliveryPerson_UserIdOrderByRequestedAtDesc(actorId).stream()
-                    .filter(t -> terminalStatuses.contains(t.getStatus().name()))
+                    .filter(t -> terminalStatuses.contains(t.getStatus()))
                     .toList();
         }
         Long branchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
@@ -229,7 +229,7 @@ public class TransferServiceImpl implements TransferService {
             return transferRequestRepository
                     .findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(branchId, branchId)
                     .stream()
-                    .filter(t -> terminalStatuses.contains(t.getStatus().name()))
+                    .filter(t -> terminalStatuses.contains(t.getStatus()))
                     .toList();
         }
         return List.of();

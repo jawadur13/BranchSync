@@ -20,9 +20,14 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<Map<String, Object>> getMyProfile(Authentication authentication) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
+            return ResponseEntity.status(401).build();
+        }
+
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        
         User user = userRepository.findById(userDetails.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found: " + userDetails.getUserId()));
 
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("userId", user.getUserId());

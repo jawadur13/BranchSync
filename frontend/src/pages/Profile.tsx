@@ -26,7 +26,8 @@ const Profile = () => {
             try {
                 const res = await api.get('/users/profile');
                 setProfile(res.data);
-            } catch (err) {
+            } catch (err: any) {
+                console.error('Profile Fetch Error:', err.response || err);
                 setError('Failed to load profile information.');
             } finally {
                 setLoading(false);
