@@ -45,6 +45,16 @@ public class TransferController {
         );
     }
 
+    @GetMapping("/history")
+    public ResponseEntity<List<TransferResponseDto>> getTransferHistory(Authentication authentication) {
+        Long actorId = getUserId(authentication);
+        return ResponseEntity.ok(
+            transferService.getTransferHistory(actorId).stream()
+                .map(transferMapper::toResponseDto)
+                .collect(Collectors.toList())
+        );
+    }
+
     // Step 1: Initiate
     @PostMapping
     public ResponseEntity<TransferResponseDto> initiateTransfer(

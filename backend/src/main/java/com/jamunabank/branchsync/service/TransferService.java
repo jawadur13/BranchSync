@@ -26,4 +26,7 @@ public interface TransferService {
     TransferRequest closeRequest(Long requestId, Long requesterId, String finalNote, boolean accepted);
 
     List<TransferRequest> getDashboardTransfers(Long actorId);
+
+    // History: all completed/terminated transfers for the user's context
+    List<TransferRequest> getTransferHistory(Long actorId);
 }

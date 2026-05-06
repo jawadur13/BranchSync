@@ -208,6 +208,33 @@ public class TransferServiceImpl implements TransferService {
         return List.of();
     }
 
+    @Override
+    public List<TransferRequest> getTransferHistory(Long actorId) {
+        User actor = getUser(actorId);
+        String role = actor.getRole().getRoleName();
+        List<String> terminalStatuses = List.of("COMPLETED", "REJECTED_ON_RECEIPT", "CANCELLED");
+
+        if ("SYSTEM_ADMIN".equals(role)) {
+            return transferRequestRepository.findAllByOrderByRequestedAtDesc().stream()
+                    .filter(t -> terminalStatuses.contains(t.getStatus().name()))
+                    .toList();
+        }
+        if ("DELIVERY_PERSON".equals(role)) {
+            return transferRequestRepository.findByDeliveryPerson_UserIdOrderByRequestedAtDesc(actorId).stream()
+                    .filter(t -> terminalStatuses.contains(t.getStatus().name()))
+                    .toList();
+        }
+        Long branchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
+        if (branchId != null) {
+            return transferRequestRepository
+                    .findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(branchId, branchId)
+                    .stream()
+                    .filter(t -> terminalStatuses.contains(t.getStatus().name()))
+                    .toList();
+        }
+        return List.of();
+    }
+
     private TransferRequest getRequest(Long id) {
         return transferRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Transfer request not found: " + id));
