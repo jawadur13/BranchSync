@@ -141,6 +141,12 @@
     color: var(--color-primary-blue);
 }
 
+/* Sensitivity Level Badges */
+.sensitivity-low    { background: #d1fae5; color: #065f46; }
+.sensitivity-medium { background: #dbeafe; color: #1e40af; }
+.sensitivity-high   { background: #fef3c7; color: #b45309; }
+.sensitivity-critical { background: #fee2e2; color: #991b1b; }
+
 /* Status Dot */
 .status-dot {
     display: inline-block;

@@ -12,7 +12,12 @@ interface DeptRow {
     departmentId: number; departmentName: string;
 }
 interface CategoryRow {
-    id: number; name: string; departmentId: number | null;
+    categoryId: number;
+    categoryName: string;
+    sensitivityLevel: string;
+    description: string | null;
+    departmentId: number | null;
+    departmentName: string;
 }
 
 const OrgManagement = () => {
@@ -25,20 +30,27 @@ const OrgManagement = () => {
     const [success, setSuccess] = useState('');
     const [showBranchForm, setShowBranchForm] = useState(false);
     const [showDeptForm, setShowDeptForm] = useState(false);
+    const [showItemForm, setShowItemForm] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [viewBranch, setViewBranch] = useState<BranchRow | null>(null);
     const [viewDept, setViewDept] = useState<DeptRow | null>(null);
+    const [viewItem, setViewItem] = useState<CategoryRow | null>(null);
     const [users, setUsers] = useState<any[]>([]);
     const [searchBranch, setSearchBranch] = useState('');
     const [searchDept, setSearchDept] = useState('');
+    const [searchItem, setSearchItem] = useState('');
     const [editBranchId, setEditBranchId] = useState<number | null>(null);
     const [editDeptId, setEditDeptId] = useState<number | null>(null);
+    const [editItemId, setEditItemId] = useState<number | null>(null);
 
     const [branchForm, setBranchForm] = useState({
         branchCode: '', branchName: '', branchType: 'BRANCH',
         district: '', division: '', address: '', phone: '', departmentIds: [] as number[]
     });
     const [deptForm, setDeptForm] = useState({ departmentName: '' });
+    const [itemForm, setItemForm] = useState({
+        categoryName: '', departmentId: '' as string | number, sensitivityLevel: 'LOW', description: ''
+    });
 
     useEffect(() => { fetchAll(); }, []);
 
@@ -49,7 +61,7 @@ const OrgManagement = () => {
                 api.get('/admin/org/branches'),
                 api.get('/admin/org/departments'),
                 api.get('/admin/users'),
-                api.get('/lookup/categories'),
+                api.get('/admin/org/items'),
             ]);
             setBranches(bRes.data);
             setDepartments(dRes.data);
@@ -139,6 +151,43 @@ const OrgManagement = () => {
         } finally { setSubmitting(false); }
     };
 
+    const openEditItem = (c: CategoryRow) => {
+        setEditItemId(c.categoryId);
+        setItemForm({
+            categoryName: c.categoryName,
+            departmentId: c.departmentId || '',
+            sensitivityLevel: c.sensitivityLevel,
+            description: c.description || ''
+        });
+        setShowItemForm(true);
+    };
+
+    const handleItemSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true); setError(''); setSuccess('');
+        try {
+            const payload = {
+                categoryName: itemForm.categoryName,
+                departmentId: itemForm.departmentId !== '' ? Number(itemForm.departmentId) : null,
+                sensitivityLevel: itemForm.sensitivityLevel,
+                description: itemForm.description || null
+            };
+            if (editItemId) {
+                await api.put(`/admin/org/items/${editItemId}`, payload);
+                setSuccess('Item category updated successfully!');
+            } else {
+                await api.post('/admin/org/items', payload);
+                setSuccess('Item category created successfully!');
+            }
+            setShowItemForm(false);
+            setEditItemId(null);
+            setItemForm({ categoryName: '', departmentId: '', sensitivityLevel: 'LOW', description: '' });
+            fetchAll();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Failed to save item category.');
+        } finally { setSubmitting(false); }
+    };
+
     const filteredBranches = branches.filter(b => 
         b.branchName.toLowerCase().includes(searchBranch.toLowerCase()) || 
         b.branchCode.toLowerCase().includes(searchBranch.toLowerCase())
@@ -146,6 +195,10 @@ const OrgManagement = () => {
 
     const filteredDepartments = departments.filter(d => 
         d.departmentName.toLowerCase().includes(searchDept.toLowerCase())
+    );
+
+    const filteredCategories = categories.filter(c =>
+        c.categoryName.toLowerCase().includes(searchItem.toLowerCase())
     );
 
     if (loading) return <div className="admin-loading">Loading organization data...</div>;
@@ -368,37 +421,153 @@ const OrgManagement = () => {
             {/* Items Tab */}
             {activeTab === 'items' && (
                 <div className="admin-card">
-                    <p style={{ marginBottom: '20px', color: '#718096', fontSize: '14px' }}>
-                        Assign which department is responsible for each item category. Regular employees can only request items belonging to their department.
-                    </p>
+                    <div className="card-toolbar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+                        <input
+                            type="text"
+                            placeholder="Search item categories..."
+                            value={searchItem}
+                            onChange={(e) => setSearchItem(e.target.value)}
+                            style={{ flex: 1, maxWidth: '300px', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}
+                        />
+                        <button className="btn-admin-primary" onClick={() => {
+                            if (!showItemForm) {
+                                setEditItemId(null);
+                                setItemForm({ categoryName: '', departmentId: '', sensitivityLevel: 'LOW', description: '' });
+                            }
+                            setShowItemForm(!showItemForm);
+                        }}>
+                            {showItemForm ? '✕ Cancel' : '+ Add Category'}
+                        </button>
+                    </div>
+
+                    {showItemForm && (
+                        <form className="inline-form" onSubmit={handleItemSubmit}>
+                            <div className="modal-grid">
+                                <div className="form-group">
+                                    <label>Category Name <span className="required">*</span></label>
+                                    <input
+                                        value={itemForm.categoryName}
+                                        onChange={e => setItemForm({ ...itemForm, categoryName: e.target.value })}
+                                        placeholder="e.g. Cash Bundle"
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Sensitivity Level</label>
+                                    <select
+                                        value={itemForm.sensitivityLevel}
+                                        onChange={e => setItemForm({ ...itemForm, sensitivityLevel: e.target.value })}
+                                    >
+                                        <option value="LOW">LOW</option>
+                                        <option value="MEDIUM">MEDIUM</option>
+                                        <option value="HIGH">HIGH</option>
+                                        <option value="CRITICAL">CRITICAL</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Responsible Department</label>
+                                    <select
+                                        value={itemForm.departmentId}
+                                        onChange={e => setItemForm({ ...itemForm, departmentId: e.target.value })}
+                                    >
+                                        <option value="">Unassigned (Open Access)</option>
+                                        {departments.map(d => (
+                                            <option key={d.departmentId} value={d.departmentId}>{d.departmentName}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group full-width">
+                                    <label>Description</label>
+                                    <input
+                                        value={itemForm.description}
+                                        onChange={e => setItemForm({ ...itemForm, description: e.target.value })}
+                                        placeholder="Brief description of the item category"
+                                    />
+                                </div>
+                            </div>
+                            <button type="submit" className="btn-admin-primary" disabled={submitting} style={{ marginTop: '12px' }}>
+                                {submitting ? 'Saving...' : (editItemId ? '💾 Save Changes' : '✅ Create Category')}
+                            </button>
+                        </form>
+                    )}
+
                     <table className="admin-table">
                         <thead>
                             <tr>
                                 <th>Category Name</th>
-                                <th>Responsible Department</th>
+                                <th>Sensitivity</th>
+                                <th>Responsible Dept</th>
+                                <th>Description</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {categories.map(cat => (
-                                <tr key={cat.id}>
-                                    <td className="fw-semibold">{cat.name.replace(/_/g, ' ')}</td>
+                            {filteredCategories.map(cat => (
+                                <tr key={cat.categoryId}>
+                                    <td className="fw-semibold">{cat.categoryName}</td>
                                     <td>
-                                        <select 
-                                            value={cat.departmentId || ''} 
-                                            onChange={(e) => handleItemMap(cat.id, e.target.value)}
-                                            style={{ padding: '8px', borderRadius: '6px', border: '1px solid #e2e8f0', width: '250px' }}
-                                            disabled={submitting}
-                                        >
-                                            <option value="">Unassigned (Open Access)</option>
-                                            {departments.map(d => (
-                                                <option key={d.departmentId} value={d.departmentId}>{d.departmentName}</option>
-                                            ))}
-                                        </select>
+                                        <span className={`type-badge sensitivity-${cat.sensitivityLevel?.toLowerCase()}`}>
+                                            {cat.sensitivityLevel}
+                                        </span>
+                                    </td>
+                                    <td>{cat.departmentName}</td>
+                                    <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {cat.description || <span style={{ color: '#a0aec0' }}>—</span>}
+                                    </td>
+                                    <td>
+                                        <div className="action-group" style={{ display: 'flex', gap: '8px' }}>
+                                            <button className="btn-icon" onClick={() => setViewItem(cat)} title="View Details">👁️</button>
+                                            <button className="btn-icon" onClick={() => openEditItem(cat)} title="Edit Category">✏️</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
+                            {filteredCategories.length === 0 && (
+                                <tr><td colSpan={5} className="empty-row">No item categories found.</td></tr>
+                            )}
                         </tbody>
                     </table>
+                </div>
+            )}
+
+            {/* View Item Modal */}
+            {viewItem && (
+                <div className="modal-overlay" onClick={() => setViewItem(null)}>
+                    <div className="modal-content profile-modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>📦 Item Category Details</h2>
+                            <button className="modal-close" onClick={() => setViewItem(null)}>✕</button>
+                        </div>
+                        <div className="profile-details">
+                            <div className="profile-header" style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px', paddingBottom: '15px', borderBottom: '1px solid #e2e8f0' }}>
+                                <div className="profile-avatar" style={{ width: '60px', height: '60px', borderRadius: '8px', backgroundColor: '#fef3c7', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+                                    📦
+                                </div>
+                                <div>
+                                    <h3 style={{ margin: '0 0 5px 0', fontSize: '20px', color: '#1a202c' }}>{viewItem.categoryName}</h3>
+                                    <span className={`type-badge sensitivity-${viewItem.sensitivityLevel?.toLowerCase()}`}>{viewItem.sensitivityLevel}</span>
+                                </div>
+                            </div>
+                            <div className="profile-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Responsible Department</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewItem.departmentName}</span>
+                                </div>
+                                <div className="profile-item">
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Sensitivity Level</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748', fontWeight: 500 }}>{viewItem.sensitivityLevel}</span>
+                                </div>
+                                <div className="profile-item" style={{ gridColumn: '1 / -1' }}>
+                                    <span className="profile-label" style={{ display: 'block', fontSize: '12px', color: '#a0aec0', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Description</span>
+                                    <span className="profile-value" style={{ fontSize: '15px', color: '#2d3748' }}>{viewItem.description || '—'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-actions" style={{ marginTop: '30px', paddingTop: '15px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                            <button className="btn-admin-primary" onClick={() => { setViewItem(null); openEditItem(viewItem); }}>Edit Category</button>
+                            <button className="btn-ghost" onClick={() => setViewItem(null)}>Close</button>
+                        </div>
+                    </div>
                 </div>
             )}
 
