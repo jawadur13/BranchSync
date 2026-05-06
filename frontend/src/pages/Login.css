@@ -4,20 +4,18 @@
     align-items: center;
     height: 100vh;
     width: 100vw;
-    background: linear-gradient(135deg, var(--color-primary-blue), var(--color-neutral-900));
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     font-family: var(--font-family-sans);
 }
 
 .login-card {
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--glass-border);
+    background: white;
+    border: 1px solid var(--color-neutral-200);
     border-radius: var(--radius-xl);
     padding: var(--spacing-8);
     width: 100%;
     max-width: 400px;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     animation: fadeIn 0.5s ease-out;
 }
 
@@ -32,10 +30,9 @@
 }
 
 .login-logo {
-    width: 60px;
-    height: 60px;
+    width: 100px;
+    height: auto;
     margin-bottom: var(--spacing-3);
-    /* Make SVG green/blue depending on your logo, assuming it's responsive or standard */
 }
 
 .login-header h2 {

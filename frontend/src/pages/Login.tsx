@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
+import logo from '../components/Logo/BranchSync_Logo_without-name.png';
 import './Login.css';
 
 const Login: React.FC = () => {
@@ -9,7 +10,7 @@ const Login: React.FC = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    
+
     const { login } = useAuth();
     const navigate = useNavigate();
 
@@ -21,10 +22,10 @@ const Login: React.FC = () => {
         try {
             const response = await api.post('/auth/login', { employeeId, password });
             const { token, id, role, branchId, departmentId } = response.data;
-            
+
             // Save to context
             login(token, { id, userId: id, employeeId: response.data.employeeId, role, branchId, departmentId });
-            
+
             // Redirect to dashboard
             navigate('/');
         } catch (err: any) {
@@ -38,18 +39,18 @@ const Login: React.FC = () => {
         <div className="login-container">
             <div className="login-card">
                 <div className="login-header">
-                    <img src="/favicon.svg" alt="Jamuna Bank Logo" className="login-logo" />
+                    <img src={logo} alt="BranchSync Logo" className="login-logo" />
                     <h2>BranchSync</h2>
-                    <p>Inter-Branch Coordination System</p>
+                    <p>Inter-Branch Coordination System for Jamuna Bank PLC</p>
                 </div>
-                
+
                 {error && <div className="login-error">{error}</div>}
-                
+
                 <form className="login-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label htmlFor="employeeId">Employee ID</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             id="employeeId"
                             value={employeeId}
                             onChange={(e) => setEmployeeId(e.target.value)}
@@ -57,11 +58,11 @@ const Login: React.FC = () => {
                             required
                         />
                     </div>
-                    
+
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
-                        <input 
-                            type="password" 
+                        <input
+                            type="password"
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
@@ -69,7 +70,7 @@ const Login: React.FC = () => {
                             required
                         />
                     </div>
-                    
+
                     <button type="submit" className="login-btn" disabled={loading}>
                         {loading ? 'Authenticating...' : 'Sign In'}
                     </button>
