@@ -20,10 +20,10 @@ const Login: React.FC = () => {
 
         try {
             const response = await api.post('/auth/login', { employeeId, password });
-            const { token, id, role, branchId } = response.data;
+            const { token, id, role, branchId, departmentId } = response.data;
             
             // Save to context
-            login(token, { id, employeeId: response.data.employeeId, role, branchId });
+            login(token, { id, userId: id, employeeId: response.data.employeeId, role, branchId, departmentId });
             
             // Redirect to dashboard
             navigate('/');

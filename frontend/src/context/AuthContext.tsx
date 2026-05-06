@@ -16,6 +16,7 @@ interface AuthContextType {
     login: (token: string, user: User) => void;
     logout: () => void;
     isAuthenticated: boolean;
+    isInitializing: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,6 +24,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
+    const [isInitializing, setIsInitializing] = useState(true);
 
     // Initialize state from local storage on mount
     useEffect(() => {
@@ -32,6 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setToken(storedToken);
             setUser(JSON.parse(storedUser));
         }
+        setIsInitializing(false);
     }, []);
 
     const login = (newToken: string, newUser: User) => {
@@ -42,17 +45,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const logout = () => {
-        setToken(null);
-        setUser(null);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/login'; // Force redirect and clear state
+        setToken(null);
+        setUser(null);
+        window.location.href = '/login'; 
     };
 
     const isAuthenticated = !!token;
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated }}>
+        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated, isInitializing }}>
             {children}
         </AuthContext.Provider>
     );
