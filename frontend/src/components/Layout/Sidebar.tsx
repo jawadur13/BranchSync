@@ -1,6 +1,7 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import logo from '../Logo/BranchSync_Logo.png';
 import './Layout.css';
 
 const Sidebar: React.FC = () => {
@@ -9,10 +10,12 @@ const Sidebar: React.FC = () => {
 
     return (
         <aside className="sidebar">
-            <div className="sidebar-header">
-                <img src="/favicon.svg" alt="Logo" className="sidebar-logo" />
-                <h2>BranchSync</h2>
-            </div>
+            <Link to="/" className="sidebar-header-link">
+                <div className="sidebar-header">
+                    <img src={logo} alt="BranchSync Logo" className="sidebar-logo" />
+                    <h2>BranchSync</h2>
+                </div>
+            </Link>
             <nav className="sidebar-nav">
                 <NavLink to="/" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'} end>
                     <span className="nav-icon">📊</span> Dashboard
