@@ -116,6 +116,12 @@
     gap: var(--spacing-4);
 }
 
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
 .user-info {
     display: flex;
     flex-direction: column;
@@ -123,44 +129,64 @@
 }
 
 .user-name {
+    font-size: var(--font-size-sm);
     font-weight: 600;
     color: var(--color-neutral-800);
-    font-size: var(--font-size-sm);
 }
 
 .user-role {
-    font-size: var(--font-size-xs);
-    color: var(--color-neutral-500);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--color-neutral-400);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: var(--color-primary-green);
+    width: 32px;
+    height: 32px;
+    background: var(--color-primary-blue);
     color: white;
+    border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+}
+
+.profile-link-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--color-neutral-200);
+    border-radius: var(--radius-md);
+    background: white;
+    color: var(--color-neutral-700);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.profile-link-btn:hover {
+    background: var(--color-neutral-50);
+    border-color: var(--color-neutral-300);
+    color: var(--color-neutral-900);
 }
 
 .logout-btn {
-    background: transparent;
-    border: 1px solid var(--color-neutral-300);
-    color: var(--color-neutral-600);
-    padding: var(--spacing-2) var(--spacing-3);
+    padding: 6px 12px;
+    border: none;
     border-radius: var(--radius-md);
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: var(--font-size-sm);
 }
 
 .logout-btn:hover {
-    background-color: #fee2e2;
-    color: var(--color-danger);
-    border-color: #fca5a5;
+    background: #fecaca;
 }
 
 /* Content Area */

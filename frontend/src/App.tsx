@@ -7,6 +7,7 @@ import TransferHistory from './pages/TransferHistory';
 import TransferDetails from './pages/TransferDetails';
 import UserManagement from './pages/admin/UserManagement';
 import OrgManagement from './pages/admin/OrgManagement';
+import Profile from './pages/Profile';
 import Layout from './components/Layout/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -30,6 +31,7 @@ function App() {
           <Route path="transfers/new" element={<NewTransfer />} />
           <Route path="transfers/:id" element={<TransferDetails />} />
           <Route path="transfers/history" element={<TransferHistory />} />
+          <Route path="profile" element={<Profile />} />
 
           {/* Admin Routes */}
           <Route path="admin/users" element={<UserManagement />} />

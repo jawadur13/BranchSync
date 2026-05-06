@@ -18,9 +18,14 @@ const Topbar: React.FC = () => {
                 <div className="user-avatar">
                     {user?.employeeId?.substring(0, 2).toUpperCase() || 'JB'}
                 </div>
-                <button onClick={logout} className="logout-btn">
-                    Logout
-                </button>
+                <div className="topbar-actions">
+                    <button onClick={() => window.location.href = '/profile'} className="profile-link-btn">
+                        My Profile
+                    </button>
+                    <button onClick={logout} className="logout-btn">
+                        Logout
+                    </button>
+                </div>
             </div>
         </header>
     );
