@@ -88,74 +88,74 @@ INSERT INTO item_categories (category_name, department_id, sensitivity_level, de
 
 -- System Admin (no branch, no dept)
 INSERT INTO users (employee_id, full_name, email, phone_number, password_hash, role_id, branch_id, department_id, is_available) VALUES
-('EMP-000', 'System Administrator', 'admin@jamunabank.com', '01700000000', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 1, NULL, NULL, TRUE);
+('EMP-000', 'System Administrator', 'admin@jamunabank.com', '01700000000', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 1, NULL, NULL, TRUE);
 
 -- FEO at HQ (branch 1, no dept)
 INSERT INTO users (employee_id, full_name, email, phone_number, password_hash, role_id, branch_id, department_id, is_available) VALUES
-('EMP-001', 'Ahmed Karim FEO',    'feo1@jamunabank.com',  '01711111111', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 2, 1, NULL, TRUE),
-('EMP-002', 'Nasrin Akter FEO',   'feo2@jamunabank.com',  '01711111122', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 2, 2, NULL, TRUE);
+('EMP-001', 'Ahmed Karim FEO',    'feo1@jamunabank.com',  '01711111111', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 2, 1, NULL, TRUE),
+('EMP-002', 'Nasrin Akter FEO',   'feo2@jamunabank.com',  '01711111122', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 2, 2, NULL, TRUE);
 
 -- Branch Managers (branch managers per branch, no dept)
 INSERT INTO users (employee_id, full_name, email, phone_number, password_hash, role_id, branch_id, department_id, is_available) VALUES
-('EMP-101', 'Rafiqul Islam',      'mgr.hq@jamunabank.com',  '01722221101', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 3, 1, NULL, TRUE),
-('EMP-102', 'Fatema Khanam',      'mgr.dhk@jamunabank.com', '01722221102', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 3, 2, NULL, TRUE),
-('EMP-103', 'Shafiqul Hassan',    'mgr.ctg@jamunabank.com', '01722221103', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 3, 3, NULL, TRUE),
-('EMP-104', 'Momena Begum',       'mgr.syl@jamunabank.com', '01722221104', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 3, 4, NULL, TRUE),
-('EMP-105', 'Jahangir Alam',      'mgr.raj@jamunabank.com', '01722221105', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 3, 5, NULL, TRUE),
-('EMP-106', 'Shahida Parvin',     'mgr.khl@jamunabank.com', '01722221106', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 3, 6, NULL, TRUE);
+('EMP-101', 'Rafiqul Islam',      'mgr.hq@jamunabank.com',  '01722221101', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 3, 1, NULL, TRUE),
+('EMP-102', 'Fatema Khanam',      'mgr.dhk@jamunabank.com', '01722221102', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 3, 2, NULL, TRUE),
+('EMP-103', 'Shafiqul Hassan',    'mgr.ctg@jamunabank.com', '01722221103', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 3, 3, NULL, TRUE),
+('EMP-104', 'Momena Begum',       'mgr.syl@jamunabank.com', '01722221104', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 3, 4, NULL, TRUE),
+('EMP-105', 'Jahangir Alam',      'mgr.raj@jamunabank.com', '01722221105', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 3, 5, NULL, TRUE),
+('EMP-106', 'Shahida Parvin',     'mgr.khl@jamunabank.com', '01722221106', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 3, 6, NULL, TRUE);
 
 -- Operation Managers (one per major branch, no dept)
 INSERT INTO users (employee_id, full_name, email, phone_number, password_hash, role_id, branch_id, department_id, is_available) VALUES
-('EMP-201', 'Mizanur Rahman',     'om.hq@jamunabank.com',   '01733331201', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 4, 1, NULL, TRUE),
-('EMP-202', 'Khaleda Akter',      'om.dhk@jamunabank.com',  '01733331202', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 4, 2, NULL, TRUE),
-('EMP-203', 'Nurul Huda',         'om.ctg@jamunabank.com',  '01733331203', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 4, 3, NULL, TRUE),
-('EMP-204', 'Saleha Begum',       'om.syl@jamunabank.com',  '01733331204', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 4, 4, NULL, TRUE);
+('EMP-201', 'Mizanur Rahman',     'om.hq@jamunabank.com',   '01733331201', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 4, 1, NULL, TRUE),
+('EMP-202', 'Khaleda Akter',      'om.dhk@jamunabank.com',  '01733331202', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 4, 2, NULL, TRUE),
+('EMP-203', 'Nurul Huda',         'om.ctg@jamunabank.com',  '01733331203', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 4, 3, NULL, TRUE),
+('EMP-204', 'Saleha Begum',       'om.syl@jamunabank.com',  '01733331204', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 4, 4, NULL, TRUE);
 
 -- Officers / Dept Staff
 -- HQ Branch (branch 1) - Cash Ops (dept 1), IT (dept 2), General Admin (dept 3)
 INSERT INTO users (employee_id, full_name, email, phone_number, password_hash, role_id, branch_id, department_id, is_available) VALUES
-('EMP-301', 'Karim Hossain',      'karim.hq@jamunabank.com',   '01744440301', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 1, 1, TRUE),
-('EMP-302', 'Rina Begum',         'rina.hq@jamunabank.com',    '01744440302', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 1, 2, TRUE),
-('EMP-303', 'Tanvir Ahmed',       'tanvir.hq@jamunabank.com',  '01744440303', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 1, 3, TRUE),
-('EMP-304', 'Sabrina Islam',      'sabrina.hq@jamunabank.com', '01744440304', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 1, 1, TRUE),
-('EMP-305', 'Rashed Khan',        'rashed.hq@jamunabank.com',  '01744440305', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 1, 4, TRUE);
+('EMP-301', 'Karim Hossain',      'karim.hq@jamunabank.com',   '01744440301', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 1, 1, TRUE),
+('EMP-302', 'Rina Begum',         'rina.hq@jamunabank.com',    '01744440302', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 1, 2, TRUE),
+('EMP-303', 'Tanvir Ahmed',       'tanvir.hq@jamunabank.com',  '01744440303', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 1, 3, TRUE),
+('EMP-304', 'Sabrina Islam',      'sabrina.hq@jamunabank.com', '01744440304', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 1, 1, TRUE),
+('EMP-305', 'Rashed Khan',        'rashed.hq@jamunabank.com',  '01744440305', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 1, 4, TRUE);
 
 -- Dhaka Main Branch (branch 2) - all depts
 INSERT INTO users (employee_id, full_name, email, phone_number, password_hash, role_id, branch_id, department_id, is_available) VALUES
-('EMP-311', 'Monira Akter',       'monira.dhk@jamunabank.com', '01744440311', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 2, 1, TRUE),
-('EMP-312', 'Raihan Uddin',       'raihan.dhk@jamunabank.com', '01744440312', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 2, 2, TRUE),
-('EMP-313', 'Popy Khatun',        'popy.dhk@jamunabank.com',   '01744440313', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 2, 3, TRUE),
-('EMP-314', 'Nasim Hossain',      'nasim.dhk@jamunabank.com',  '01744440314', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 2, 1, TRUE),
-('EMP-315', 'Sharmin Jahan',      'sharmin.dhk@jamunabank.com','01744440315', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 2, 6, TRUE);
+('EMP-311', 'Monira Akter',       'monira.dhk@jamunabank.com', '01744440311', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 2, 1, TRUE),
+('EMP-312', 'Raihan Uddin',       'raihan.dhk@jamunabank.com', '01744440312', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 2, 2, TRUE),
+('EMP-313', 'Popy Khatun',        'popy.dhk@jamunabank.com',   '01744440313', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 2, 3, TRUE),
+('EMP-314', 'Nasim Hossain',      'nasim.dhk@jamunabank.com',  '01744440314', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 2, 1, TRUE),
+('EMP-315', 'Sharmin Jahan',      'sharmin.dhk@jamunabank.com','01744440315', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 2, 6, TRUE);
 
 -- Chittagong Branch (branch 3)
 INSERT INTO users (employee_id, full_name, email, phone_number, password_hash, role_id, branch_id, department_id, is_available) VALUES
-('EMP-321', 'Arif Hossain',       'arif.ctg@jamunabank.com',   '01744440321', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 3, 1, TRUE),
-('EMP-322', 'Sumaiya Khatun',     'sumaiya.ctg@jamunabank.com','01744440322', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 3, 2, TRUE),
-('EMP-323', 'Jahirul Islam',      'jahirul.ctg@jamunabank.com','01744440323', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 3, 3, TRUE);
+('EMP-321', 'Arif Hossain',       'arif.ctg@jamunabank.com',   '01744440321', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 3, 1, TRUE),
+('EMP-322', 'Sumaiya Khatun',     'sumaiya.ctg@jamunabank.com','01744440322', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 3, 2, TRUE),
+('EMP-323', 'Jahirul Islam',      'jahirul.ctg@jamunabank.com','01744440323', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 3, 3, TRUE);
 
 -- Sylhet Branch (branch 4)
 INSERT INTO users (employee_id, full_name, email, phone_number, password_hash, role_id, branch_id, department_id, is_available) VALUES
-('EMP-331', 'Munmun Akter',       'munmun.syl@jamunabank.com', '01744440331', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 4, 1, TRUE),
-('EMP-332', 'Touhid Mia',         'touhid.syl@jamunabank.com', '01744440332', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 4, 3, TRUE);
+('EMP-331', 'Munmun Akter',       'munmun.syl@jamunabank.com', '01744440331', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 4, 1, TRUE),
+('EMP-332', 'Touhid Mia',         'touhid.syl@jamunabank.com', '01744440332', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 4, 3, TRUE);
 
 -- Rajshahi Branch (branch 5)
 INSERT INTO users (employee_id, full_name, email, phone_number, password_hash, role_id, branch_id, department_id, is_available) VALUES
-('EMP-341', 'Maksuda Begum',      'maksuda.raj@jamunabank.com','01744440341', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 5, 1, TRUE),
-('EMP-342', 'Selim Reza',         'selim.raj@jamunabank.com',  '01744440342', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 5, 3, TRUE);
+('EMP-341', 'Maksuda Begum',      'maksuda.raj@jamunabank.com','01744440341', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 5, 1, TRUE),
+('EMP-342', 'Selim Reza',         'selim.raj@jamunabank.com',  '01744440342', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 5, 3, TRUE);
 
 -- Khulna Branch (branch 6)
 INSERT INTO users (employee_id, full_name, email, phone_number, password_hash, role_id, branch_id, department_id, is_available) VALUES
-('EMP-351', 'Hafiza Khanam',      'hafiza.khl@jamunabank.com', '01744440351', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 6, 1, TRUE),
-('EMP-352', 'Nazmul Haq',         'nazmul.khl@jamunabank.com', '01744440352', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 5, 6, 3, TRUE);
+('EMP-351', 'Hafiza Khanam',      'hafiza.khl@jamunabank.com', '01744440351', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 6, 1, TRUE),
+('EMP-352', 'Nazmul Haq',         'nazmul.khl@jamunabank.com', '01744440352', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 6, 3, TRUE);
 
 -- Floating Delivery Persons (no branch, no dept)
 INSERT INTO users (employee_id, full_name, email, phone_number, password_hash, role_id, branch_id, department_id, is_available) VALUES
-('DRV-001', 'Rubel Hossain',      'drv1@jamunabank.com', '01755551001', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 6, NULL, NULL, TRUE),
-('DRV-002', 'Faruk Ahmed',        'drv2@jamunabank.com', '01755551002', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 6, NULL, NULL, TRUE),
-('DRV-003', 'Shamim Mia',         'drv3@jamunabank.com', '01755551003', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 6, NULL, NULL, TRUE),
-('DRV-004', 'Khorshed Alam',      'drv4@jamunabank.com', '01755551004', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 6, NULL, NULL, TRUE),
-('DRV-005', 'Biplob Kumar Das',   'drv5@jamunabank.com', '01755551005', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LPVwc6mDhm', 6, NULL, NULL, FALSE);
+('DRV-001', 'Rubel Hossain',      'drv1@jamunabank.com', '01755551001', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 6, NULL, NULL, TRUE),
+('DRV-002', 'Faruk Ahmed',        'drv2@jamunabank.com', '01755551002', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 6, NULL, NULL, TRUE),
+('DRV-003', 'Shamim Mia',         'drv3@jamunabank.com', '01755551003', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 6, NULL, NULL, TRUE),
+('DRV-004', 'Khorshed Alam',      'drv4@jamunabank.com', '01755551004', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 6, NULL, NULL, TRUE),
+('DRV-005', 'Biplob Kumar Das',   'drv5@jamunabank.com', '01755551005', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 6, NULL, NULL, FALSE);
 -- DRV-005 is intentionally set as BUSY/FALSE to test the availability filter in Step 2
 
 SET FOREIGN_KEY_CHECKS = 1;
