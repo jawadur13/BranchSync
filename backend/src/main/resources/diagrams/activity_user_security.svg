@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="900" viewBox="0 0 800 900">
+  <defs>
+    <style>
+      .page { fill: #ffffff; }
+      .title { font: 700 24px Arial, sans-serif; fill: #12355f; text-anchor: middle; }
+      .activity { fill: #ffffff; stroke: #333333; stroke-width: 1.2; rx: 15; }
+      .activity-text { font: 400 12px Arial, sans-serif; fill: #111111; text-anchor: middle; dominant-baseline: middle; }
+      .decision { fill: #ffffff; stroke: #333333; stroke-width: 1.2; }
+      .decision-text { font: 700 11px Arial, sans-serif; fill: #111111; text-anchor: middle; dominant-baseline: middle; }
+      .flow-line { stroke: #333333; stroke-width: 1.2; fill: none; marker-end: url(#arrow); }
+      .start-node { fill: #111111; }
+      .end-node { fill: #ffffff; stroke: #111111; stroke-width: 2; }
+      .end-inner { fill: #111111; }
+      .label { font: 400 11px Arial, sans-serif; fill: #666666; }
+    </style>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L7,4 z" fill="#333333"/>
+    </marker>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="800" height="900"/>
+  <text class="title" x="400" y="50">Activity Diagram: User Security</text>
+
+  <!-- Start -->
+  <circle class="start-node" cx="400" cy="100" r="10"/>
+  <line class="flow-line" x1="400" y1="110" x2="400" y2="150"/>
+
+  <rect class="activity" x="325" y="150" width="150" height="40"/>
+  <text class="activity-text" x="400" y="170">User Access Portal</text>
+  <line class="flow-line" x1="400" y1="190" x2="400" y2="230"/>
+
+  <rect class="activity" x="310" y="230" width="180" height="40"/>
+  <text class="activity-text" x="400" y="250">Submit Employee ID &amp; PW</text>
+  <line class="flow-line" x1="400" y1="270" x2="400" y2="310"/>
+
+  <rect class="activity" x="325" y="310" width="150" height="40"/>
+  <text class="activity-text" x="400" y="330">Validate Credentials</text>
+  <line class="flow-line" x1="400" y1="350" x2="400" y2="380"/>
+
+  <polygon class="decision" points="400,380 430,410 400,440 370,410"/>
+  <text class="decision-text" x="400" y="410">Valid?</text>
+
+  <line class="flow-line" x1="430" y1="410" x2="550" y2="410"/>
+  <text class="label" x="450" y="405">Yes</text>
+  
+  <line class="flow-line" x1="370" y1="410" x2="250" y2="410"/>
+  <text class="label" x="330" y="405">No</text>
+  <rect class="activity" x="130" y="390" width="120" height="40"/>
+  <text class="activity-text" x="190" y="410">Display Error</text>
+  <path class="flow-line" d="M190 390 L190 250 L310 250"/>
+
+  <rect class="activity" x="550" y="390" width="150" height="40"/>
+  <text class="activity-text" x="625" y="410">Generate JWT Token</text>
+  <line class="flow-line" x1="625" y1="430" x2="625" y2="480"/>
+
+  <rect class="activity" x="550" y="480" width="150" height="40"/>
+  <text class="activity-text" x="625" y="500">Authorize Session</text>
+  <line class="flow-line" x1="550" y1="500" x2="400" y2="500" transform="translate(0, 50)"/>
+
+  <rect class="activity" x="310" y="530" width="180" height="40"/>
+  <text class="activity-text" x="400" y="550">Redirect to Dashboard</text>
+  <line class="flow-line" x1="400" y1="570" x2="400" y2="610"/>
+
+  <rect class="activity" x="310" y="610" width="180" height="40"/>
+  <text class="activity-text" x="400" y="630">Load Role-Based Menu</text>
+  <line class="flow-line" x1="400" y1="650" x2="400" y2="700"/>
+
+  <!-- End -->
+  <g transform="translate(400, 720)">
+    <circle class="end-node" cx="0" cy="0" r="15"/>
+    <circle class="end-inner" cx="0" cy="0" r="8"/>
+  </g>
+
+</svg>
