@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <defs>
+    <style>
+      .page { fill: #ffffff; }
+      .title { font: 700 18px Arial, sans-serif; fill: #12355f; text-anchor: middle; }
+      .section { font: 700 13px Arial, sans-serif; fill: #2f5f9f; }
+      .entity { fill: #ffffff; stroke: #2f5f9f; stroke-width: 2.2; }
+      .entity-text { font: 700 12px Arial, sans-serif; fill: #101820; text-anchor: middle; dominant-baseline: middle; }
+      .attr { fill: #dfeecb; stroke: #2f5f9f; stroke-width: 1.5; }
+      .attr-text { font: 700 10px Arial, sans-serif; fill: #101820; text-anchor: middle; dominant-baseline: middle; }
+      .rel { fill: #ffffff; stroke: #2f5f9f; stroke-width: 1.8; }
+      .rel-text { font: 600 9px Arial, sans-serif; fill: #101820; text-anchor: middle; dominant-baseline: middle; }
+      .line { stroke: #3f78bf; stroke-width: 1.7; fill: none; }
+      .thin { stroke: #8caed7; stroke-width: 1.1; fill: none; }
+    </style>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1600" height="1000"/>
+  <rect x="10" y="10" width="1580" height="980" fill="none" stroke="#dce8f7"/>
+  <text class="title" x="800" y="36">BranchSync ERD</text>
+
+  <!-- ===================================================== -->
+  <!-- Upper Attributes -->
+  <!-- ===================================================== -->
+  <text class="section" x="40" y="78">Identity, Users &amp; Workflow</text>
+
+  <!-- roles attrs -->
+  <rect class="attr" x="25" y="110" width="88" height="28"/><text class="attr-text" x="69" y="124">role_id PK</text>
+  <rect class="attr" x="120" y="110" width="100" height="28"/><text class="attr-text" x="170" y="124">role_name UK</text>
+
+  <!-- users attrs -->
+  <rect class="attr" x="240" y="80" width="88" height="28"/><text class="attr-text" x="284" y="94">user_id PK</text>
+  <rect class="attr" x="332" y="80" width="112" height="28"/><text class="attr-text" x="388" y="94">employee_id UK</text>
+  <rect class="attr" x="448" y="80" width="90" height="28"/><text class="attr-text" x="493" y="94">full_name</text>
+  <rect class="attr" x="542" y="80" width="78" height="28"/><text class="attr-text" x="581" y="94">email UK</text>
+  <rect class="attr" x="624" y="80" width="108" height="28"/><text class="attr-text" x="678" y="94">phone_number</text>
+  <rect class="attr" x="240" y="116" width="112" height="28"/><text class="attr-text" x="296" y="130">password_hash</text>
+  <rect class="attr" x="356" y="116" width="82" height="28"/><text class="attr-text" x="397" y="130">role_id FK</text>
+  <rect class="attr" x="442" y="116" width="92" height="28"/><text class="attr-text" x="488" y="130">branch_id FK</text>
+  <rect class="attr" x="538" y="116" width="118" height="28"/><text class="attr-text" x="597" y="130">department_id FK</text>
+  <rect class="attr" x="660" y="116" width="98" height="28"/><text class="attr-text" x="709" y="130">is_available</text>
+  <rect class="attr" x="300" y="152" width="78" height="28"/><text class="attr-text" x="339" y="166">is_active</text>
+  <rect class="attr" x="382" y="152" width="84" height="28"/><text class="attr-text" x="424" y="166">created_at</text>
+  <rect class="attr" x="470" y="152" width="84" height="28"/><text class="attr-text" x="512" y="166">updated_at</text>
+  <rect class="attr" x="558" y="152" width="102" height="28"/><text class="attr-text" x="609" y="166">last_login_at</text>
+
+  <!-- transfer attrs -->
+  <rect class="attr" x="755" y="72" width="98" height="28"/><text class="attr-text" x="804" y="86">request_id PK</text>
+  <rect class="attr" x="857" y="72" width="116" height="28"/><text class="attr-text" x="915" y="86">request_code UK</text>
+  <rect class="attr" x="977" y="72" width="58" height="28"/><text class="attr-text" x="1006" y="86">title</text>
+  <rect class="attr" x="1039" y="72" width="90" height="28"/><text class="attr-text" x="1084" y="86">description</text>
+  <rect class="attr" x="1133" y="72" width="104" height="28"/><text class="attr-text" x="1185" y="86">category_id FK</text>
+  <rect class="attr" x="730" y="108" width="70" height="28"/><text class="attr-text" x="765" y="122">priority</text>
+  <rect class="attr" x="804" y="108" width="62" height="28"/><text class="attr-text" x="835" y="122">status</text>
+  <rect class="attr" x="870" y="108" width="128" height="28"/><text class="attr-text" x="934" y="122">origin_branch_id FK</text>
+  <rect class="attr" x="1002" y="108" width="152" height="28"/><text class="attr-text" x="1078" y="122">origin_department_id FK</text>
+  <rect class="attr" x="1158" y="108" width="126" height="28"/><text class="attr-text" x="1221" y="122">initiated_by_id FK</text>
+  <rect class="attr" x="710" y="144" width="152" height="28"/><text class="attr-text" x="786" y="158">internal_approver_id FK</text>
+  <rect class="attr" x="866" y="144" width="156" height="28"/><text class="attr-text" x="944" y="158">destination_branch_id FK</text>
+  <rect class="attr" x="1026" y="144" width="178" height="28"/><text class="attr-text" x="1115" y="158">destination_department_id FK</text>
+  <rect class="attr" x="1208" y="144" width="128" height="28"/><text class="attr-text" x="1272" y="158">dept_acceptor_id FK</text>
+  <rect class="attr" x="755" y="180" width="136" height="28"/><text class="attr-text" x="823" y="194">final_releaser_id FK</text>
+  <rect class="attr" x="895" y="180" width="142" height="28"/><text class="attr-text" x="966" y="194">delivery_person_id FK</text>
+  <rect class="attr" x="1041" y="180" width="92" height="28"/><text class="attr-text" x="1087" y="194">picked_up_at</text>
+  <rect class="attr" x="1137" y="180" width="88" height="28"/><text class="attr-text" x="1181" y="194">delivered_at</text>
+  <rect class="attr" x="1229" y="180" width="78" height="28"/><text class="attr-text" x="1268" y="194">final_note</text>
+  <rect class="attr" x="878" y="216" width="76" height="28"/><text class="attr-text" x="916" y="230">closed_at</text>
+  <rect class="attr" x="958" y="216" width="94" height="28"/><text class="attr-text" x="1005" y="230">requested_at</text>
+
+  <!-- audit attrs -->
+  <rect class="attr" x="1350" y="98" width="90" height="28"/><text class="attr-text" x="1395" y="112">audit_id PK</text>
+  <rect class="attr" x="1444" y="98" width="104" height="28"/><text class="attr-text" x="1496" y="112">request_id FK</text>
+  <rect class="attr" x="1328" y="134" width="88" height="28"/><text class="attr-text" x="1372" y="148">actor_id FK</text>
+  <rect class="attr" x="1420" y="134" width="64" height="28"/><text class="attr-text" x="1452" y="148">action</text>
+  <rect class="attr" x="1488" y="134" width="90" height="28"/><text class="attr-text" x="1533" y="148">from_status</text>
+  <rect class="attr" x="1345" y="170" width="82" height="28"/><text class="attr-text" x="1386" y="184">to_status</text>
+  <rect class="attr" x="1431" y="170" width="72" height="28"/><text class="attr-text" x="1467" y="184">remarks</text>
+  <rect class="attr" x="1507" y="170" width="86" height="28"/><text class="attr-text" x="1550" y="184">ip_address</text>
+  <rect class="attr" x="1415" y="206" width="78" height="28"/><text class="attr-text" x="1454" y="220">acted_at</text>
+
+  <!-- ===================================================== -->
+  <!-- Upper Entity Row -->
+  <!-- ===================================================== -->
+  <rect class="entity" x="62" y="290" width="110" height="42"/><text class="entity-text" x="117" y="311">roles</text>
+  <rect class="entity" x="380" y="290" width="120" height="42"/><text class="entity-text" x="440" y="311">users</text>
+  <rect class="entity" x="870" y="290" width="180" height="42"/><text class="entity-text" x="960" y="311">transfer_requests</text>
+  <rect class="entity" x="1400" y="290" width="125" height="42"/><text class="entity-text" x="1462.5" y="311">audit_logs</text>
+
+  <!-- Attribute connectors upward -->
+  <path class="thin" d="M117 290 L69 138 M117 290 L170 138"/>
+  <path class="thin" d="M440 290 L284 108 M440 290 L388 108 M440 290 L493 108 M440 290 L581 108 M440 290 L678 108 M440 290 L296 144 M440 290 L397 144 M440 290 L488 144 M440 290 L597 144 M440 290 L709 144 M440 290 L339 180 M440 290 L424 180 M440 290 L512 180 M440 290 L609 180"/>
+  <path class="thin" d="M960 290 L804 100 M960 290 L915 100 M960 290 L1006 100 M960 290 L1084 100 M960 290 L1185 100 M960 290 L765 136 M960 290 L835 136 M960 290 L934 136 M960 290 L1078 136 M960 290 L1221 136 M960 290 L786 172 M960 290 L944 172 M960 290 L1115 172 M960 290 L1272 172 M960 290 L823 208 M960 290 L966 208 M960 290 L1087 208 M960 290 L1181 208 M960 290 L1268 208 M960 290 L916 244 M960 290 L1005 244"/>
+  <path class="thin" d="M1463 290 L1395 126 M1463 290 L1496 126 M1463 290 L1372 162 M1463 290 L1452 162 M1463 290 L1533 162 M1463 290 L1386 198 M1463 290 L1467 198 M1463 290 L1550 198 M1463 290 L1454 234"/>
+
+  <!-- ===================================================== -->
+  <!-- Middle Relationships -->
+  <!-- ===================================================== -->
+  <polygon class="rel" points="260,311 280,291 300,311 280,331"/><text class="rel-text" x="280" y="311">assigned_to</text>
+  <path class="line" d="M172 311 L260 311 M300 311 L380 311"/>
+
+  <polygon class="rel" points="650,311 670,291 690,311 670,331"/><text class="rel-text" x="670" y="311">initiates / acts</text>
+  <path class="line" d="M500 311 L650 311 M690 311 L870 311"/>
+
+  <polygon class="rel" points="1225,311 1245,291 1265,311 1245,331"/><text class="rel-text" x="1245" y="311">audited_by</text>
+  <path class="line" d="M1050 311 L1225 311 M1265 311 L1400 311"/>
+
+  <polygon class="rel" points="1285,380 1305,360 1325,380 1305,400"/><text class="rel-text" x="1305" y="380">actor</text>
+  <path class="line" d="M500 332 C750 470 1070 470 1285 380 M1325 380 C1370 365 1420 345 1463 332"/>
+
+  <polygon class="rel" points="225,490 245,470 265,490 245,510"/><text class="rel-text" x="245" y="490">home_branch</text>
+  <polygon class="rel" points="490,490 510,470 530,490 510,510"/><text class="rel-text" x="510" y="490">home_dept</text>
+  <polygon class="rel" points="725,490 745,470 765,490 745,510"/><text class="rel-text" x="745" y="490">origin / destination</text>
+  <polygon class="rel" points="945,490 965,470 985,490 965,510"/><text class="rel-text" x="965" y="490">origin / destination</text>
+  <polygon class="rel" points="1130,490 1150,470 1170,490 1150,510"/><text class="rel-text" x="1150" y="490">classifies</text>
+
+  <!-- ===================================================== -->
+  <!-- Lower Entity Row -->
+  <!-- ===================================================== -->
+  <text class="section" x="40" y="560">Organization &amp; Item Master Data</text>
+  <rect class="entity" x="75" y="600" width="125" height="42"/><text class="entity-text" x="137.5" y="621">branches</text>
+  <rect class="entity" x="380" y="600" width="175" height="42"/><text class="entity-text" x="467.5" y="621">branch_departments</text>
+  <rect class="entity" x="770" y="600" width="135" height="42"/><text class="entity-text" x="837.5" y="621">departments</text>
+  <rect class="entity" x="1160" y="600" width="150" height="42"/><text class="entity-text" x="1235" y="621">item_categories</text>
+
+  <polygon class="rel" points="285,621 305,601 325,621 305,641"/><text class="rel-text" x="305" y="621">has</text>
+  <path class="line" d="M200 621 L285 621 M325 621 L380 621"/>
+
+  <polygon class="rel" points="625,621 645,601 665,621 645,641"/><text class="rel-text" x="645" y="621">assigned_to</text>
+  <path class="line" d="M555 621 L625 621 M665 621 L770 621"/>
+
+  <polygon class="rel" points="1000,621 1020,601 1040,621 1020,641"/><text class="rel-text" x="1020" y="621">responsible_for</text>
+  <path class="line" d="M905 621 L1000 621 M1040 621 L1160 621"/>
+
+  <!-- Cross-row relationship lines -->
+  <path class="line" d="M137 600 C145 555 180 515 225 490 M265 490 C335 430 395 360 440 332"/>
+  <path class="line" d="M838 600 C735 555 610 520 530 490 M490 490 C465 430 450 365 440 332"/>
+  <path class="line" d="M137 600 C315 525 560 500 725 490 M765 490 C835 430 920 360 960 332"/>
+  <path class="line" d="M838 600 C860 548 915 508 945 490 M985 490 C975 430 965 365 960 332"/>
+  <path class="line" d="M1235 600 C1210 550 1180 520 1170 490 M1130 490 C1050 430 990 360 960 332"/>
+
+  <!-- ===================================================== -->
+  <!-- Lower Attributes -->
+  <!-- ===================================================== -->
+  <rect class="attr" x="20" y="690" width="100" height="28"/><text class="attr-text" x="70" y="704">branch_id PK</text>
+  <rect class="attr" x="124" y="690" width="118" height="28"/><text class="attr-text" x="183" y="704">branch_code UK</text>
+  <rect class="attr" x="246" y="690" width="110" height="28"/><text class="attr-text" x="301" y="704">branch_name</text>
+  <rect class="attr" x="32" y="728" width="100" height="28"/><text class="attr-text" x="82" y="742">branch_type</text>
+  <rect class="attr" x="136" y="728" width="72" height="28"/><text class="attr-text" x="172" y="742">district</text>
+  <rect class="attr" x="212" y="728" width="72" height="28"/><text class="attr-text" x="248" y="742">division</text>
+  <rect class="attr" x="288" y="728" width="76" height="28"/><text class="attr-text" x="326" y="742">address</text>
+  <rect class="attr" x="45" y="766" width="62" height="28"/><text class="attr-text" x="76" y="780">phone</text>
+  <rect class="attr" x="111" y="766" width="60" height="28"/><text class="attr-text" x="141" y="780">email</text>
+  <rect class="attr" x="175" y="766" width="78" height="28"/><text class="attr-text" x="214" y="780">is_active</text>
+  <rect class="attr" x="257" y="766" width="86" height="28"/><text class="attr-text" x="300" y="780">created_at</text>
+  <path class="thin" d="M138 642 L70 690 M138 642 L183 690 M138 642 L301 690 M138 642 L82 728 M138 642 L172 728 M138 642 L248 728 M138 642 L326 728 M138 642 L76 766 M138 642 L141 766 M138 642 L214 766 M138 642 L300 766"/>
+
+  <rect class="attr" x="370" y="690" width="122" height="28"/><text class="attr-text" x="431" y="704">branch_id PK, FK</text>
+  <rect class="attr" x="496" y="690" width="152" height="28"/><text class="attr-text" x="572" y="704">department_id PK, FK</text>
+  <path class="thin" d="M468 642 L431 690 M468 642 L572 690"/>
+
+  <rect class="attr" x="710" y="690" width="120" height="28"/><text class="attr-text" x="770" y="704">department_id PK</text>
+  <rect class="attr" x="834" y="690" width="145" height="28"/><text class="attr-text" x="906.5" y="704">department_name UK</text>
+  <rect class="attr" x="780" y="728" width="88" height="28"/><text class="attr-text" x="824" y="742">created_at</text>
+  <path class="thin" d="M838 642 L770 690 M838 642 L907 690 M838 642 L824 728"/>
+
+  <rect class="attr" x="1050" y="690" width="108" height="28"/><text class="attr-text" x="1104" y="704">category_id PK</text>
+  <rect class="attr" x="1162" y="690" width="134" height="28"/><text class="attr-text" x="1229" y="704">category_name UK</text>
+  <rect class="attr" x="1300" y="690" width="118" height="28"/><text class="attr-text" x="1359" y="704">department_id FK</text>
+  <rect class="attr" x="1080" y="728" width="130" height="28"/><text class="attr-text" x="1145" y="742">sensitivity_level</text>
+  <rect class="attr" x="1214" y="728" width="88" height="28"/><text class="attr-text" x="1258" y="742">description</text>
+  <rect class="attr" x="1306" y="728" width="86" height="28"/><text class="attr-text" x="1349" y="742">created_at</text>
+  <path class="thin" d="M1235 642 L1104 690 M1235 642 L1229 690 M1235 642 L1359 690 M1235 642 L1145 728 M1235 642 L1258 728 M1235 642 L1349 728"/>
+</svg>
