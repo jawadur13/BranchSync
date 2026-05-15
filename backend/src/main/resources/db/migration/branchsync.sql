@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 15, 2026 at 08:57 PM
+-- Generation Time: May 15, 2026 at 09:57 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -144,20 +144,22 @@ INSERT INTO `branch_departments` (`branch_id`, `department_id`) VALUES
 CREATE TABLE `departments` (
   `department_id` bigint(20) NOT NULL,
   `department_name` varchar(255) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `is_hq_only` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `departments`
 --
 
-INSERT INTO `departments` (`department_id`, `department_name`, `created_at`) VALUES
-(1, 'Cash Operations', '2026-05-04 16:32:09'),
-(2, 'IT Department', '2026-05-04 16:32:09'),
-(3, 'General Administration', '2026-05-04 16:32:09'),
-(4, 'Security & Compliance', '2026-05-04 16:32:09'),
-(5, 'Human Resources', '2026-05-04 16:32:09'),
-(6, 'Customer Service', '2026-05-04 16:32:09');
+INSERT INTO `departments` (`department_id`, `department_name`, `created_at`, `is_hq_only`) VALUES
+(1, 'Cash Operations', '2026-05-04 16:32:09', 0),
+(2, 'IT Department', '2026-05-04 16:32:09', 0),
+(3, 'General Administration', '2026-05-04 16:32:09', 0),
+(4, 'Security & Compliance', '2026-05-04 16:32:09', 0),
+(5, 'Human Resources', '2026-05-04 16:32:09', 0),
+(6, 'Customer Service', '2026-05-04 16:32:09', 0),
+(7, 'Central Logistics Control', '2026-05-15 19:56:20', 1);
 
 -- --------------------------------------------------------
 
@@ -211,6 +213,7 @@ INSERT INTO `roles` (`role_id`, `role_name`) VALUES
 (3, 'BRANCH_MANAGER'),
 (6, 'DELIVERY_PERSON'),
 (2, 'FIRST_EXECUTIVE_OFFICER'),
+(7, 'HQ_LOGISTICS_OFFICER'),
 (5, 'OFFICER'),
 (4, 'OPERATION_MANAGER'),
 (1, 'SYSTEM_ADMIN');
@@ -242,16 +245,19 @@ CREATE TABLE `transfer_requests` (
   `delivered_at` timestamp NULL DEFAULT NULL,
   `final_note` text DEFAULT NULL COMMENT 'Required when status = REJECTED_ON_RECEIPT',
   `closed_at` timestamp NULL DEFAULT NULL,
-  `requested_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `requested_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `hq_approver_id` bigint(20) DEFAULT NULL,
+  `hq_approved_at` datetime(6) DEFAULT NULL,
+  `hq_rejection_note` longtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `transfer_requests`
 --
 
-INSERT INTO `transfer_requests` (`request_id`, `request_code`, `title`, `description`, `category_id`, `priority`, `status`, `origin_branch_id`, `origin_department_id`, `initiated_by_id`, `internal_approver_id`, `destination_branch_id`, `destination_department_id`, `dept_acceptor_id`, `final_releaser_id`, `delivery_person_id`, `picked_up_at`, `delivered_at`, `final_note`, `closed_at`, `requested_at`) VALUES
-(1, 'REQ-2026-0001', 'Cash require due to shortage', 'Cash required due to shortage of cash balance at our branch. Kindly arrange cash support as soon as possible.\n', 1, 'URGENT', 'COMPLETED', 2, 1, 19, 5, 3, 1, 24, 12, 33, '2026-05-06 11:34:58', '2026-05-06 11:35:23', '', '2026-05-06 11:37:51', '2026-05-06 10:56:17'),
-(2, 'REQ-2026-0002', 'Requestion for copy of account opening form ', 'Need a copy of the account opening form of Customer name: Tasnim Jahan (AC#1101008003478)', 8, 'NORMAL', 'COMPLETED', 4, 3, 28, 7, 5, 3, 30, 8, 33, '2026-05-10 12:02:21', '2026-05-10 12:03:18', '', '2026-05-10 12:05:30', '2026-05-10 11:48:11');
+INSERT INTO `transfer_requests` (`request_id`, `request_code`, `title`, `description`, `category_id`, `priority`, `status`, `origin_branch_id`, `origin_department_id`, `initiated_by_id`, `internal_approver_id`, `destination_branch_id`, `destination_department_id`, `dept_acceptor_id`, `final_releaser_id`, `delivery_person_id`, `picked_up_at`, `delivered_at`, `final_note`, `closed_at`, `requested_at`, `hq_approver_id`, `hq_approved_at`, `hq_rejection_note`) VALUES
+(1, 'REQ-2026-0001', 'Cash require due to shortage', 'Cash required due to shortage of cash balance at our branch. Kindly arrange cash support as soon as possible.\n', 1, 'URGENT', 'COMPLETED', 2, 1, 19, 5, 3, 1, 24, 12, 33, '2026-05-06 11:34:58', '2026-05-06 11:35:23', '', '2026-05-06 11:37:51', '2026-05-06 10:56:17', NULL, NULL, NULL),
+(2, 'REQ-2026-0002', 'Requestion for copy of account opening form ', 'Need a copy of the account opening form of Customer name: Tasnim Jahan (AC#1101008003478)', 8, 'NORMAL', 'COMPLETED', 4, 3, 28, 7, 5, 3, 30, 8, 33, '2026-05-10 12:02:21', '2026-05-10 12:03:18', '', '2026-05-10 12:05:30', '2026-05-10 11:48:11', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -382,7 +388,8 @@ ALTER TABLE `transfer_requests`
   ADD KEY `internal_approver_id` (`internal_approver_id`),
   ADD KEY `dept_acceptor_id` (`dept_acceptor_id`),
   ADD KEY `final_releaser_id` (`final_releaser_id`),
-  ADD KEY `delivery_person_id` (`delivery_person_id`);
+  ADD KEY `delivery_person_id` (`delivery_person_id`),
+  ADD KEY `fk_tr_hq_approver` (`hq_approver_id`);
 
 --
 -- Indexes for table `users`
@@ -415,7 +422,7 @@ ALTER TABLE `branches`
 -- AUTO_INCREMENT for table `departments`
 --
 ALTER TABLE `departments`
-  MODIFY `department_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `department_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `item_categories`
@@ -427,7 +434,7 @@ ALTER TABLE `item_categories`
 -- AUTO_INCREMENT for table `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `role_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `role_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `transfer_requests`
@@ -469,6 +476,7 @@ ALTER TABLE `item_categories`
 -- Constraints for table `transfer_requests`
 --
 ALTER TABLE `transfer_requests`
+  ADD CONSTRAINT `fk_tr_hq_approver` FOREIGN KEY (`hq_approver_id`) REFERENCES `users` (`user_id`),
   ADD CONSTRAINT `transfer_requests_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `item_categories` (`category_id`),
   ADD CONSTRAINT `transfer_requests_ibfk_10` FOREIGN KEY (`delivery_person_id`) REFERENCES `users` (`user_id`),
   ADD CONSTRAINT `transfer_requests_ibfk_2` FOREIGN KEY (`origin_branch_id`) REFERENCES `branches` (`branch_id`),

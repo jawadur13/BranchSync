@@ -133,6 +133,14 @@ public class ManagementServiceImpl implements ManagementService {
                     .build();
             if (dto.getDepartmentIds() != null && !dto.getDepartmentIds().isEmpty()) {
                 List<Department> departments = departmentRepository.findAllById(dto.getDepartmentIds());
+                // Enforce: HQ-only departments can only be assigned to HQ branches
+                boolean targetIsHq = BranchType.HQ.name().equalsIgnoreCase(dto.getBranchType().trim());
+                for (Department dept : departments) {
+                    if (Boolean.TRUE.equals(dept.getIsHqOnly()) && !targetIsHq) {
+                        throw new RuntimeException(
+                            "Department '" + dept.getDepartmentName() + "' is restricted to HQ branches only.");
+                    }
+                }
                 branch.setDepartments(new java.util.HashSet<>(departments));
             }
             return branchRepository.save(branch);
@@ -153,6 +161,7 @@ public class ManagementServiceImpl implements ManagementService {
     public Department createDepartment(CreateDepartmentDto dto) {
         Department department = Department.builder()
                 .departmentName(dto.getDepartmentName())
+                .isHqOnly(Boolean.TRUE.equals(dto.getIsHqOnly()))
                 .createdAt(OffsetDateTime.now())
                 .build();
         return departmentRepository.save(department);
@@ -173,6 +182,14 @@ public class ManagementServiceImpl implements ManagementService {
             branch.setPhone(dto.getPhone() != null ? dto.getPhone().trim() : null);
             if (dto.getDepartmentIds() != null) {
                 List<Department> departments = departmentRepository.findAllById(dto.getDepartmentIds());
+                // Enforce: HQ-only departments can only be assigned to HQ branches
+                boolean targetIsHq = BranchType.HQ.name().equalsIgnoreCase(dto.getBranchType().trim());
+                for (Department dept : departments) {
+                    if (Boolean.TRUE.equals(dept.getIsHqOnly()) && !targetIsHq) {
+                        throw new RuntimeException(
+                            "Department '" + dept.getDepartmentName() + "' is restricted to HQ branches only.");
+                    }
+                }
                 branch.setDepartments(new java.util.HashSet<>(departments));
             }
             
@@ -188,6 +205,9 @@ public class ManagementServiceImpl implements ManagementService {
                 .orElseThrow(() -> new RuntimeException("Department not found"));
         
         department.setDepartmentName(dto.getDepartmentName());
+        if (dto.getIsHqOnly() != null) {
+            department.setIsHqOnly(dto.getIsHqOnly());
+        }
         return departmentRepository.save(department);
     }
 

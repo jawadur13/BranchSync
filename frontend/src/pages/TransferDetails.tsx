@@ -34,6 +34,11 @@ interface TransferDetail {
     deliveryPersonId: number | null;
     deliveryPersonFullName: string | null;
     finalNote: string | null;
+    // HQ Approval
+    hqApproverId: number | null;
+    hqApproverFullName: string | null;
+    hqApprovedAt: string | null;
+    hqRejectionNote: string | null;
 }
 
 const TransferDetails = () => {
@@ -49,6 +54,7 @@ const TransferDetails = () => {
     const [availableDeliveryPersons, setAvailableDeliveryPersons] = useState<any[]>([]);
     const [selectedDeliveryPersonId, setSelectedDeliveryPersonId] = useState('');
     const [finalNote, setFinalNote] = useState('');
+    const [hqRejectionNote, setHqRejectionNote] = useState('');
 
     useEffect(() => {
         fetchTransferDetails();
@@ -172,6 +178,33 @@ const TransferDetails = () => {
         }
     };
 
+    // HQ Step: Verify or Reject
+    const handleHqVerify = async (approved: boolean) => {
+        if (!approved && !hqRejectionNote.trim()) {
+            setError('A rejection note is required when rejecting a transfer.');
+            return;
+        }
+        const actionText = approved ? 'forward to destination branch' : 'reject';
+        if (!confirm(`Are you sure you want to ${actionText} this transfer?`)) return;
+
+        setActionLoading(true); setActionSuccess(''); setError('');
+        try {
+            await api.post(`/transfers/${id}/hq-verify`, {
+                approved,
+                rejectionNote: hqRejectionNote || null,
+            });
+            setActionSuccess(approved
+                ? '✅ Transfer verified and forwarded to destination branch!'
+                : '❌ Transfer rejected. The requester has been notified.'
+            );
+            fetchTransferDetails();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Action failed.');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const formatDate = (dateStr: string | null) => {
         if (!dateStr) return '—';
         return new Date(dateStr).toLocaleString('en-US', {
@@ -182,24 +215,31 @@ const TransferDetails = () => {
 
     const getStatusConfig = (status: string) => {
         const configs: Record<string, { class: string; icon: string }> = {
-            'PENDING_INTERNAL': { class: 'status-pending', icon: '⏳' },
-            'PENDING_ASSIGNMENT': { class: 'status-pending', icon: '🤝' },
-            'PENDING_FINAL_RELEASE': { class: 'status-approved', icon: '🚦' },
-            'READY_FOR_PICKUP': { class: 'status-approved', icon: '📦' },
-            'IN_TRANSIT': { class: 'status-transit', icon: '🚚' },
-            'DELIVERED': { class: 'status-received', icon: '📍' },
-            'COMPLETED': { class: 'status-confirmed', icon: '✔️' },
-            'REJECTED_ON_RECEIPT': { class: 'status-rejected', icon: '❌' },
-            'CANCELLED': { class: 'status-cancelled', icon: '🚫' },
+            'PENDING_INTERNAL':       { class: 'status-pending',   icon: '⏳' },
+            'PENDING_HQ_APPROVAL':    { class: 'status-hq',        icon: '🏛️' },
+            'PENDING_ASSIGNMENT':     { class: 'status-pending',   icon: '🤝' },
+            'PENDING_FINAL_RELEASE':  { class: 'status-approved',  icon: '🚦' },
+            'READY_FOR_PICKUP':       { class: 'status-approved',  icon: '📦' },
+            'IN_TRANSIT':             { class: 'status-transit',   icon: '🚚' },
+            'DELIVERED':              { class: 'status-received',  icon: '📍' },
+            'COMPLETED':              { class: 'status-confirmed', icon: '✔️' },
+            'REJECTED_BY_HQ':         { class: 'status-rejected',  icon: '🏛️❌' },
+            'REJECTED_ON_RECEIPT':    { class: 'status-rejected',  icon: '❌' },
+            'CANCELLED':              { class: 'status-cancelled', icon: '🚫' },
         };
         return configs[status] || { class: 'status-draft', icon: '📄' };
     };
 
     // Role-based logic
     const isManager = user?.role === 'BRANCH_MANAGER' || user?.role === 'OPERATION_MANAGER' || user?.role === 'FIRST_EXECUTIVE_OFFICER';
+    const isHqOfficer = user?.role === 'HQ_LOGISTICS_OFFICER';
     
     const canApproveInternal = () => {
         return transfer?.status === 'PENDING_INTERNAL' && isManager && user?.branchId === transfer?.originBranchId;
+    };
+
+    const canHqVerify = () => {
+        return transfer?.status === 'PENDING_HQ_APPROVAL' && isHqOfficer;
     };
 
     const canAcceptAndAssign = () => {
@@ -337,6 +377,27 @@ const TransferDetails = () => {
                                     </button>
                                 </div>
                             )}
+                            {canHqVerify() && (
+                                <div className="action-close-group">
+                                    <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                                        🏛️ <strong>HQ Review</strong> — Verify this transfer to forward it to the destination branch, or reject it with a mandatory explanation.
+                                    </p>
+                                    <textarea
+                                        className="action-textarea"
+                                        value={hqRejectionNote}
+                                        onChange={(e) => setHqRejectionNote(e.target.value)}
+                                        placeholder="Rejection reason (required if rejecting)"
+                                    />
+                                    <div className="action-close-buttons">
+                                        <button className="action-btn action-confirmed" onClick={() => handleHqVerify(true)} disabled={actionLoading}>
+                                            ✅ Verify & Forward
+                                        </button>
+                                        <button className="action-btn action-rejected" onClick={() => handleHqVerify(false)} disabled={actionLoading || !hqRejectionNote.trim()}>
+                                            ❌ Reject Transfer
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                             {canRelease() && (
                                 <button className="action-btn action-verify-dest" onClick={handleRelease} disabled={actionLoading}>
                                     🟢 Final Green Light (Release)
@@ -370,7 +431,7 @@ const TransferDetails = () => {
                                     </div>
                                 </div>
                             )}
-                            {!canApproveInternal() && !canAcceptAndAssign() && !canRelease() && !canPickup() && !canDeliver() && transfer.status !== 'DELIVERED' && (
+                            {!canApproveInternal() && !canHqVerify() && !canAcceptAndAssign() && !canRelease() && !canPickup() && !canDeliver() && transfer.status !== 'DELIVERED' && (
                                 <p className="action-no-action">No actions available for your role at this stage.</p>
                             )}
                         </div>
@@ -380,11 +441,24 @@ const TransferDetails = () => {
                         <h3 className="card-title">🗓️ Timeline</h3>
                         <div className="timeline-list">
                             <div className="timeline-item"><div className="timeline-dot active"></div><div className="timeline-content"><span className="timeline-label">Requested</span><span className="timeline-date">{formatDate(transfer.requestedAt)}</span></div></div>
+                            {transfer.hqApprovedAt && <div className="timeline-item"><div className={`timeline-dot ${transfer.status === 'REJECTED_BY_HQ' ? 'rejected' : 'active'}`}></div><div className="timeline-content"><span className="timeline-label">{transfer.status === 'REJECTED_BY_HQ' ? 'HQ Rejected' : 'HQ Approved'}</span><span className="timeline-date">{formatDate(transfer.hqApprovedAt)}</span></div></div>}
                             {transfer.pickedUpAt && <div className="timeline-item"><div className="timeline-dot active"></div><div className="timeline-content"><span className="timeline-label">Picked Up</span><span className="timeline-date">{formatDate(transfer.pickedUpAt)}</span></div></div>}
                             {transfer.deliveredAt && <div className="timeline-item"><div className="timeline-dot active"></div><div className="timeline-content"><span className="timeline-label">Delivered</span><span className="timeline-date">{formatDate(transfer.deliveredAt)}</span></div></div>}
                             {transfer.closedAt && <div className="timeline-item"><div className="timeline-dot completed"></div><div className="timeline-content"><span className="timeline-label">Closed</span><span className="timeline-date">{formatDate(transfer.closedAt)}</span></div></div>}
                         </div>
                     </div>
+
+                    {transfer.hqRejectionNote && (
+                        <div className="detail-card" style={{ borderLeft: '3px solid #ef4444' }}>
+                            <h3 className="card-title">🏛️ HQ Rejection Reason</h3>
+                            <p style={{ color: '#ef4444', fontStyle: 'italic', margin: 0 }}>{transfer.hqRejectionNote}</p>
+                            {transfer.hqApproverFullName && (
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+                                    Reviewed by: <strong>{transfer.hqApproverFullName}</strong>
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

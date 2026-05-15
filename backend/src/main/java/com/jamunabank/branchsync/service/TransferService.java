@@ -4,11 +4,14 @@ import com.jamunabank.branchsync.model.entity.TransferRequest;
 import java.util.List;
 
 public interface TransferService {
-    // Step 1: Initiate (auto-bypasses if Manager/FEO)
+    // Step 1: Initiate (auto-bypasses internal gate if Manager/FEO)
     TransferRequest initiateTransfer(TransferRequest request, Long actorId);
 
-    // Step 1 Gate: Manager/FEO at source branch approves internally
+    // Step 1 Gate: Manager/FEO at source branch approves internally → goes to HQ
     TransferRequest approveInternal(Long requestId, Long approverId);
+
+    // HQ Step: Central Logistics Control officer verifies or rejects
+    TransferRequest hqVerify(Long requestId, Long hqOfficerId, String rejectionNote, boolean approved);
 
     // Step 2: Dest dept staff accepts and assigns available driver
     TransferRequest acceptAndAssignDriver(Long requestId, Long acceptorId, Long deliveryPersonId);
@@ -30,3 +33,4 @@ public interface TransferService {
     // History: all completed/terminated transfers for the user's context
     List<TransferRequest> getTransferHistory(Long actorId);
 }
+

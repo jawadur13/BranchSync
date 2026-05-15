@@ -20,7 +20,7 @@ const Sidebar: React.FC = () => {
                 <NavLink to="/" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'} end>
                     <span className="nav-icon">📊</span> Dashboard
                 </NavLink>
-                {user?.role !== 'DELIVERY_PERSON' && (
+                {user?.role !== 'DELIVERY_PERSON' && user?.role !== 'HQ_LOGISTICS_OFFICER' && (
                     <NavLink to="/transfers/new" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                         <span className="nav-icon">➕</span> New Request
                     </NavLink>

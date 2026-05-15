@@ -14,6 +14,9 @@ public class Department {
     @Column(name = "department_name", nullable = false, unique = true, length = 255)
     private String departmentName;
 
+    @Column(name = "is_hq_only", nullable = false)
+    private Boolean isHqOnly = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -23,6 +26,8 @@ public class Department {
     public void setDepartmentId(Long departmentId) { this.departmentId = departmentId; }
     public String getDepartmentName() { return departmentName; }
     public void setDepartmentName(String departmentName) { this.departmentName = departmentName; }
+    public Boolean getIsHqOnly() { return isHqOnly; }
+    public void setIsHqOnly(Boolean isHqOnly) { this.isHqOnly = isHqOnly; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 
@@ -30,6 +35,7 @@ public class Department {
         private Department d = new Department();
         public DepartmentBuilder departmentId(Long id) { d.departmentId = id; return this; }
         public DepartmentBuilder departmentName(String n) { d.departmentName = n; return this; }
+        public DepartmentBuilder isHqOnly(Boolean h) { d.isHqOnly = h; return this; }
         public DepartmentBuilder createdAt(OffsetDateTime c) { d.createdAt = c; return this; }
         public Department build() { return d; }
     }

@@ -90,6 +90,12 @@ public class TransferMapper {
             b.deliveryPersonId(e.getDeliveryPerson().getUserId())
              .deliveryPersonFullName(e.getDeliveryPerson().getFullName());
         }
+        if (e.getHqApprover() != null) {
+            b.hqApproverId(e.getHqApprover().getUserId())
+             .hqApproverFullName(e.getHqApprover().getFullName());
+        }
+        b.hqApprovedAt(e.getHqApprovedAt())
+         .hqRejectionNote(e.getHqRejectionNote());
         return b.build();
     }
 }

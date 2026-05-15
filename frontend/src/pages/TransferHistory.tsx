@@ -7,7 +7,8 @@ import './TransferHistory.css';
 
 const STATUS_LABELS: Record<string, string> = {
     COMPLETED:           'Completed',
-    REJECTED_ON_RECEIPT: 'Rejected',
+    REJECTED_ON_RECEIPT: 'Rejected on Receipt',
+    REJECTED_BY_HQ:      'Rejected by HQ',
     CANCELLED:           'Cancelled',
 };
 
@@ -63,6 +64,7 @@ const TransferHistory = () => {
     const getStatusClass = (status: string) => {
         if (status === 'COMPLETED')           return 'hist-badge hist-badge-success';
         if (status === 'REJECTED_ON_RECEIPT') return 'hist-badge hist-badge-danger';
+        if (status === 'REJECTED_BY_HQ')      return 'hist-badge hist-badge-danger';
         if (status === 'CANCELLED')           return 'hist-badge hist-badge-neutral';
         return 'hist-badge hist-badge-neutral';
     };
@@ -83,7 +85,7 @@ const TransferHistory = () => {
     const stats = {
         total:    transfers.length,
         completed: transfers.filter(t => t.status === 'COMPLETED').length,
-        rejected:  transfers.filter(t => t.status === 'REJECTED_ON_RECEIPT').length,
+        rejected:  transfers.filter(t => t.status === 'REJECTED_ON_RECEIPT' || t.status === 'REJECTED_BY_HQ').length,
         cancelled: transfers.filter(t => t.status === 'CANCELLED').length,
     };
 
@@ -137,7 +139,8 @@ const TransferHistory = () => {
                 <select className="hist-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
                     <option value="">All Statuses</option>
                     <option value="COMPLETED">Completed</option>
-                    <option value="REJECTED_ON_RECEIPT">Rejected</option>
+                    <option value="REJECTED_ON_RECEIPT">Rejected on Receipt</option>
+                    <option value="REJECTED_BY_HQ">Rejected by HQ</option>
                     <option value="CANCELLED">Cancelled</option>
                 </select>
                 <select className="hist-select" value={filterPriority} onChange={e => setFilterPriority(e.target.value)}>

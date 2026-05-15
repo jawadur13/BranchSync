@@ -106,6 +106,18 @@ const NewTransfer = () => {
 
     const originBranch = branches.find(b => b.id === user?.branchId);
 
+    // HQ officers are not permitted to create transfer requests
+    if (user?.role === 'HQ_LOGISTICS_OFFICER') {
+        return (
+            <div className="new-transfer-container">
+                <div className="form-alert form-alert-error" style={{ marginTop: '2rem' }}>
+                    🏛️ <strong>Access Denied</strong> — HQ Logistics Officers are not permitted to create transfer requests.
+                    Your role is to review and verify transfers, not initiate them.
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="new-transfer-container">
             <div className="new-transfer-header">

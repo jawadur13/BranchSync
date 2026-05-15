@@ -14,4 +14,8 @@ public class CreateDepartmentDto {
 
     @NotBlank(message = "Department name is required")
     private String departmentName;
+
+    /** When true, this department can only be assigned to HQ branches. */
+    private Boolean isHqOnly = false;
 }
+

@@ -48,7 +48,7 @@ public class Branch {
     )
     private java.util.Set<Department> departments = new java.util.HashSet<>();
 
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMPTZ DEFAULT NOW()")
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "DATETIME(6) DEFAULT NOW(6)")
     private OffsetDateTime createdAt;
 
     public Branch() {}

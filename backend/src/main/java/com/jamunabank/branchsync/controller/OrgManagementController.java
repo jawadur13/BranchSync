@@ -70,7 +70,8 @@ public class OrgManagementController {
                     Map<String, Object> map = new java.util.LinkedHashMap<>();
                     map.put("departmentId", d.getDepartmentId());
                     map.put("departmentName", d.getDepartmentName());
-                    map.put("branchName", "Global (Master List)");
+                    map.put("isHqOnly", Boolean.TRUE.equals(d.getIsHqOnly()));
+                    map.put("branchName", Boolean.TRUE.equals(d.getIsHqOnly()) ? "HQ Only" : "Global (Master List)");
                     map.put("branchId", null);
                     return map;
                 })

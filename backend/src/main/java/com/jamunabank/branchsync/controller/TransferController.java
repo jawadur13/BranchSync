@@ -66,12 +66,25 @@ public class TransferController {
         return new ResponseEntity<>(transferMapper.toResponseDto(saved), HttpStatus.CREATED);
     }
 
-    // Step 1 Gate: Source manager approves internally
+    // Step 1 Gate: Source manager approves internally → routes to HQ
     @PostMapping("/{requestId}/approve-internal")
     public ResponseEntity<TransferResponseDto> approveInternal(
             Authentication authentication, @PathVariable Long requestId) {
 
         TransferRequest updated = transferService.approveInternal(requestId, getUserId(authentication));
+        return ResponseEntity.ok(transferMapper.toResponseDto(updated));
+    }
+
+    // HQ Step: Central Logistics Control officer verifies or rejects
+    @PostMapping("/{requestId}/hq-verify")
+    public ResponseEntity<TransferResponseDto> hqVerify(
+            Authentication authentication,
+            @PathVariable Long requestId,
+            @RequestBody Map<String, Object> body) {
+
+        String rejectionNote = (String) body.get("rejectionNote");
+        boolean approved = Boolean.TRUE.equals(body.get("approved"));
+        TransferRequest updated = transferService.hqVerify(requestId, getUserId(authentication), rejectionNote, approved);
         return ResponseEntity.ok(transferMapper.toResponseDto(updated));
     }
 

@@ -41,6 +41,12 @@ public class TransferDetailDto {
     private Long deliveryPersonId;
     private String deliveryPersonFullName;
 
+    // HQ Approval
+    private Long hqApproverId;
+    private String hqApproverFullName;
+    private OffsetDateTime hqApprovedAt;
+    private String hqRejectionNote;
+
     // Timestamps & Closing
     private OffsetDateTime requestedAt;
     private OffsetDateTime pickedUpAt;

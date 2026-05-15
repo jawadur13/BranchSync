@@ -85,6 +85,17 @@ public class TransferRequest {
     @Column(name = "closed_at")
     private OffsetDateTime closedAt;
 
+    // HQ Approval (between Step 1 and Step 2)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hq_approver_id")
+    private User hqApprover;
+
+    @Column(name = "hq_approved_at")
+    private OffsetDateTime hqApprovedAt;
+
+    @Column(name = "hq_rejection_note", columnDefinition = "TEXT")
+    private String hqRejectionNote;
+
     @Column(name = "requested_at", nullable = false, updatable = false)
     private OffsetDateTime requestedAt;
 
@@ -133,6 +144,12 @@ public class TransferRequest {
     public void setClosedAt(OffsetDateTime closedAt) { this.closedAt = closedAt; }
     public OffsetDateTime getRequestedAt() { return requestedAt; }
     public void setRequestedAt(OffsetDateTime requestedAt) { this.requestedAt = requestedAt; }
+    public User getHqApprover() { return hqApprover; }
+    public void setHqApprover(User hqApprover) { this.hqApprover = hqApprover; }
+    public OffsetDateTime getHqApprovedAt() { return hqApprovedAt; }
+    public void setHqApprovedAt(OffsetDateTime hqApprovedAt) { this.hqApprovedAt = hqApprovedAt; }
+    public String getHqRejectionNote() { return hqRejectionNote; }
+    public void setHqRejectionNote(String hqRejectionNote) { this.hqRejectionNote = hqRejectionNote; }
 
     public static class TransferRequestBuilder {
         private TransferRequest t = new TransferRequest();
@@ -157,6 +174,9 @@ public class TransferRequest {
         public TransferRequestBuilder finalNote(String n) { t.finalNote = n; return this; }
         public TransferRequestBuilder closedAt(OffsetDateTime d) { t.closedAt = d; return this; }
         public TransferRequestBuilder requestedAt(OffsetDateTime d) { t.requestedAt = d; return this; }
+        public TransferRequestBuilder hqApprover(User u) { t.hqApprover = u; return this; }
+        public TransferRequestBuilder hqApprovedAt(OffsetDateTime d) { t.hqApprovedAt = d; return this; }
+        public TransferRequestBuilder hqRejectionNote(String n) { t.hqRejectionNote = n; return this; }
         public TransferRequest build() { return t; }
     }
     public static TransferRequestBuilder builder() { return new TransferRequestBuilder(); }

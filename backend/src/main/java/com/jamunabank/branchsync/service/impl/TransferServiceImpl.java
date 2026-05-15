@@ -25,11 +25,18 @@ public class TransferServiceImpl implements TransferService {
         "BRANCH_MANAGER", "OPERATION_MANAGER", "FIRST_EXECUTIVE_OFFICER"
     );
 
+    // ── Step 1: Initiate ─────────────────────────────────────────────────────
+
     @Override
     @Transactional
     public TransferRequest initiateTransfer(TransferRequest request, Long actorId) {
         User actor = userRepository.findById(actorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Actor not found"));
+
+        // HQ officers are not allowed to create transfer requests
+        if ("HQ_LOGISTICS_OFFICER".equals(actor.getRole().getRoleName())) {
+            throw new UnauthorizedRoleException("HQ Logistics Officers cannot create transfer requests.");
+        }
 
         long count = transferRequestRepository.count();
         String year = String.valueOf(OffsetDateTime.now().getYear());
@@ -39,10 +46,10 @@ public class TransferServiceImpl implements TransferService {
         request.setOriginDepartment(actor.getDepartment());
         request.setRequestedAt(OffsetDateTime.now());
 
-        // Bypass Step 1 if requester is a Manager/FEO
+        // Manager/FEO bypass: skip PENDING_INTERNAL but still go through HQ
         String role = actor.getRole().getRoleName();
         if (MANAGER_ROLES.contains(role)) {
-            request.setStatus("PENDING_ASSIGNMENT");
+            request.setStatus("PENDING_HQ_APPROVAL");
             request.setInternalApprover(actor);
         } else {
             request.setStatus("PENDING_INTERNAL");
@@ -53,11 +60,17 @@ public class TransferServiceImpl implements TransferService {
         return saved;
     }
 
+    // ── Step 1 Gate: Source branch Manager/FEO internal approval → HQ ────────
+
     @Override
     @Transactional
     public TransferRequest approveInternal(Long requestId, Long approverId) {
         TransferRequest request = getRequest(requestId);
         User approver = getUser(approverId);
+
+        if (!"PENDING_INTERNAL".equals(request.getStatus())) {
+            throw new UnauthorizedRoleException("This request is not awaiting internal approval.");
+        }
 
         String role = approver.getRole().getRoleName();
         if (!MANAGER_ROLES.contains(role)) {
@@ -68,7 +81,8 @@ public class TransferServiceImpl implements TransferService {
         }
 
         String old = request.getStatus();
-        request.setStatus("PENDING_ASSIGNMENT");
+        // After source approval, route to HQ — destination branch cannot see it yet
+        request.setStatus("PENDING_HQ_APPROVAL");
         request.setInternalApprover(approver);
 
         TransferRequest updated = transferRequestRepository.save(request);
@@ -76,12 +90,59 @@ public class TransferServiceImpl implements TransferService {
         return updated;
     }
 
+    // ── HQ Step: Central Logistics Control officer verifies or rejects ─────────
+
+    @Override
+    @Transactional
+    public TransferRequest hqVerify(Long requestId, Long hqOfficerId, String rejectionNote, boolean approved) {
+        TransferRequest request = getRequest(requestId);
+        User hqOfficer = getUser(hqOfficerId);
+
+        if (!"PENDING_HQ_APPROVAL".equals(request.getStatus())) {
+            throw new UnauthorizedRoleException("This request is not awaiting HQ approval.");
+        }
+
+        if (!"HQ_LOGISTICS_OFFICER".equals(hqOfficer.getRole().getRoleName())) {
+            throw new UnauthorizedRoleException("Only an HQ Logistics Officer can perform this action.");
+        }
+
+        if (!approved && (rejectionNote == null || rejectionNote.isBlank())) {
+            throw new UnauthorizedRoleException("A rejection note is required when rejecting a transfer.");
+        }
+
+        String old = request.getStatus();
+        request.setHqApprover(hqOfficer);
+        request.setHqApprovedAt(OffsetDateTime.now());
+
+        if (approved) {
+            // Forward to destination branch
+            request.setStatus("PENDING_ASSIGNMENT");
+            TransferRequest updated = transferRequestRepository.save(request);
+            auditService.logAction(updated, hqOfficer, "HQ_APPROVED", old, updated.getStatus(), null, "127.0.0.1");
+            return updated;
+        } else {
+            // Reject — requester is informed via hqRejectionNote
+            request.setStatus("REJECTED_BY_HQ");
+            request.setHqRejectionNote(rejectionNote);
+            request.setClosedAt(OffsetDateTime.now());
+            TransferRequest updated = transferRequestRepository.save(request);
+            auditService.logAction(updated, hqOfficer, "HQ_REJECTED", old, updated.getStatus(), rejectionNote, "127.0.0.1");
+            return updated;
+        }
+    }
+
+    // ── Step 2: Dest dept staff accepts and assigns driver ────────────────────
+
     @Override
     @Transactional
     public TransferRequest acceptAndAssignDriver(Long requestId, Long acceptorId, Long deliveryPersonId) {
         TransferRequest request = getRequest(requestId);
         User acceptor = getUser(acceptorId);
         User driver = getUser(deliveryPersonId);
+
+        if (!"PENDING_ASSIGNMENT".equals(request.getStatus())) {
+            throw new UnauthorizedRoleException("This request is not awaiting assignment.");
+        }
 
         if (!Boolean.TRUE.equals(driver.getIsAvailable())) {
             throw new UnauthorizedRoleException("Selected delivery person is not available.");
@@ -96,6 +157,8 @@ public class TransferServiceImpl implements TransferService {
         auditService.logAction(updated, acceptor, "ASSIGNED_DRIVER", old, updated.getStatus(), null, "127.0.0.1");
         return updated;
     }
+
+    // ── Step 3: Dest Manager/FEO gives final green light ─────────────────────
 
     @Override
     @Transactional
@@ -120,6 +183,8 @@ public class TransferServiceImpl implements TransferService {
         return updated;
     }
 
+    // ── Step 4: Driver picks up ───────────────────────────────────────────────
+
     @Override
     @Transactional
     public TransferRequest markPickedUp(Long requestId, Long driverId) {
@@ -140,6 +205,8 @@ public class TransferServiceImpl implements TransferService {
         auditService.logAction(updated, driver, "PICKED_UP", old, updated.getStatus(), null, "127.0.0.1");
         return updated;
     }
+
+    // ── Step 5: Driver marks delivered ───────────────────────────────────────
 
     @Override
     @Transactional
@@ -162,6 +229,8 @@ public class TransferServiceImpl implements TransferService {
         return updated;
     }
 
+    // ── Step 6: Original requester closes ────────────────────────────────────
+
     @Override
     @Transactional
     public TransferRequest closeRequest(Long requestId, Long requesterId, String finalNote, boolean accepted) {
@@ -183,6 +252,8 @@ public class TransferServiceImpl implements TransferService {
         return updated;
     }
 
+    // ── Dashboard & History ───────────────────────────────────────────────────
+
     @Override
     public List<TransferRequest> getDashboardTransfers(Long actorId) {
         User actor = getUser(actorId);
@@ -191,19 +262,18 @@ public class TransferServiceImpl implements TransferService {
         if ("SYSTEM_ADMIN".equals(role)) {
             return transferRequestRepository.findAllByOrderByRequestedAtDesc();
         }
+        // HQ officers only see transfers sitting in their queue
+        if ("HQ_LOGISTICS_OFFICER".equals(role)) {
+            return transferRequestRepository.findByStatusOrderByRequestedAtDesc("PENDING_HQ_APPROVAL");
+        }
         if ("DELIVERY_PERSON".equals(role)) {
             return transferRequestRepository.findByDeliveryPerson_UserIdOrderByRequestedAtDesc(actorId);
         }
-        if (MANAGER_ROLES.contains(role)) {
-            Long branchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
-            if (branchId != null) {
-                return transferRequestRepository.findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(branchId, branchId);
-            }
-        }
-        // Regular officer — see requests from their branch
+        // Branch users (managers and staff): use the branch-scoped query that
+        // hides pre-HQ transfers from the destination branch
         Long branchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
         if (branchId != null) {
-            return transferRequestRepository.findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(branchId, branchId);
+            return transferRequestRepository.findByBranchDashboard(branchId);
         }
         return List.of();
     }
@@ -212,11 +282,19 @@ public class TransferServiceImpl implements TransferService {
     public List<TransferRequest> getTransferHistory(Long actorId) {
         User actor = getUser(actorId);
         String role = actor.getRole().getRoleName();
-        List<String> terminalStatuses = List.of("COMPLETED", "REJECTED_ON_RECEIPT", "CANCELLED");
+        List<String> terminalStatuses = List.of("COMPLETED", "REJECTED_ON_RECEIPT", "CANCELLED", "REJECTED_BY_HQ");
 
         if ("SYSTEM_ADMIN".equals(role)) {
             return transferRequestRepository.findAllByOrderByRequestedAtDesc().stream()
                     .filter(t -> terminalStatuses.contains(t.getStatus()))
+                    .toList();
+        }
+        if ("HQ_LOGISTICS_OFFICER".equals(role)) {
+            // HQ officers see the transfers they themselves rejected
+            return transferRequestRepository.findAllByOrderByRequestedAtDesc().stream()
+                    .filter(t -> "REJECTED_BY_HQ".equals(t.getStatus()) &&
+                                 t.getHqApprover() != null &&
+                                 t.getHqApprover().getUserId().equals(actorId))
                     .toList();
         }
         if ("DELIVERY_PERSON".equals(role)) {
@@ -234,6 +312,8 @@ public class TransferServiceImpl implements TransferService {
         }
         return List.of();
     }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private TransferRequest getRequest(Long id) {
         return transferRequestRepository.findById(id)

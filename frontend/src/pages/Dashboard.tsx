@@ -35,6 +35,8 @@ const Dashboard = () => {
             case 'PENDING_INTERNAL':
             case 'PENDING_ASSIGNMENT':
                 return 'badge-warning';
+            case 'PENDING_HQ_APPROVAL':
+                return 'badge-hq';
             case 'PENDING_FINAL_RELEASE':
             case 'READY_FOR_PICKUP':
                 return 'badge-info';
@@ -42,6 +44,7 @@ const Dashboard = () => {
                 return 'badge-transit';
             case 'DELIVERED':
                 return 'badge-received';
+            case 'REJECTED_BY_HQ':
             case 'REJECTED_ON_RECEIPT':
             case 'CANCELLED':
                 return 'badge-danger';
