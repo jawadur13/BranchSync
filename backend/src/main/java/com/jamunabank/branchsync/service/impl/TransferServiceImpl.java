@@ -301,17 +301,9 @@ public class TransferServiceImpl implements TransferService {
         String role = actor.getRole().getRoleName();
         List<String> terminalStatuses = List.of("COMPLETED", "REJECTED_ON_RECEIPT", "CANCELLED", "REJECTED_BY_HQ");
 
-        if ("SYSTEM_ADMIN".equals(role)) {
+        if ("SYSTEM_ADMIN".equals(role) || "HQ_LOGISTICS_OFFICER".equals(role)) {
             return transferRequestRepository.findAllByOrderByRequestedAtDesc().stream()
                     .filter(t -> terminalStatuses.contains(t.getStatus()))
-                    .toList();
-        }
-        if ("HQ_LOGISTICS_OFFICER".equals(role)) {
-            // HQ officers see the transfers they themselves rejected
-            return transferRequestRepository.findAllByOrderByRequestedAtDesc().stream()
-                    .filter(t -> "REJECTED_BY_HQ".equals(t.getStatus()) &&
-                                 t.getHqApprover() != null &&
-                                 t.getHqApprover().getUserId().equals(actorId))
                     .toList();
         }
         if ("DELIVERY_PERSON".equals(role)) {
