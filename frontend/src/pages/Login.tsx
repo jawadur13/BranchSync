@@ -37,6 +37,9 @@ const Login: React.FC = () => {
 
     return (
         <div className="login-container">
+            <div className="bg-blur-circle circle-1"></div>
+            <div className="bg-blur-circle circle-2"></div>
+            <div className="bg-blur-circle circle-3"></div>
             <div className="login-card">
                 <div className="login-header">
                     <img src={logo} alt="BranchSync Logo" className="login-logo" />
