@@ -55,6 +55,22 @@ const TransferDetails = () => {
     const [selectedDeliveryPersonId, setSelectedDeliveryPersonId] = useState('');
     const [finalNote, setFinalNote] = useState('');
     const [hqRejectionNote, setHqRejectionNote] = useState('');
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        message: string;
+        onConfirm: () => void;
+    } | null>(null);
+
+    const triggerActionWithConfirm = (message: string, onConfirm: () => Promise<void> | void) => {
+        setConfirmModal({
+            isOpen: true,
+            message,
+            onConfirm: async () => {
+                setConfirmModal(null);
+                await onConfirm();
+            }
+        });
+    };
 
     useEffect(() => {
         fetchTransferDetails();
@@ -79,130 +95,135 @@ const TransferDetails = () => {
     };
 
     // Step 1 Gate: Internal Approval
-    const handleApproveInternal = async () => {
-        if (!confirm('Approve this request internally for your branch?')) return;
-        setActionLoading(true); setActionSuccess(''); setError('');
-        try {
-            await api.post(`/transfers/${id}/approve-internal`);
-            setActionSuccess('Internally approved! Now waiting for destination acceptance.');
-            fetchTransferDetails();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Action failed.');
-        } finally {
-            setActionLoading(false);
-        }
+    const handleApproveInternal = () => {
+        triggerActionWithConfirm('Approve this request internally for your branch?', async () => {
+            setActionLoading(true); setActionSuccess(''); setError('');
+            try {
+                await api.post(`/transfers/${id}/approve-internal`);
+                setActionSuccess('Internally approved! Now waiting for destination acceptance.');
+                fetchTransferDetails();
+            } catch (err: any) {
+                setError(err.response?.data?.message || 'Action failed.');
+            } finally {
+                setActionLoading(false);
+            }
+        });
     };
 
     // Step 2: Accept and Assign
-    const handleAcceptAndAssign = async () => {
+    const handleAcceptAndAssign = () => {
         if (!selectedDeliveryPersonId) {
             setError('Please select a delivery person.');
             return;
         }
-        if (!confirm('Accept this request and assign the selected driver?')) return;
-        setActionLoading(true); setActionSuccess(''); setError('');
-        try {
-            await api.post(`/transfers/${id}/accept`, { deliveryPersonId: Number(selectedDeliveryPersonId) });
-            setActionSuccess('Request accepted and driver assigned!');
-            fetchTransferDetails();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Action failed.');
-        } finally {
-            setActionLoading(false);
-        }
+        triggerActionWithConfirm('Accept this request and assign the selected driver?', async () => {
+            setActionLoading(true); setActionSuccess(''); setError('');
+            try {
+                await api.post(`/transfers/${id}/accept`, { deliveryPersonId: Number(selectedDeliveryPersonId) });
+                setActionSuccess('Request accepted and driver assigned!');
+                fetchTransferDetails();
+            } catch (err: any) {
+                setError(err.response?.data?.message || 'Action failed.');
+            } finally {
+                setActionLoading(false);
+            }
+        });
     };
 
     // Step 3: Final Release
-    const handleRelease = async () => {
-        if (!confirm('Give final green light for this transfer?')) return;
-        setActionLoading(true); setActionSuccess(''); setError('');
-        try {
-            await api.post(`/transfers/${id}/release`);
-            setActionSuccess('Final release granted! Driver can now pick up.');
-            fetchTransferDetails();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Action failed.');
-        } finally {
-            setActionLoading(false);
-        }
+    const handleRelease = () => {
+        triggerActionWithConfirm('Give final green light for this transfer?', async () => {
+            setActionLoading(true); setActionSuccess(''); setError('');
+            try {
+                await api.post(`/transfers/${id}/release`);
+                setActionSuccess('Final release granted! Driver can now pick up.');
+                fetchTransferDetails();
+            } catch (err: any) {
+                setError(err.response?.data?.message || 'Action failed.');
+            } finally {
+                setActionLoading(false);
+            }
+        });
     };
 
     // Step 4: Pickup
-    const handlePickup = async () => {
-        if (!confirm('Confirm pickup of items?')) return;
-        setActionLoading(true); setActionSuccess(''); setError('');
-        try {
-            await api.post(`/transfers/${id}/pickup`);
-            setActionSuccess('Items marked as Picked Up!');
-            fetchTransferDetails();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Action failed.');
-        } finally {
-            setActionLoading(false);
-        }
+    const handlePickup = () => {
+        triggerActionWithConfirm('Confirm pickup of items?', async () => {
+            setActionLoading(true); setActionSuccess(''); setError('');
+            try {
+                await api.post(`/transfers/${id}/pickup`);
+                setActionSuccess('Items marked as Picked Up!');
+                fetchTransferDetails();
+            } catch (err: any) {
+                setError(err.response?.data?.message || 'Action failed.');
+            } finally {
+                setActionLoading(false);
+            }
+        });
     };
 
     // Step 5: Deliver
-    const handleDeliver = async () => {
-        if (!confirm('Confirm delivery at destination?')) return;
-        setActionLoading(true); setActionSuccess(''); setError('');
-        try {
-            await api.post(`/transfers/${id}/deliver`);
-            setActionSuccess('Items marked as Delivered!');
-            fetchTransferDetails();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Action failed.');
-        } finally {
-            setActionLoading(false);
-        }
+    const handleDeliver = () => {
+        triggerActionWithConfirm('Confirm delivery at destination?', async () => {
+            setActionLoading(true); setActionSuccess(''); setError('');
+            try {
+                await api.post(`/transfers/${id}/deliver`);
+                setActionSuccess('Items marked as Delivered!');
+                fetchTransferDetails();
+            } catch (err: any) {
+                setError(err.response?.data?.message || 'Action failed.');
+            } finally {
+                setActionLoading(false);
+            }
+        });
     };
 
     // Step 6: Close (Accept/Reject)
-    const handleClose = async (accepted: boolean) => {
+    const handleClose = (accepted: boolean) => {
         if (!finalNote && !accepted) {
             setError('Please provide a reason for rejection.');
             return;
         }
         const actionText = accepted ? 'Complete' : 'Reject';
-        if (!confirm(`Are you sure you want to ${actionText} this transfer?`)) return;
-        
-        setActionLoading(true); setActionSuccess(''); setError('');
-        try {
-            await api.post(`/transfers/${id}/close`, { finalNote, accepted });
-            setActionSuccess(`Transfer ${accepted ? 'Completed' : 'Rejected'} successfully!`);
-            fetchTransferDetails();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Action failed.');
-        } finally {
-            setActionLoading(false);
-        }
+        triggerActionWithConfirm(`Are you sure you want to ${actionText} this transfer?`, async () => {
+            setActionLoading(true); setActionSuccess(''); setError('');
+            try {
+                await api.post(`/transfers/${id}/close`, { finalNote, accepted });
+                setActionSuccess(`Transfer ${accepted ? 'Completed' : 'Rejected'} successfully!`);
+                fetchTransferDetails();
+            } catch (err: any) {
+                setError(err.response?.data?.message || 'Action failed.');
+            } finally {
+                setActionLoading(false);
+            }
+        });
     };
 
     // HQ Step: Verify or Reject
-    const handleHqVerify = async (approved: boolean) => {
+    const handleHqVerify = (approved: boolean) => {
         if (!approved && !hqRejectionNote.trim()) {
             setError('A rejection note is required when rejecting a transfer.');
             return;
         }
         const actionText = approved ? 'forward to destination branch' : 'reject';
-        if (!confirm(`Are you sure you want to ${actionText} this transfer?`)) return;
-
-        setActionLoading(true); setActionSuccess(''); setError('');
-        try {
-            await api.post(`/transfers/${id}/hq-verify`, {
-                approved,
-                rejectionNote: hqRejectionNote || null,
-            });
-            setActionSuccess(approved
-                ? '✅ Transfer verified and forwarded to destination branch!'
-                : '❌ Transfer rejected. The requester has been notified.'
-            );
-            fetchTransferDetails();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Action failed.');
-        } finally {
-            setActionLoading(false);
-        }
+        triggerActionWithConfirm(`Are you sure you want to ${actionText} this transfer?`, async () => {
+            setActionLoading(true); setActionSuccess(''); setError('');
+            try {
+                await api.post(`/transfers/${id}/hq-verify`, {
+                    approved,
+                    rejectionNote: hqRejectionNote || null,
+                });
+                setActionSuccess(approved
+                    ? '✅ Transfer verified and forwarded to destination branch!'
+                    : '❌ Transfer rejected. The requester has been notified.'
+                );
+                fetchTransferDetails();
+            } catch (err: any) {
+                setError(err.response?.data?.message || 'Action failed.');
+            } finally {
+                setActionLoading(false);
+            }
+        });
     };
 
     const formatDate = (dateStr: string | null) => {
@@ -461,6 +482,23 @@ const TransferDetails = () => {
                     )}
                 </div>
             </div>
+            {confirmModal?.isOpen && (
+                <div className="custom-modal-overlay">
+                    <div className="custom-modal-container">
+                        <div className="custom-modal-icon">⚠️</div>
+                        <h3 className="custom-modal-title">Confirm Action</h3>
+                        <p className="custom-modal-message">{confirmModal.message}</p>
+                        <div className="custom-modal-actions">
+                            <button className="btn-modal-cancel" onClick={() => setConfirmModal(null)}>
+                                Cancel
+                            </button>
+                            <button className="btn-modal-confirm" onClick={confirmModal.onConfirm}>
+                                Yes, Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
