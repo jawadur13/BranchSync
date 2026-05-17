@@ -24,6 +24,9 @@ const TransferHistory = () => {
     const [searchTerm,      setSearchTerm]      = useState('');
     const [filterStatus,    setFilterStatus]    = useState('');
     const [filterPriority,  setFilterPriority]  = useState('');
+    const [filterBranch,    setFilterBranch]    = useState('');
+    const [startDate,       setStartDate]       = useState('');
+    const [endDate,         setEndDate]         = useState('');
     const [sortOrder,       setSortOrder]       = useState<'desc' | 'asc'>('desc');
 
     useEffect(() => { fetchHistory(); }, []);
@@ -40,6 +43,11 @@ const TransferHistory = () => {
         }
     };
 
+    // dynamic branch options extracted from visible records
+    const uniqueBranches = Array.from(
+        new Set(transfers.flatMap(t => [t.originBranchName, t.destinationBranchName]).filter(Boolean))
+    ).sort();
+
     // ── derived list ──────────────────────────────────────────────────
     const filtered = transfers
         .filter(t => {
@@ -50,10 +58,17 @@ const TransferHistory = () => {
                 t.title?.toLowerCase().includes(q) ||
                 t.originBranchName?.toLowerCase().includes(q) ||
                 t.destinationBranchName?.toLowerCase().includes(q) ||
-                t.categoryName?.toLowerCase().includes(q);
+                t.categoryName?.toLowerCase().includes(q) ||
+                t.initiatedByFullName?.toLowerCase().includes(q);
             const matchStatus   = !filterStatus   || t.status === filterStatus;
             const matchPriority = !filterPriority || t.priority === filterPriority;
-            return matchSearch && matchStatus && matchPriority;
+            const matchBranch   = !filterBranch   || t.originBranchName === filterBranch || t.destinationBranchName === filterBranch;
+            
+            const reqDate = new Date(t.requestedAt);
+            const matchStart = !startDate || reqDate >= new Date(startDate);
+            const matchEnd = !endDate || reqDate <= new Date(endDate + 'T23:59:59');
+
+            return matchSearch && matchStatus && matchPriority && matchBranch && matchStart && matchEnd;
         })
         .sort((a, b) => {
             const da = new Date(a.requestedAt).getTime();
@@ -81,6 +96,82 @@ const TransferHistory = () => {
             hour: '2-digit', minute: '2-digit',
         });
 
+    // ── Print Report Handler ──────────────────────────────────────────
+    const handlePrint = () => {
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) return;
+
+        const tableRows = filtered.map((t, idx) => `
+            <tr>
+                <td style="text-align: center;">${idx + 1}</td>
+                <td><strong>${t.requestCode}</strong></td>
+                <td>${t.title}</td>
+                <td>${t.categoryName}</td>
+                <td>${t.originBranchName} → ${t.destinationBranchName}</td>
+                <td>${t.priority}</td>
+                <td>${STATUS_LABELS[t.status] || t.status}</td>
+                <td>${formatDate(t.requestedAt)}</td>
+            </tr>
+        `).join('');
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Jamuna Bank PLC - Transfer History Report</title>
+                    <style>
+                        body { font-family: 'Outfit', 'Segoe UI', Arial, sans-serif; color: #1e293b; padding: 40px; }
+                        .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #003366; padding-bottom: 20px; margin-bottom: 30px; }
+                        .title { font-size: 26px; color: #003366; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+                        .meta { font-size: 13px; color: #64748b; margin-top: 5px; font-weight: 500; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+                        th, td { border: 1px solid #cbd5e1; padding: 12px 10px; text-align: left; }
+                        th { background-color: #f1f5f9; color: #0f172a; font-weight: 600; }
+                        tr:nth-child(even) { background-color: #f8fafc; }
+                        .summary { margin-top: 30px; padding: 15px; background: #f0f6ff; border: 1px solid #bae6fd; border-radius: 8px; font-size: 14px; color: #075985; }
+                        @page { size: landscape; margin: 15mm; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header-container">
+                        <div>
+                            <div class="title">JAMUNA BANK PLC</div>
+                            <div class="meta">Inter-Branch Coordination & Logistics Report</div>
+                        </div>
+                        <div style="text-align: right; font-size: 13px; color: #475569; line-height: 1.5;">
+                            <strong>Date Generated:</strong> ${new Date().toLocaleDateString('en-BD', { day: '2-digit', month: 'short', year: 'numeric' })}<br/>
+                            <strong>Generated By:</strong> ${user?.fullName || 'System User'} (${user?.role})
+                        </div>
+                    </div>
+                    <h3 style="color: #0f172a; margin-bottom: 10px;">📜 Closed Transfer Request History</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 40px; text-align: center;">#</th>
+                                <th>Code</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Route</th>
+                                <th>Priority</th>
+                                <th>Outcome</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                    <div class="summary">
+                        <strong>Report Summary:</strong> Showing ${filtered.length} of ${transfers.length} total history records.
+                    </div>
+                    <script>
+                        window.onload = function() { window.print(); window.close(); };
+                    </script>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+    };
+
     // ── stats ─────────────────────────────────────────────────────────
     const stats = {
         total:    transfers.length,
@@ -102,6 +193,11 @@ const TransferHistory = () => {
                             ? 'All completed, rejected, and cancelled transfers'
                             : 'Closed transfers from your branch'}
                     </p>
+                </div>
+                <div className="hist-actions">
+                    <button className="hist-action-btn print-btn" onClick={handlePrint} title="Print report or save as PDF">
+                        🖨️ Print / Save PDF
+                    </button>
                 </div>
             </div>
 
@@ -128,34 +224,57 @@ const TransferHistory = () => {
             {error && <div className="hist-error">{error}</div>}
 
             {/* ── Filters ── */}
-            <div className="hist-filters">
-                <input
-                    className="hist-search"
-                    type="text"
-                    placeholder="🔍  Search by code, title, branch, category..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                />
-                <select className="hist-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-                    <option value="">All Statuses</option>
-                    <option value="COMPLETED">Completed</option>
-                    <option value="REJECTED_ON_RECEIPT">Rejected on Receipt</option>
-                    <option value="REJECTED_BY_HQ">Rejected by HQ</option>
-                    <option value="CANCELLED">Cancelled</option>
-                </select>
-                <select className="hist-select" value={filterPriority} onChange={e => setFilterPriority(e.target.value)}>
-                    <option value="">All Priorities</option>
-                    {PRIORITY_OPTIONS.filter(Boolean).map(p => (
-                        <option key={p} value={p}>{p}</option>
-                    ))}
-                </select>
-                <button
-                    className="hist-sort-btn"
-                    onClick={() => setSortOrder(s => s === 'desc' ? 'asc' : 'desc')}
-                    title="Toggle sort order"
-                >
-                    {sortOrder === 'desc' ? '↓ Newest First' : '↑ Oldest First'}
-                </button>
+            <div className="hist-filters-wrapper">
+                <div className="hist-filters">
+                    <input
+                        className="hist-search"
+                        type="text"
+                        placeholder="🔍 Search code, title, category, initiator..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                    />
+                    <select className="hist-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                        <option value="">All Statuses</option>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="REJECTED_ON_RECEIPT">Rejected on Receipt</option>
+                        <option value="REJECTED_BY_HQ">Rejected by HQ</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                    <select className="hist-select" value={filterPriority} onChange={e => setFilterPriority(e.target.value)}>
+                        <option value="">All Priorities</option>
+                        {PRIORITY_OPTIONS.filter(Boolean).map(p => (
+                            <option key={p} value={p}>{p}</option>
+                        ))}
+                    </select>
+                    <select className="hist-select" value={filterBranch} onChange={e => setFilterBranch(e.target.value)}>
+                        <option value="">All Branches</option>
+                        {uniqueBranches.map(br => (
+                            <option key={br} value={br}>{br}</option>
+                        ))}
+                    </select>
+                    <button
+                        className="hist-sort-btn"
+                        onClick={() => setSortOrder(s => s === 'desc' ? 'asc' : 'desc')}
+                        title="Toggle sort order"
+                    >
+                        {sortOrder === 'desc' ? '↓ Newest First' : '↑ Oldest First'}
+                    </button>
+                </div>
+                <div className="hist-date-filters">
+                    <div className="date-group">
+                        <label>From:</label>
+                        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                    </div>
+                    <div className="date-group">
+                        <label>To:</label>
+                        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+                    </div>
+                    {(startDate || endDate || filterBranch) && (
+                        <button className="clear-filters-btn" onClick={() => { setStartDate(''); setEndDate(''); setFilterBranch(''); }}>
+                            Clear Extra
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* ── Table ── */}

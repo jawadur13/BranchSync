@@ -882,3 +882,28 @@
     color: var(--color-neutral-700);
     font-size: 12px;
 }
+
+/* ── Print Media Overrides ── */
+@media print {
+    .sidebar,
+    .topbar,
+    .details-nav,
+    .detail-card.action-card,
+    .custom-modal-overlay {
+        display: none !important;
+    }
+    .layout-content {
+        padding: 0 !important;
+    }
+    .details-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .details-sidebar {
+        display: none !important;
+    }
+    .detail-card {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+}

@@ -280,6 +280,106 @@ const TransferDetails = () => {
         });
     };
 
+    const handlePrintDetails = () => {
+        const printWindow = window.open('', '_blank');
+        if (!printWindow || !transfer) return;
+
+        const auditTrailRows = (transfer.auditLogs || []).map((log, idx) => `
+            <tr>
+                <td style="text-align: center;">${idx + 1}</td>
+                <td><strong>${log.action.replace(/_/g, ' ')}</strong></td>
+                <td>${log.actorFullName || 'System Event'} (${log.actorRoleName?.replace(/_/g, ' ') || 'N/A'})</td>
+                <td>${formatActionDescription(log.action)}</td>
+                <td>${formatDate(log.actedAt)}</td>
+                <td>${log.remarks ? `"${log.remarks}"` : '—'}</td>
+            </tr>
+        `).join('');
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Transfer Slip - ${transfer.requestCode}</title>
+                    <style>
+                        body { font-family: 'Outfit', 'Segoe UI', Arial, sans-serif; color: #1e293b; padding: 40px; max-width: 900px; margin: 0 auto; }
+                        .header-container { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #003366; padding-bottom: 20px; margin-bottom: 30px; }
+                        .title { font-size: 26px; color: #003366; font-weight: 800; margin: 0; letter-spacing: -0.01em; }
+                        .sub { font-size: 13px; color: #64748b; margin-top: 5px; font-weight: 500; }
+                        .status-pill { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+                        .priority-pill { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; margin-left: 6px; }
+                        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #cbd5e1; }
+                        .grid-item { font-size: 13px; line-height: 1.6; color: #334155; }
+                        .grid-item strong { color: #0f172a; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+                        th, td { border: 1px solid #cbd5e1; padding: 10px 8px; text-align: left; }
+                        th { background-color: #f1f5f9; color: #0f172a; font-weight: 600; }
+                        tr:nth-child(even) { background-color: #f8fafc; }
+                        @media print { body { padding: 0; max-width: 100%; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="header-container">
+                        <div>
+                            <div class="title">JAMUNA BANK PLC</div>
+                            <div class="sub">Official Inter-Branch Transfer Request Slip</div>
+                        </div>
+                        <div style="text-align: right; line-height: 1.6;">
+                            <div>
+                                <span class="status-pill">${transfer.status}</span>
+                                <span class="priority-pill">${transfer.priority}</span>
+                            </div>
+                            <div style="font-size: 13px; font-weight: bold; color: #003366; margin-top: 8px;">CODE: ${transfer.requestCode}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid">
+                        <div class="grid-item">
+                            <strong>Transfer Title:</strong> ${transfer.title}<br/>
+                            <strong>Category:</strong> ${transfer.categoryName || 'General'}<br/>
+                            <strong>Sensitivity:</strong> ${transfer.sensitivityLevel || 'Normal'}<br/>
+                            <strong>Requested By:</strong> ${transfer.initiatedByFullName} (ID: ${transfer.initiatedByEmployeeId})<br/>
+                            <strong>Date Requested:</strong> ${formatDate(transfer.requestedAt)}
+                        </div>
+                        <div class="grid-item">
+                            <strong>Origin Branch:</strong> ${transfer.originBranchName} (${transfer.originDepartmentName || 'Main Department'})<br/>
+                            <strong>Destination Branch:</strong> ${transfer.destinationBranchName} (${transfer.destinationDepartmentName || 'Clearing Department'})<br/>
+                            ${transfer.deliveryPersonFullName ? `<strong>Assigned Courier:</strong> ${transfer.deliveryPersonFullName}<br/>` : ''}
+                            ${transfer.closedAt ? `<strong>Date Completed:</strong> ${formatDate(transfer.closedAt)}<br/>` : ''}
+                        </div>
+                    </div>
+
+                    ${transfer.description ? `
+                    <div style="margin-bottom: 30px; font-size: 13px; color: #334155; line-height: 1.5; background: #ffffff; padding: 15px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                        <strong style="color: #0f172a; display: block; margin-bottom: 5px;">📝 Item Description:</strong>
+                        ${transfer.description}
+                    </div>
+                    ` : ''}
+
+                    <h3 style="color: #0f172a; font-size: 16px; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 12px; margin-top: 30px;">🏛️ Complete Action Lifecycle & Audit Trail</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 30px; text-align: center;">#</th>
+                                <th>Action</th>
+                                <th>Performer</th>
+                                <th>Action Description</th>
+                                <th>Date & Time</th>
+                                <th>Comments / Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${auditTrailRows || `<tr><td colspan="6" style="text-align: center;">No audit logs available for this transfer.</td></tr>`}
+                        </tbody>
+                    </table>
+
+                    <script>
+                        window.onload = function() { window.print(); window.close(); };
+                    </script>
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+    };
+
     const getStatusConfig = (status: string) => {
         const configs: Record<string, { class: string; icon: string }> = {
             'PENDING_INTERNAL':       { class: 'status-pending',   icon: '⏳' },
@@ -341,8 +441,11 @@ const TransferDetails = () => {
 
     return (
         <div className="transfer-details-container">
-            <div className="details-nav">
+            <div className="details-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <button className="btn-ghost" onClick={() => navigate('/')}>← Back</button>
+                <button className="hist-action-btn print-btn" onClick={handlePrintDetails} title="Print Transfer Slip or save as PDF" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    🖨️ Print Slip / Save PDF
+                </button>
             </div>
 
             {error && <div className="detail-alert detail-alert-error">{error}</div>}
