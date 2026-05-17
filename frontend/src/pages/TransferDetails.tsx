@@ -528,7 +528,7 @@ const TransferDetails = () => {
                     )}
                 </div>
 
-                {user?.role === 'SYSTEM_ADMIN' && transfer.auditLogs && transfer.auditLogs.length > 0 && (
+                {transfer.auditLogs && transfer.auditLogs.length > 0 && (
                     <div className="detail-card admin-audit-card">
                         <h3 className="card-title">🏛️ Full System Audit & Lifecycle Trail</h3>
                         <div className="audit-table-wrapper">

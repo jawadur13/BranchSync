@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 import com.jamunabank.branchsync.security.CustomUserDetails;
 import com.jamunabank.branchsync.dto.response.AuditLogResponseDto;
@@ -32,12 +33,26 @@ public class TransferController {
     private final AuditLogRepository auditLogRepository;
 
     @GetMapping("/{requestId}")
-    public ResponseEntity<TransferDetailDto> getTransferById(@PathVariable Long requestId) {
+    public ResponseEntity<TransferDetailDto> getTransferById(
+            @PathVariable Long requestId,
+            Authentication authentication) {
+        
         TransferRequest request = transferRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Transfer request not found: " + requestId));
         TransferDetailDto dto = transferMapper.toDetailDto(request);
         
-        List<AuditLogResponseDto> logs = auditLogRepository.findByTransferRequest_RequestIdOrderByActedAtDesc(requestId).stream()
+        // 1. Fetch current user context
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Long loggedInUserId = userDetails.getUserId();
+        Long loggedInBranchId = userDetails.getBranchId();
+        Long loggedInDepartmentId = userDetails.getDepartmentId();
+        String loggedInRoleName = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("");
+        
+        // 2. Fetch all raw logs
+        List<AuditLogResponseDto> allLogs = auditLogRepository.findByTransferRequest_RequestIdOrderByActedAtDesc(requestId).stream()
                 .map(log -> AuditLogResponseDto.builder()
                         .auditId(log.getAuditId())
                         .action(log.getAction())
@@ -55,7 +70,54 @@ public class TransferController {
                         .build())
                 .collect(Collectors.toList());
         
-        dto.setAuditLogs(logs);
+        List<AuditLogResponseDto> scopedLogs = new java.util.ArrayList<>();
+        
+        // 3. Apply role-based scoping constraints
+        if ("SYSTEM_ADMIN".equals(loggedInRoleName) || "HQ_LOGISTICS_OFFICER".equals(loggedInRoleName)) {
+            // Can see all details for each transfer
+            scopedLogs = allLogs;
+        } 
+        else if ("BRANCH_MANAGER".equals(loggedInRoleName) || "OPERATION_MANAGER".equals(loggedInRoleName) || "FIRST_EXECUTIVE_OFFICER".equals(loggedInRoleName)) {
+            // Can see all details for all transfers of their branch
+            Long originBranchId = request.getOriginBranch() != null ? request.getOriginBranch().getBranchId() : null;
+            Long destBranchId = request.getDestinationBranch() != null ? request.getDestinationBranch().getBranchId() : null;
+            
+            if (loggedInBranchId != null && (loggedInBranchId.equals(originBranchId) || loggedInBranchId.equals(destBranchId))) {
+                scopedLogs = allLogs;
+            }
+        } 
+        else if ("OFFICER".equals(loggedInRoleName)) {
+            // Can see all details for their department in their branch
+            Long originBranchId = request.getOriginBranch() != null ? request.getOriginBranch().getBranchId() : null;
+            Long originDeptId = request.getOriginDepartment() != null ? request.getOriginDepartment().getDepartmentId() : null;
+            Long destBranchId = request.getDestinationBranch() != null ? request.getDestinationBranch().getBranchId() : null;
+            Long destDeptId = request.getDestinationDepartment() != null ? request.getDestinationDepartment().getDepartmentId() : null;
+            
+            boolean matchesOrigin = loggedInBranchId != null && loggedInBranchId.equals(originBranchId) 
+                    && loggedInDepartmentId != null && loggedInDepartmentId.equals(originDeptId);
+            boolean matchesDest = loggedInBranchId != null && loggedInBranchId.equals(destBranchId) 
+                    && loggedInDepartmentId != null && loggedInDepartmentId.equals(destDeptId);
+            
+            if (matchesOrigin || matchesDest) {
+                scopedLogs = allLogs;
+            }
+        } 
+        else if ("DELIVERY_PERSON".equals(loggedInRoleName)) {
+            // Can see only the assignment, pickup, delivery, and final close (completion/rejection) steps of their assigned transfer
+            Long assignedDriverId = request.getDeliveryPerson() != null ? request.getDeliveryPerson().getUserId() : null;
+            
+            if (loggedInUserId != null && loggedInUserId.equals(assignedDriverId)) {
+                scopedLogs = allLogs.stream()
+                        .filter(log -> "ASSIGNED_DRIVER".equals(log.getAction())
+                                    || "PICKED_UP".equals(log.getAction())
+                                    || "DELIVERED".equals(log.getAction())
+                                    || "COMPLETED".equals(log.getAction())
+                                    || "REJECTED".equals(log.getAction()))
+                        .collect(Collectors.toList());
+            }
+        }
+        
+        dto.setAuditLogs(scopedLogs);
         return ResponseEntity.ok(dto);
     }
 

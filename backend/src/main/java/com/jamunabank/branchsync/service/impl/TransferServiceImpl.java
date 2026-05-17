@@ -271,6 +271,23 @@ public class TransferServiceImpl implements TransferService {
         }
         // Branch users (managers and staff): use the branch-scoped query that
         // hides pre-HQ transfers from the destination branch
+        if ("OFFICER".equals(role)) {
+            Long branchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
+            Long departmentId = actor.getDepartment() != null ? actor.getDepartment().getDepartmentId() : null;
+            if (branchId != null && departmentId != null) {
+                return transferRequestRepository.findByBranchDashboard(branchId).stream()
+                        .filter(t -> {
+                            boolean isOriginDept = t.getOriginBranch() != null && t.getOriginBranch().getBranchId().equals(branchId)
+                                    && t.getOriginDepartment() != null && t.getOriginDepartment().getDepartmentId().equals(departmentId);
+                            boolean isDestDept = t.getDestinationBranch() != null && t.getDestinationBranch().getBranchId().equals(branchId)
+                                    && t.getDestinationDepartment() != null && t.getDestinationDepartment().getDepartmentId().equals(departmentId);
+                            return isOriginDept || isDestDept;
+                        })
+                        .toList();
+            }
+            return List.of();
+        }
+
         Long branchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
         if (branchId != null) {
             return transferRequestRepository.findByBranchDashboard(branchId);
@@ -302,10 +319,30 @@ public class TransferServiceImpl implements TransferService {
                     .filter(t -> terminalStatuses.contains(t.getStatus()))
                     .toList();
         }
-        Long branchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
-        if (branchId != null) {
+        if ("OFFICER".equals(role)) {
+            Long userBranchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
+            Long departmentId = actor.getDepartment() != null ? actor.getDepartment().getDepartmentId() : null;
+            if (userBranchId != null && departmentId != null) {
+                return transferRequestRepository
+                        .findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(userBranchId, userBranchId)
+                        .stream()
+                        .filter(t -> terminalStatuses.contains(t.getStatus()))
+                        .filter(t -> {
+                            boolean isOriginDept = t.getOriginBranch() != null && t.getOriginBranch().getBranchId().equals(userBranchId)
+                                    && t.getOriginDepartment() != null && t.getOriginDepartment().getDepartmentId().equals(departmentId);
+                            boolean isDestDept = t.getDestinationBranch() != null && t.getDestinationBranch().getBranchId().equals(userBranchId)
+                                    && t.getDestinationDepartment() != null && t.getDestinationDepartment().getDepartmentId().equals(departmentId);
+                            return isOriginDept || isDestDept;
+                        })
+                        .toList();
+            }
+            return List.of();
+        }
+
+        Long userBranchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
+        if (userBranchId != null) {
             return transferRequestRepository
-                    .findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(branchId, branchId)
+                    .findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(userBranchId, userBranchId)
                     .stream()
                     .filter(t -> terminalStatuses.contains(t.getStatus()))
                     .toList();
