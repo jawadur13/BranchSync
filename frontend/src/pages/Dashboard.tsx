@@ -64,6 +64,25 @@ const Dashboard = () => {
         return 'Good Evening';
     };
 
+    const isActionable = (t: TransferResponseDto) => {
+        if (!user) return false;
+        if (user.role === 'SYSTEM_ADMIN') return false; 
+        if (user.role === 'HQ_LOGISTICS_OFFICER' && t.status === 'PENDING_HQ_APPROVAL') return true;
+        
+        const isManager = ['BRANCH_MANAGER', 'OPERATION_MANAGER', 'FIRST_EXECUTIVE_OFFICER'].includes(user.role);
+        // Note: The backend already scopes list elements to the user's branch.
+        // Therefore, if a manager sees PENDING_INTERNAL, they must be the origin branch manager.
+        if (isManager && (t.status === 'PENDING_INTERNAL' || t.status === 'PENDING_FINAL_RELEASE')) return true;
+        if (!isManager && t.status === 'PENDING_ASSIGNMENT') return true; 
+        
+        if (user.role === 'DELIVERY_PERSON' && (t.status === 'READY_FOR_PICKUP' || t.status === 'IN_TRANSIT')) return true;
+        if (t.status === 'DELIVERED' && t.initiatedByFullName === user.fullName) return true;
+        
+        return false;
+    };
+
+    const attentionTransfers = transfers.filter(isActionable);
+
     if (loading) {
         return <div className="dashboard-loading">Loading transfers...</div>;
     }
@@ -80,6 +99,31 @@ const Dashboard = () => {
                     </p>
                 </div>
             </div>
+
+            {attentionTransfers.length > 0 && (
+                <div className="attention-widget">
+                    <div className="attention-header">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span className="attention-icon">🔔</span>
+                            <h3 className="attention-title">Attention Required</h3>
+                        </div>
+                        <span className="attention-badge">{attentionTransfers.length} Action{attentionTransfers.length !== 1 ? 's' : ''} Pending</span>
+                    </div>
+                    <p className="attention-subtitle">You have active transfers that require your immediate input or approval.</p>
+                    <div className="attention-list">
+                        {attentionTransfers.map(t => (
+                            <Link key={t.requestId} to={`/transfers/${t.requestId}`} className="attention-item">
+                                <div className="attention-item-code">{t.requestCode}</div>
+                                <div className="attention-item-title">{t.title}</div>
+                                <div className="attention-item-status">
+                                    <span className={`badge ${getStatusBadgeClass(t.status)}`}>{t.status.replace(/_/g, ' ')}</span>
+                                </div>
+                                <div className="attention-item-arrow">→</div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="dashboard-header">
                 <div>

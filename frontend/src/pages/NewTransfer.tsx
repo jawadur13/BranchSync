@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 import './NewTransfer.css';
@@ -28,13 +28,15 @@ const NewTransfer = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    // Form state
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
+    const location = useLocation();
+
+    // Form state initialized with location state if available (for Duplicate action)
+    const [title, setTitle] = useState(location.state?.title || '');
+    const [description, setDescription] = useState(location.state?.description || '');
     const [categoryId, setCategoryId] = useState('');
-    const [priority, setPriority] = useState('NORMAL');
-    const [destinationBranchId, setDestinationBranchId] = useState('');
-    const [destinationDepartmentId, setDestinationDepartmentId] = useState('');
+    const [priority, setPriority] = useState(location.state?.priority || 'NORMAL');
+    const [destinationBranchId, setDestinationBranchId] = useState(location.state?.destinationBranchId?.toString() || '');
+    const [destinationDepartmentId, setDestinationDepartmentId] = useState(location.state?.destinationDepartmentId?.toString() || '');
 
     // Lookup data
     const [branches, setBranches] = useState<BranchOption[]>([]);
@@ -60,6 +62,11 @@ const NewTransfer = () => {
             setBranches(branchRes.data);
             setDepartments(departmentRes.data);
             setCategories(categoryRes.data);
+            
+            if (location.state?.categoryName) {
+                const match = categoryRes.data.find((c: CategoryOption) => c.name === location.state.categoryName);
+                if (match) setCategoryId(match.id.toString());
+            }
         } catch (err) {
             setError('Failed to load form data. Please refresh the page.');
         }

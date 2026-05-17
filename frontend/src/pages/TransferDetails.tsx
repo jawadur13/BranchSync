@@ -439,14 +439,38 @@ const TransferDetails = () => {
 
     const statusConfig = getStatusConfig(transfer.status);
 
+    const handleDuplicate = () => {
+        if (!transfer) return;
+        navigate('/transfers/new', {
+            state: {
+                title: transfer.title,
+                description: transfer.description || '',
+                categoryName: transfer.categoryName,
+                priority: transfer.priority,
+                destinationBranchId: transfer.destinationBranchId,
+                destinationDepartmentId: transfer.destinationDepartmentId,
+            }
+        });
+    };
+
+    const canDuplicate = user?.role !== 'HQ_LOGISTICS_OFFICER' && user?.role !== 'DELIVERY_PERSON';
+
     return (
         <div className="transfer-details-container">
             <div className="details-nav" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <button className="btn-ghost" onClick={() => navigate('/')}>← Back</button>
-                <button className="hist-action-btn print-btn" onClick={handlePrintDetails} title="Print Transfer Slip or save as PDF" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    🖨️ Print Slip / Save PDF
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    {canDuplicate && (
+                        <button className="hist-action-btn print-btn" onClick={handleDuplicate} title="Create a new transfer with these details" style={{ backgroundColor: '#f8fafc', color: '#334155', border: '1px solid #cbd5e1', boxShadow: 'none' }}>
+                            📋 Duplicate Request
+                        </button>
+                    )}
+                    <button className="hist-action-btn print-btn" onClick={handlePrintDetails} title="Print Transfer Slip or save as PDF" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        🖨️ Print Slip / Save PDF
+                    </button>
+                </div>
             </div>
+
 
             {error && <div className="detail-alert detail-alert-error">{error}</div>}
             {actionSuccess && <div className="detail-alert detail-alert-success">{actionSuccess}</div>}
