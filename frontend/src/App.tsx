@@ -8,6 +8,7 @@ import TransferDetails from './pages/TransferDetails';
 import UserManagement from './pages/admin/UserManagement';
 import OrgManagement from './pages/admin/OrgManagement';
 import Profile from './pages/Profile';
+import BranchDirectory from './pages/BranchDirectory';
 import Layout from './components/Layout/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -31,6 +32,7 @@ function App() {
           <Route path="transfers/new" element={<NewTransfer />} />
           <Route path="transfers/:id" element={<TransferDetails />} />
           <Route path="transfers/history" element={<TransferHistory />} />
+          <Route path="branch-directory" element={<BranchDirectory />} />
           <Route path="profile" element={<Profile />} />
 
           {/* Admin Routes */}

@@ -7,6 +7,7 @@ import './Layout.css';
 const Sidebar: React.FC = () => {
     const { user } = useAuth();
     const isAdmin = user?.role === 'SYSTEM_ADMIN';
+    const isManager = user?.role === 'BRANCH_MANAGER' || user?.role === 'OPERATION_MANAGER' || user?.role === 'FIRST_EXECUTIVE_OFFICER';
 
     return (
         <aside className="sidebar">
@@ -23,6 +24,11 @@ const Sidebar: React.FC = () => {
                 {user?.role !== 'DELIVERY_PERSON' && user?.role !== 'HQ_LOGISTICS_OFFICER' && (
                     <NavLink to="/transfers/new" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                         <span className="nav-icon">➕</span> New Request
+                    </NavLink>
+                )}
+                {isManager && (
+                    <NavLink to="/branch-directory" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                        <span className="nav-icon">🏢</span> Branch Directory
                     </NavLink>
                 )}
                 <NavLink to="/transfers/history" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>

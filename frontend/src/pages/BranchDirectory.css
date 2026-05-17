@@ -1,0 +1,198 @@
+.directory-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.directory-header {
+    margin-bottom: var(--spacing-6);
+}
+
+.directory-title {
+    font-size: var(--font-size-2xl);
+    color: var(--color-neutral-900);
+    margin: 0 0 var(--spacing-1) 0;
+}
+
+.directory-subtitle {
+    color: var(--color-neutral-500);
+    margin: 0;
+}
+
+.directory-error {
+    background-color: #fee2e2;
+    color: #991b1b;
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-4);
+}
+
+.directory-filters-wrapper {
+    display: flex;
+    gap: var(--spacing-3);
+    margin-bottom: var(--spacing-4);
+    flex-wrap: wrap;
+    background: white;
+    padding: var(--spacing-4);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.directory-search {
+    flex: 2;
+    min-width: 200px;
+    padding: 10px 14px;
+    border: 1px solid var(--color-neutral-300);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.directory-search:focus {
+    border-color: var(--color-primary-blue);
+}
+
+.directory-select {
+    flex: 1;
+    min-width: 150px;
+    padding: 10px 14px;
+    border: 1px solid var(--color-neutral-300);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    background-color: white;
+    outline: none;
+    cursor: pointer;
+}
+
+.directory-clear-btn {
+    padding: 0 16px;
+    background-color: var(--color-neutral-100);
+    color: var(--color-neutral-600);
+    border: 1px solid var(--color-neutral-300);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.directory-clear-btn:hover {
+    background-color: var(--color-neutral-200);
+}
+
+.directory-card {
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    margin-bottom: var(--spacing-4);
+}
+
+.directory-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.directory-table th {
+    background-color: var(--color-neutral-50);
+    padding: var(--spacing-3) var(--spacing-4);
+    font-weight: 600;
+    color: var(--color-neutral-600);
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.directory-table td {
+    padding: var(--spacing-3) var(--spacing-4);
+    border-bottom: 1px solid var(--color-neutral-100);
+    color: var(--color-neutral-800);
+    font-size: var(--font-size-sm);
+}
+
+.directory-row:last-child td {
+    border-bottom: none;
+}
+
+.directory-row:hover td {
+    background-color: var(--color-neutral-50);
+}
+
+.directory-row.inactive td {
+    opacity: 0.6;
+}
+
+.directory-id {
+    font-family: monospace;
+    font-weight: 600;
+    color: var(--color-neutral-500) !important;
+}
+
+.directory-name {
+    font-weight: 600;
+    color: var(--color-primary-blue) !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.directory-badge-inactive {
+    background-color: #f3f4f6;
+    color: #6b7280;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.directory-link {
+    color: var(--color-primary-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.directory-link:hover {
+    text-decoration: underline;
+}
+
+.directory-empty {
+    padding: var(--spacing-12);
+    text-align: center;
+}
+
+.directory-empty-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: var(--spacing-4);
+}
+
+.directory-count {
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-500);
+    text-align: right;
+    margin: 0;
+}
+
+.directory-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px;
+    color: var(--color-neutral-500);
+}
+
+.directory-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--color-neutral-300);
+    border-top-color: var(--color-primary-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

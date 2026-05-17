@@ -44,4 +44,37 @@ public class UserController {
         
         return ResponseEntity.ok(map);
     }
+
+    @GetMapping("/branch-directory")
+    public ResponseEntity<java.util.List<Map<String, Object>>> getBranchDirectory(Authentication authentication) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
+            return ResponseEntity.status(401).build();
+        }
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User currentUser = userRepository.findById(userDetails.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (currentUser.getBranch() == null) {
+            return ResponseEntity.ok(java.util.Collections.emptyList());
+        }
+
+        java.util.List<Map<String, Object>> users = userRepository.findAll().stream()
+                .filter(u -> u.getBranch() != null && u.getBranch().getBranchId().equals(currentUser.getBranch().getBranchId()))
+                .map(u -> {
+                    Map<String, Object> map = new LinkedHashMap<>();
+                    map.put("userId", u.getUserId());
+                    map.put("employeeId", u.getEmployeeId());
+                    map.put("fullName", u.getFullName());
+                    map.put("email", u.getEmail());
+                    map.put("phoneNumber", u.getPhoneNumber());
+                    map.put("roleName", u.getRole() != null ? u.getRole().getRoleName() : null);
+                    map.put("departmentName", u.getDepartment() != null ? u.getDepartment().getDepartmentName() : null);
+                    map.put("isActive", u.getIsActive());
+                    return map;
+                })
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(users);
+    }
 }
