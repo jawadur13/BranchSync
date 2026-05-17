@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.jamunabank.branchsync.security.CustomUserDetails;
+import com.jamunabank.branchsync.dto.response.AuditLogResponseDto;
+import com.jamunabank.branchsync.repository.AuditLogRepository;
 
 import java.util.List;
 import java.util.Map;
@@ -27,12 +29,34 @@ public class TransferController {
     private final TransferService transferService;
     private final TransferMapper transferMapper;
     private final TransferRequestRepository transferRequestRepository;
+    private final AuditLogRepository auditLogRepository;
 
     @GetMapping("/{requestId}")
     public ResponseEntity<TransferDetailDto> getTransferById(@PathVariable Long requestId) {
         TransferRequest request = transferRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Transfer request not found: " + requestId));
-        return ResponseEntity.ok(transferMapper.toDetailDto(request));
+        TransferDetailDto dto = transferMapper.toDetailDto(request);
+        
+        List<AuditLogResponseDto> logs = auditLogRepository.findByTransferRequest_RequestIdOrderByActedAtDesc(requestId).stream()
+                .map(log -> AuditLogResponseDto.builder()
+                        .auditId(log.getAuditId())
+                        .action(log.getAction())
+                        .fromStatus(log.getFromStatus())
+                        .toStatus(log.getToStatus())
+                        .remarks(log.getRemarks())
+                        .actedAt(log.getActedAt())
+                        .ipAddress(log.getIpAddress())
+                        .actorUserId(log.getActor() != null ? log.getActor().getUserId() : null)
+                        .actorFullName(log.getActor() != null ? log.getActor().getFullName() : null)
+                        .actorEmployeeId(log.getActor() != null ? log.getActor().getEmployeeId() : null)
+                        .actorRoleName(log.getActor() != null && log.getActor().getRole() != null ? log.getActor().getRole().getRoleName() : null)
+                        .actorBranchName(log.getActor() != null && log.getActor().getBranch() != null ? log.getActor().getBranch().getBranchName() : null)
+                        .actorDepartmentName(log.getActor() != null && log.getActor().getDepartment() != null ? log.getActor().getDepartment().getDepartmentName() : null)
+                        .build())
+                .collect(Collectors.toList());
+        
+        dto.setAuditLogs(logs);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping

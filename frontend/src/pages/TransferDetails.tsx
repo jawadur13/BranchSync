@@ -39,7 +39,53 @@ interface TransferDetail {
     hqApproverFullName: string | null;
     hqApprovedAt: string | null;
     hqRejectionNote: string | null;
+    auditLogs?: AuditLogResponse[];
 }
+
+interface AuditLogResponse {
+    auditId: number;
+    action: string;
+    fromStatus: string | null;
+    toStatus: string | null;
+    remarks: string | null;
+    actedAt: string;
+    ipAddress: string | null;
+    actorUserId: number | null;
+    actorFullName: string | null;
+    actorEmployeeId: string | null;
+    actorRoleName: string | null;
+    actorBranchName: string | null;
+    actorDepartmentName: string | null;
+}
+
+const formatActionDescription = (action: string): string => {
+    switch (action.toUpperCase()) {
+        case 'CREATED':
+            return 'Initiated the transfer request';
+        case 'APPROVED_INTERNAL':
+            return 'Approved the request internally at origin branch';
+        case 'HQ_APPROVED':
+            return 'Verified and approved the request at Central HQ';
+        case 'HQ_REJECTED':
+            return 'Rejected the request at Central HQ';
+        case 'ASSIGNED_DRIVER':
+            return 'Accepted request and assigned the delivery driver';
+        case 'RELEASED':
+            return 'Released the transfer request (Green Light)';
+        case 'PICKED_UP':
+            return 'Picked up the items (Transit Started)';
+        case 'DELIVERED':
+            return 'Delivered the items to destination branch';
+        case 'COMPLETED':
+            return 'Confirmed receipt and completed the request';
+        case 'REJECTED':
+            return 'Rejected the items upon receipt';
+        default:
+            return action.replace(/_/g, ' ')
+                .toLowerCase()
+                .replace(/\b\w/g, c => c.toUpperCase());
+    }
+};
 
 const TransferDetails = () => {
     const { id } = useParams<{ id: string }>();
@@ -481,6 +527,60 @@ const TransferDetails = () => {
                         </div>
                     )}
                 </div>
+
+                {user?.role === 'SYSTEM_ADMIN' && transfer.auditLogs && transfer.auditLogs.length > 0 && (
+                    <div className="detail-card admin-audit-card">
+                        <h3 className="card-title">🏛️ Full System Audit & Lifecycle Trail</h3>
+                        <div className="audit-table-wrapper">
+                            <table className="audit-table">
+                                <thead>
+                                    <tr>
+                                        <th>Action</th>
+                                        <th>Performer Details</th>
+                                        <th>Action Taken</th>
+                                        <th>Date &amp; Time</th>
+                                        <th>Remarks &amp; IP Address</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {transfer.auditLogs.map((log) => (
+                                        <tr key={log.auditId} className="audit-row">
+                                            <td className="audit-cell-action">
+                                                <span className={`audit-badge badge-${log.action.toLowerCase()}`}>
+                                                    {log.action.replace(/_/g, ' ')}
+                                                </span>
+                                            </td>
+                                            <td className="audit-cell-actor">
+                                                <div className="actor-name">{log.actorFullName || 'System Event'}</div>
+                                                <div className="actor-meta">
+                                                    <span className="actor-emp">ID: {log.actorEmployeeId || 'N/A'}</span>
+                                                    <span className="meta-bullet">•</span>
+                                                    <span className="actor-role">{log.actorRoleName?.replace(/_/g, ' ')}</span>
+                                                </div>
+                                                <div className="actor-dept-branch">
+                                                    {log.actorBranchName && <span className="actor-branch">🏦 {log.actorBranchName}</span>}
+                                                    {log.actorDepartmentName && <span className="actor-dept"> 📁 {log.actorDepartmentName}</span>}
+                                                </div>
+                                            </td>
+                                            <td className="audit-cell-action-taken">
+                                                <span className="action-description-text">
+                                                    {formatActionDescription(log.action)}
+                                                </span>
+                                            </td>
+                                            <td className="audit-cell-time">
+                                                <div className="acted-time">{formatDate(log.actedAt)}</div>
+                                            </td>
+                                            <td className="audit-cell-remarks">
+                                                {log.remarks && <div className="audit-remarks">💬 "{log.remarks}"</div>}
+                                                <div className="audit-ip">🖥️ {log.ipAddress || '127.0.0.1'}</div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
             </div>
             {confirmModal?.isOpen && (
                 <div className="custom-modal-overlay">

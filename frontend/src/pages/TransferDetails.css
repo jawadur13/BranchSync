@@ -719,3 +719,166 @@
     from { transform: translateY(20px) scale(0.95); opacity: 0; }
     to { transform: translateY(0) scale(1); opacity: 1; }
 }
+
+/* Admin Audit Logs Card */
+.admin-audit-card {
+    grid-column: 1 / -1; /* spans full width on details grid */
+    border-color: var(--color-primary-blue) !important;
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%) !important;
+    margin-top: var(--spacing-4);
+    box-shadow: 0 10px 15px -3px rgba(0, 51, 102, 0.05), 0 4px 6px -2px rgba(0, 51, 102, 0.02) !important;
+}
+
+.audit-table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-neutral-200);
+}
+
+.audit-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-800);
+}
+
+.audit-table th {
+    background-color: var(--color-neutral-50);
+    color: var(--color-neutral-500);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    padding: 12px 16px;
+    border-bottom: 2px solid var(--color-neutral-200);
+}
+
+.audit-table td {
+    padding: 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.audit-row:hover {
+    background-color: rgba(241, 245, 249, 0.4);
+}
+
+/* Badges for actions */
+.audit-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: var(--radius-md);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.badge-created { background: #f1f5f9; color: #475569; }
+.badge-approved_internal { background: #dbeafe; color: #1e40af; }
+.badge-hq_approved { background: #e0e7ff; color: #3730a3; }
+.badge-hq_rejected { background: #fee2e2; color: #991b1b; }
+.badge-assigned_driver { background: #fef3c7; color: #92400e; }
+.badge-released { background: #f3e8ff; color: #6b21a8; }
+.badge-picked_up { background: #fae8ff; color: #86198f; }
+.badge-delivered { background: #cffafe; color: #155e75; }
+.badge-completed { background: #d1fae5; color: #065f46; }
+.badge-rejected { background: #fee2e2; color: #991b1b; }
+
+/* Performer Details formatting */
+.actor-name {
+    font-weight: 600;
+    color: var(--color-neutral-900);
+    margin-bottom: 2px;
+}
+
+.actor-meta {
+    font-size: 11px;
+    color: var(--color-neutral-500);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.meta-bullet {
+    color: var(--color-neutral-300);
+}
+
+.actor-dept-branch {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-neutral-600);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.actor-branch, .actor-dept {
+    background: var(--color-neutral-50);
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--color-neutral-100);
+}
+
+/* Status Transitions formatting */
+.status-transition {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-pill {
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.status-from {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.status-arrow {
+    color: var(--color-neutral-400);
+}
+
+.status-to {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+/* Date and Time formatting */
+.acted-time {
+    font-family: var(--font-family-sans);
+    color: var(--color-neutral-700);
+    font-weight: 500;
+}
+
+/* Remarks formatting */
+.audit-remarks {
+    font-style: italic;
+    color: var(--color-neutral-600);
+    margin-bottom: 4px;
+    background: rgba(248, 250, 252, 0.8);
+    border-left: 2px solid var(--color-neutral-300);
+    padding: 4px 8px;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+}
+
+.audit-ip {
+    font-size: 10px;
+    color: var(--color-neutral-400);
+    font-family: monospace;
+}
+
+.action-description-text {
+    font-weight: 600;
+    color: var(--color-neutral-700);
+    font-size: 12px;
+}

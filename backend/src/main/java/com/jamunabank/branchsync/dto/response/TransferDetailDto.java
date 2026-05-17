@@ -53,4 +53,6 @@ public class TransferDetailDto {
     private OffsetDateTime deliveredAt;
     private OffsetDateTime closedAt;
     private String finalNote;
+
+    private java.util.List<AuditLogResponseDto> auditLogs;
 }
