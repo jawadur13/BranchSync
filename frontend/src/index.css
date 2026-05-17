@@ -4,15 +4,15 @@
   --primary-color: #003366; /* Jamuna Bank Blue */
   --secondary-color: #f2a900; /* Jamuna Bank Gold/Yellow */
   --accent-color: #00a4e4;
-  --bg-dark: #0a0e14;
-  --bg-card: #161b22;
-  --text-main: #e6edf3;
-  --text-dim: #848d97;
-  --border-color: #30363d;
-  --glass-bg: rgba(22, 27, 34, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --success: #238636;
-  --error: #da3633;
+  --bg-dark: #f0f6ff;
+  --bg-card: rgba(255, 255, 255, 0.75);
+  --text-main: #0c4a6e;
+  --text-dim: #0284c7;
+  --border-color: #bae6fd;
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --success: #10b981;
+  --error: #ef4444;
   --font-family: 'Outfit', sans-serif;
 }
 
@@ -85,4 +85,39 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 0.8s ease-out forwards;
+}
+
+/* Global Light-Mode Glassmorphism Card Theme */
+.welcome-banner,
+.table-card,
+.admin-card,
+.transfer-card,
+.details-card,
+.profile-card,
+.card,
+.inline-form {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+    border-radius: 16px !important;
+    box-shadow: 
+        0 8px 32px 0 rgba(31, 38, 135, 0.03) !important,
+        0 4px 15px -3px rgba(0, 0, 0, 0.01) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.welcome-banner:hover,
+.table-card:hover,
+.admin-card:hover,
+.transfer-card:hover,
+.details-card:hover,
+.profile-card:hover,
+.card:hover,
+.inline-form:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 
+        0 12px 40px 0 rgba(31, 38, 135, 0.06) !important,
+        0 8px 20px -3px rgba(0, 0, 0, 0.02) !important;
+    border-color: rgba(255, 255, 255, 0.95) !important;
 }
