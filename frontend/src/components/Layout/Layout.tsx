@@ -2,16 +2,15 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import { useAuth } from '../../context/AuthContext';
 import './Layout.css';
 
 const Layout: React.FC = () => {
+    const { user } = useAuth();
+    const roleClass = user?.role ? `role-bg-${user.role.toLowerCase()}` : '';
+
     return (
-        <div className="layout-container">
-            <div className="bg-blobs">
-                <div className="blob blob-1"></div>
-                <div className="blob blob-2"></div>
-                <div className="blob blob-3"></div>
-            </div>
+        <div className={`layout-container ${roleClass}`}>
             <Sidebar />
             <div className="layout-main">
                 <Topbar />

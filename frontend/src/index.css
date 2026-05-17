@@ -5,12 +5,10 @@
   --secondary-color: #f2a900; /* Jamuna Bank Gold/Yellow */
   --accent-color: #00a4e4;
   --bg-dark: #f0f6ff;
-  --bg-card: rgba(255, 255, 255, 0.75);
+  --bg-card: #ffffff;
   --text-main: #0c4a6e;
   --text-dim: #0284c7;
   --border-color: #bae6fd;
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.5);
   --success: #10b981;
   --error: #ef4444;
   --font-family: 'Outfit', sans-serif;
@@ -31,12 +29,10 @@ body {
   overflow-x: hidden;
 }
 
-/* Glassmorphism utility */
+/* Standard Simple Light Card Utility */
 .glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
+  background: #ffffff;
+  border: 1px solid var(--border-color);
   border-radius: 16px;
 }
 
@@ -87,7 +83,7 @@ body {
   animation: fadeIn 0.8s ease-out forwards;
 }
 
-/* Global Light-Mode Glassmorphism Card Theme */
+/* Standard Simple Light Cards (No Glass/Blur) */
 .welcome-banner,
 .table-card,
 .admin-card,
@@ -95,16 +91,15 @@ body {
 .details-card,
 .profile-card,
 .card,
-.inline-form {
-    background: rgba(255, 255, 255, 0.75) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.8) !important;
+.inline-form,
+.form-section {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--color-neutral-200) !important;
     border-radius: 16px !important;
-    box-shadow: 
-        0 8px 32px 0 rgba(31, 38, 135, 0.03) !important,
-        0 4px 15px -3px rgba(0, 0, 0, 0.01) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.25s ease !important;
 }
 
 .welcome-banner:hover,
@@ -114,10 +109,122 @@ body {
 .details-card:hover,
 .profile-card:hover,
 .card:hover,
-.inline-form:hover {
+.inline-form:hover,
+.form-section:hover {
     transform: translateY(-1px) !important;
-    box-shadow: 
-        0 12px 40px 0 rgba(31, 38, 135, 0.06) !important,
-        0 8px 20px -3px rgba(0, 0, 0, 0.02) !important;
-    border-color: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* ================================================= */
+/* Simple Light Colors - Role-Specific Customization */
+/* ================================================= */
+
+/* SYSTEM_ADMIN - Pastel Purple Light Theme */
+.role-bg-system_admin {
+    background-color: #f5f3ff !important;
+}
+.role-bg-system_admin .sidebar,
+.role-bg-system_admin .topbar {
+    background-color: #ffffff !important;
+    border-color: #ddd6fe !important;
+}
+.role-bg-system_admin .welcome-banner,
+.role-bg-system_admin .table-card,
+.role-bg-system_admin .admin-card,
+.role-bg-system_admin .card,
+.role-bg-system_admin .profile-card,
+.role-bg-system_admin .details-hero,
+.role-bg-system_admin .form-section,
+.role-bg-system_admin .modal-content,
+.role-bg-system_admin .profile-modal {
+    background-color: #ffffff !important;
+    border: 1px solid #ddd6fe !important;
+    box-shadow: 0 4px 10px rgba(109, 40, 217, 0.04) !important;
+}
+
+/* HQ_LOGISTICS_OFFICER - Pastel Blue Light Theme */
+.role-bg-hq_logistics_officer {
+    background-color: #f0f7ff !important;
+}
+.role-bg-hq_logistics_officer .sidebar,
+.role-bg-hq_logistics_officer .topbar {
+    background-color: #ffffff !important;
+    border-color: #bae6fd !important;
+}
+.role-bg-hq_logistics_officer .welcome-banner,
+.role-bg-hq_logistics_officer .table-card,
+.role-bg-hq_logistics_officer .admin-card,
+.role-bg-hq_logistics_officer .card,
+.role-bg-hq_logistics_officer .profile-card,
+.role-bg-hq_logistics_officer .details-hero,
+.role-bg-hq_logistics_officer .form-section,
+.role-bg-hq_logistics_officer .modal-content,
+.role-bg-hq_logistics_officer .profile-modal {
+    background-color: #ffffff !important;
+    border: 1px solid #bae6fd !important;
+    box-shadow: 0 4px 10px rgba(14, 165, 233, 0.04) !important;
+}
+
+/* Managers (BRANCH_MANAGER, OPERATION_MANAGER, FIRST_EXECUTIVE_OFFICER) - Pastel Green Light Theme */
+.role-bg-branch_manager,
+.role-bg-operation_manager,
+.role-bg-first_executive_officer {
+    background-color: #f0fdf4 !important;
+}
+.role-bg-branch_manager .sidebar, .role-bg-branch_manager .topbar,
+.role-bg-operation_manager .sidebar, .role-bg-operation_manager .topbar,
+.role-bg-first_executive_officer .sidebar, .role-bg-first_executive_officer .topbar {
+    background-color: #ffffff !important;
+    border-color: #a7f3d0 !important;
+}
+.role-bg-branch_manager .welcome-banner, .role-bg-branch_manager .table-card, .role-bg-branch_manager .card, .role-bg-branch_manager .profile-card, .role-bg-branch_manager .details-hero, .role-bg-branch_manager .form-section, .role-bg-branch_manager .modal-content,
+.role-bg-operation_manager .welcome-banner, .role-bg-operation_manager .table-card, .role-bg-operation_manager .card, .role-bg-operation_manager .profile-card, .role-bg-operation_manager .details-hero, .role-bg-operation_manager .form-section, .role-bg-operation_manager .modal-content,
+.role-bg-first_executive_officer .welcome-banner, .role-bg-first_executive_officer .table-card, .role-bg-first_executive_officer .card, .role-bg-first_executive_officer .profile-card, .role-bg-first_executive_officer .details-hero, .role-bg-first_executive_officer .form-section, .role-bg-first_executive_officer .modal-content {
+    background-color: #ffffff !important;
+    border: 1px solid #a7f3d0 !important;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.04) !important;
+}
+
+/* OFFICER - Pastel Teal Light Theme */
+.role-bg-officer {
+    background-color: #f0fdfa !important;
+}
+.role-bg-officer .sidebar,
+.role-bg-officer .topbar {
+    background-color: #ffffff !important;
+    border-color: #99f6e4 !important;
+}
+.role-bg-officer .welcome-banner,
+.role-bg-officer .table-card,
+.role-bg-officer .card,
+.role-bg-officer .profile-card,
+.role-bg-officer .details-hero,
+.role-bg-officer .form-section,
+.role-bg-officer .modal-content,
+.role-bg-officer .profile-modal {
+    background-color: #ffffff !important;
+    border: 1px solid #99f6e4 !important;
+    box-shadow: 0 4px 10px rgba(13, 148, 136, 0.04) !important;
+}
+
+/* DELIVERY_PERSON - Pastel Amber Light Theme */
+.role-bg-delivery_person {
+    background-color: #fffbeb !important;
+}
+.role-bg-delivery_person .sidebar,
+.role-bg-delivery_person .topbar {
+    background-color: #ffffff !important;
+    border-color: #fde68a !important;
+}
+.role-bg-delivery_person .welcome-banner,
+.role-bg-delivery_person .table-card,
+.role-bg-delivery_person .card,
+.role-bg-delivery_person .profile-card,
+.role-bg-delivery_person .details-hero,
+.role-bg-delivery_person .form-section,
+.role-bg-delivery_person .modal-content,
+.role-bg-delivery_person .profile-modal {
+    background-color: #ffffff !important;
+    border: 1px solid #fde68a !important;
+    box-shadow: 0 4px 10px rgba(217, 119, 6, 0.04) !important;
 }
