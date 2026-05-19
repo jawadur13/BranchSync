@@ -228,7 +228,7 @@
 .hist-code      { font-weight: 700; color: var(--color-neutral-800); font-family: monospace; white-space: nowrap; }
 .hist-title-cell{ max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.hist-route {
+.hist-route-flex {
     display: flex;
     align-items: center;
     gap: 6px;

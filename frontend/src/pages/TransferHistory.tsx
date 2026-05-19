@@ -330,10 +330,12 @@ const TransferHistory = () => {
                                     <td className="hist-code">{t.requestCode}</td>
                                     <td className="hist-title-cell">{t.title}</td>
                                     <td>{t.categoryName}</td>
-                                    <td className="hist-route">
-                                        <span className="hist-branch">{t.originBranchName}</span>
-                                        <span className="hist-arrow">→</span>
-                                        <span className="hist-branch">{t.destinationBranchName}</span>
+                                    <td>
+                                        <div className="hist-route-flex">
+                                            <span className="hist-branch">{t.originBranchName}</span>
+                                            <span className="hist-arrow">→</span>
+                                            <span className="hist-branch">{t.destinationBranchName}</span>
+                                        </div>
                                     </td>
                                     <td>
                                         <span className={getPriorityClass(t.priority)}>
