@@ -80,16 +80,21 @@ The core power of **BranchSync** is its structured, step-by-step state machine. 
 *   **Step 1: Request Initiation (Origin Desk)**
     *   A general officer creates a request detailing *what* needs to be moved.
     *   **Deferred Destination Safety**: They do *not* select where the item goes. The request is created in a "Pending Internal Review" state, automatically tracking their own branch as the origin.
-*   **Step 2: Internal Endorsement (Branch Manager)**
+*   **Step 2: Internal Endorsement & Local Rejection (Branch Manager)**
     *   A local manager reviews the outgoing request to ensure it is legitimate.
-    *   If approved, the request is dispatched to **Central HQ**. If the originator is a Manager/FEO, this step is bypassed automatically.
+    *   **Approve**: If approved, the request is dispatched to **Central HQ**. If the originator is a Manager/FEO, this step is bypassed automatically.
+    *   **Reject**: Alternatively, the origin manager can **Reject** the request with a mandatory explanation, terminating it immediately in a closed "Rejected by Manager" state.
 *   **Step 3: HQ Audit & Destination Allocation (HQ Logistics Officer)**
     *   The Central HQ officer opens their dashboard.
-    *   They audit the request contents, select the appropriate target **Destination Branch**, select the target **Destination Department** (which are filtered automatically to show only departments that are actually present in the selected branch), and click **Verify & Forward**.
-*   **Step 4: Acceptance & Driver Assignment (Destination Branch)**
-    *   The destination branch's desk team is notified. They accept the upcoming delivery and select the available **Delivery Driver** to go collect the package.
-*   **Step 5: Local Green Light (Origin Branch Manager)**
-    *   The origin branch manager verifies that the physical package is boxed and sealed. They click **Final Green Light (Release)** to authorize custody transfer.
+    *   They audit the request contents, select the appropriate target **Destination Branch**, select the target **Destination Department** (which are filtered automatically to show only departments that are actually present in the selected branch), and click **Verify & Forward** to approve. Alternatively, they can reject the transfer back to the originator.
+*   **Step 4: Acceptance, Driver Assignment & Routing Rejection (Destination Branch)**
+    *   The destination branch's desk team is notified. 
+    *   **Accept**: They accept the upcoming delivery and select the available **Delivery Driver** to go collect the package, advancing the status to **Pending Final Release**.
+    *   **Decline (Return to HQ)**: If they spot a discrepancy or lack storage space, they can decline the routing with a mandatory explanation. The request is **automatically returned straight back to Central HQ** (`PENDING_HQ_APPROVAL`), clearing the assigned destination branch and department so HQ can re-allocate it.
+*   **Step 5: Local Green Light & Release Rejection (Destination Manager)**
+    *   The destination branch manager conducts a final check of the courier arrangements.
+    *   **Release**: They click **Final Release** to authorize the courier to physically pick up the items, advancing the request to **Ready for Pickup**.
+    *   **Decline (Return to HQ)**: Even at this late stage, the manager can decline the release. Doing so clears all routing, acceptor, and driver details, returning the request **straight back to Central HQ** for re-routing.
 *   **Step 6: Transit Handshake (Delivery Driver)**
     *   The courier arrives at the origin branch, collects the package, and clicks **Confirm Pickup**. The request status changes instantly to **In Transit**.
 *   **Step 7: Delivery Handshake (Delivery Driver)**
