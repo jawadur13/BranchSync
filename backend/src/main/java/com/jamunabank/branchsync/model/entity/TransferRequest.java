@@ -48,9 +48,8 @@ public class TransferRequest {
     @JoinColumn(name = "internal_approver_id")
     private User internalApprover;
 
-    // Destination
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "destination_branch_id", nullable = false)
+    @JoinColumn(name = "destination_branch_id")
     private Branch destinationBranch;
 
     @ManyToOne(fetch = FetchType.LAZY)

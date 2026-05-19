@@ -10,14 +10,23 @@ public interface TransferService {
     // Step 1 Gate: Manager/FEO at source branch approves internally → goes to HQ
     TransferRequest approveInternal(Long requestId, Long approverId);
 
+    // Step 1 Gate: Manager/FEO at source branch rejects internally → terminates
+    TransferRequest rejectInternal(Long requestId, Long approverId, String rejectionNote);
+
     // HQ Step: Central Logistics Control officer verifies or rejects
-    TransferRequest hqVerify(Long requestId, Long hqOfficerId, String rejectionNote, boolean approved);
+    TransferRequest hqVerify(Long requestId, Long hqOfficerId, String rejectionNote, boolean approved, Long destinationBranchId, Long destinationDepartmentId);
 
     // Step 2: Dest dept staff accepts and assigns available driver
     TransferRequest acceptAndAssignDriver(Long requestId, Long acceptorId, Long deliveryPersonId);
 
+    // Step 2: Dest branch rejects the routing → sends back to HQ
+    TransferRequest rejectDestination(Long requestId, Long rejectorId, String rejectionNote);
+
     // Step 3: Dest Manager/FEO gives final green light
     TransferRequest releaseFinal(Long requestId, Long releaserId);
+
+    // Step 3: Dest Manager/FEO declines final release → sends back to HQ
+    TransferRequest rejectRelease(Long requestId, Long releaserId, String rejectionNote);
 
     // Step 4: Driver picks up from source
     TransferRequest markPickedUp(Long requestId, Long driverId);

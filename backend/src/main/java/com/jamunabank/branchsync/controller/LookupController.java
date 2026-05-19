@@ -63,6 +63,21 @@ public class LookupController {
         return ResponseEntity.ok(depts);
     }
 
+    @GetMapping("/branches/{branchId}/departments")
+    public ResponseEntity<List<Map<String, Object>>> getDepartmentsByBranch(@PathVariable Long branchId) {
+        Branch branch = branchRepository.findById(branchId)
+                .orElseThrow(() -> new com.jamunabank.branchsync.exception.ResourceNotFoundException("Branch not found"));
+        List<Map<String, Object>> depts = branch.getDepartments().stream()
+                .map(d -> {
+                    java.util.Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("departmentId", d.getDepartmentId());
+                    map.put("departmentName", d.getDepartmentName());
+                    return map;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(depts);
+    }
+
     @GetMapping("/roles")
     public ResponseEntity<List<Map<String, Object>>> getAllRoles() {
         List<Map<String, Object>> roles = roleRepository.findAll().stream()

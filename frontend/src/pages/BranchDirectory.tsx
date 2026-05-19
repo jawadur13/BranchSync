@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import api from '../api/axiosConfig';
-import { useAuth } from '../context/AuthContext';
 import './BranchDirectory.css';
 
 interface DirectoryUser {
@@ -15,7 +14,6 @@ interface DirectoryUser {
 }
 
 const BranchDirectory = () => {
-    const { user } = useAuth();
     const [users, setUsers] = useState<DirectoryUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -64,7 +62,7 @@ const BranchDirectory = () => {
             <div className="directory-header">
                 <div>
                     <h1 className="directory-title">🏢 Branch Directory</h1>
-                    <p className="directory-subtitle">Contact details for all staff in {user?.branchName || 'your branch'}</p>
+                    <p className="directory-subtitle">Contact details for all staff in your branch</p>
                 </div>
             </div>
 

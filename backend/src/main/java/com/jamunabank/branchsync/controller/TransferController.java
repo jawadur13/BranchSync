@@ -161,6 +161,18 @@ public class TransferController {
         return ResponseEntity.ok(transferMapper.toResponseDto(updated));
     }
 
+    // Step 1 Gate: Source manager rejects internally → terminates
+    @PostMapping("/{requestId}/reject-internal")
+    public ResponseEntity<TransferResponseDto> rejectInternal(
+            Authentication authentication,
+            @PathVariable Long requestId,
+            @RequestBody Map<String, String> body) {
+
+        String rejectionNote = body.get("rejectionNote");
+        TransferRequest updated = transferService.rejectInternal(requestId, getUserId(authentication), rejectionNote);
+        return ResponseEntity.ok(transferMapper.toResponseDto(updated));
+    }
+
     // HQ Step: Central Logistics Control officer verifies or rejects
     @PostMapping("/{requestId}/hq-verify")
     public ResponseEntity<TransferResponseDto> hqVerify(
@@ -170,7 +182,21 @@ public class TransferController {
 
         String rejectionNote = (String) body.get("rejectionNote");
         boolean approved = Boolean.TRUE.equals(body.get("approved"));
-        TransferRequest updated = transferService.hqVerify(requestId, getUserId(authentication), rejectionNote, approved);
+        
+        Number destBranchIdNum = (Number) body.get("destinationBranchId");
+        Number destDeptIdNum = (Number) body.get("destinationDepartmentId");
+        
+        Long destinationBranchId = destBranchIdNum != null ? destBranchIdNum.longValue() : null;
+        Long destinationDepartmentId = destDeptIdNum != null ? destDeptIdNum.longValue() : null;
+
+        TransferRequest updated = transferService.hqVerify(
+                requestId, 
+                getUserId(authentication), 
+                rejectionNote, 
+                approved, 
+                destinationBranchId, 
+                destinationDepartmentId
+        );
         return ResponseEntity.ok(transferMapper.toResponseDto(updated));
     }
 
@@ -186,12 +212,36 @@ public class TransferController {
         return ResponseEntity.ok(transferMapper.toResponseDto(updated));
     }
 
+    // Step 2: Dest branch declines routing → sends back to HQ
+    @PostMapping("/{requestId}/reject-destination")
+    public ResponseEntity<TransferResponseDto> rejectDestination(
+            Authentication authentication,
+            @PathVariable Long requestId,
+            @RequestBody Map<String, String> body) {
+
+        String rejectionNote = body.get("rejectionNote");
+        TransferRequest updated = transferService.rejectDestination(requestId, getUserId(authentication), rejectionNote);
+        return ResponseEntity.ok(transferMapper.toResponseDto(updated));
+    }
+
     // Step 3: Dest manager gives green light
     @PostMapping("/{requestId}/release")
     public ResponseEntity<TransferResponseDto> releaseFinal(
             Authentication authentication, @PathVariable Long requestId) {
 
         TransferRequest updated = transferService.releaseFinal(requestId, getUserId(authentication));
+        return ResponseEntity.ok(transferMapper.toResponseDto(updated));
+    }
+
+    // Step 3: Dest manager declines final green light → sends back to HQ
+    @PostMapping("/{requestId}/reject-release")
+    public ResponseEntity<TransferResponseDto> rejectRelease(
+            Authentication authentication,
+            @PathVariable Long requestId,
+            @RequestBody Map<String, String> body) {
+
+        String rejectionNote = body.get("rejectionNote");
+        TransferRequest updated = transferService.rejectRelease(requestId, getUserId(authentication), rejectionNote);
         return ResponseEntity.ok(transferMapper.toResponseDto(updated));
     }
 

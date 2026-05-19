@@ -131,19 +131,42 @@ The controller delegates all business logic to `TransferService` / `TransferServ
 
 ---
 
-### POST `/api/transfers/{requestId}/hq-verify` — HQ Officer Decision (HQ Step)
-- **Who calls it:** `HQ_LOGISTICS_OFFICER`
-- **What it does:** The Central Logistics Control officer at HQ reviews the transfer and either approves or rejects it
+### POST `/api/transfers/{requestId}/reject-internal` — Branch Manager Rejects (Step 1 Reject)
+- **Who calls it:** `BRANCH_MANAGER`, `OPERATION_MANAGER`, `FIRST_EXECUTIVE_OFFICER`
+- **What it does:** The origin branch manager rejects the transfer request locally before it goes to HQ
 - **Request Body:**
   ```json
-  { "approved": true, "rejectionNote": null }
+  { "rejectionNote": "Required documents are missing from this package." }
   ```
-  or
+- **Status transition:** `PENDING_INTERNAL` → `REJECTED_BY_MANAGER` (Terminated state)
+- **Audit log written:** `REJECTED_INTERNAL`
+- **Returns:** Updated `TransferResponseDto`
+
+---
+
+### POST `/api/transfers/{requestId}/hq-verify` — HQ Officer Decision & Destination Allocation (HQ Step)
+- **Who calls it:** `HQ_LOGISTICS_OFFICER`
+- **What it does:** The Central Logistics Control officer at HQ reviews the transfer, allocates the final destination branch and department, and either approves or rejects it.
+- **Request Body (Approved):**
   ```json
-  { "approved": false, "rejectionNote": "Items exceed weight limit policy" }
+  {
+    "approved": true,
+    "rejectionNote": null,
+    "destinationBranchId": 5,
+    "destinationDepartmentId": 2
+  }
+  ```
+- **Request Body (Rejected):**
+  ```json
+  {
+    "approved": false,
+    "rejectionNote": "Items exceed weight limit policy",
+    "destinationBranchId": null,
+    "destinationDepartmentId": null
+  }
   ```
 - **Status transitions:**
-  - Approved → `PENDING_ASSIGNMENT`
+  - Approved → `PENDING_ASSIGNMENT` (with destination branch & department assigned to the request)
   - Rejected → `REJECTED_BY_HQ`
 - **Audit logs written:** `APPROVED_BY_HQ` or `REJECTED_BY_HQ`
 - **Returns:** Updated `TransferResponseDto`
@@ -163,11 +186,37 @@ The controller delegates all business logic to `TransferService` / `TransferServ
 
 ---
 
+### POST `/api/transfers/{requestId}/reject-destination` — Destination Branch Rejects/Declines Routing (Step 2 Decline)
+- **Who calls it:** Branch Manager / Operations Staff at the destination branch
+- **What it does:** Rejects/declines routing to this branch, clearing the routing and sending the request back to HQ for re-routing.
+- **Request Body:**
+  ```json
+  { "rejectionNote": "This department doesn't have the storage capacity for these items right now." }
+  ```
+- **Status transition:** `PENDING_ASSIGNMENT` → `PENDING_HQ_APPROVAL` (resets destinationBranch & destinationDepartment to null)
+- **Audit log written:** `DESTINATION_REJECTED`
+- **Returns:** Updated `TransferResponseDto`
+
+---
+
 ### POST `/api/transfers/{requestId}/release` — Final Release (Step 3)
 - **Who calls it:** Branch Manager (gives the green light for physical pickup)
 - **What it does:** Authorizes the physical release of the item for the courier to collect
 - **Status transition:** `PENDING_FINAL_RELEASE` → `READY_FOR_PICKUP`
 - **Audit log written:** `RELEASED`
+- **Returns:** Updated `TransferResponseDto`
+
+---
+
+### POST `/api/transfers/{requestId}/reject-release` — Destination Manager Rejects Final Release (Step 3 Decline)
+- **Who calls it:** Branch Manager / Operations Staff at the destination branch
+- **What it does:** Rejects/declines routing at the final release stage, clearing the routing/department/acceptor/courier assignments and sending the request back to HQ for re-routing.
+- **Request Body:**
+  ```json
+  { "rejectionNote": "Incorrect package type received for storage." }
+  ```
+- **Status transition:** `PENDING_FINAL_RELEASE` → `PENDING_HQ_APPROVAL` (resets destinationBranch, destinationDepartment, deptAcceptor, and deliveryPerson to null)
+- **Audit log written:** `RELEASE_REJECTED`
 - **Returns:** Updated `TransferResponseDto`
 
 ---
@@ -376,6 +425,11 @@ A **lightweight, read-only** controller that provides dropdown/select data to th
 - **Who calls it:** New Transfer form (destination department dropdown), Admin User form (department assignment)
 - **Returns:** `departmentId, departmentName`
 
+#### GET `/api/lookup/branches/{branchId}/departments` — Scoped Branch Departments
+- **Who calls it:** HQ review allocation panel when picking the target department
+- **What it does:** Fetches only the departments associated with the specified branch ID (mapped via the `branch_departments` join table)
+- **Returns:** List of department objects: `departmentId, departmentName`
+
 #### GET `/api/lookup/roles` — All Roles (Simplified)
 - **Who calls it:** Admin User Management form (role assignment dropdown)
 - **Returns:** `roleId, roleName`
@@ -401,9 +455,9 @@ A **lightweight, read-only** controller that provides dropdown/select data to th
 | `UserController` | `/api/users` | 2 | Profile & branch directory | All / Managers |
 | `UserManagementController` | `/api/admin/users` | 4 | User CRUD | SYSTEM_ADMIN only |
 | `OrgManagementController` | `/api/admin/org` | 10 | Branch/Dept/Category CRUD | SYSTEM_ADMIN only |
-| `LookupController` | `/api/lookup` | 5 | Dropdown/form data | All authenticated |
+| `LookupController` | `/api/lookup` | 6 | Dropdown/form data | All authenticated |
 
-**Total backend endpoints: 31**
+**Total backend endpoints: 32**
 
 ---
 

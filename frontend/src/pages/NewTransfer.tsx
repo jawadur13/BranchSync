@@ -19,10 +19,6 @@ interface CategoryOption {
     departmentId: number | null;
 }
 
-interface DepartmentOption {
-    departmentId: number;
-    departmentName: string;
-}
 
 const NewTransfer = () => {
     const { user } = useAuth();
@@ -35,12 +31,9 @@ const NewTransfer = () => {
     const [description, setDescription] = useState(location.state?.description || '');
     const [categoryId, setCategoryId] = useState('');
     const [priority, setPriority] = useState(location.state?.priority || 'NORMAL');
-    const [destinationBranchId, setDestinationBranchId] = useState(location.state?.destinationBranchId?.toString() || '');
-    const [destinationDepartmentId, setDestinationDepartmentId] = useState(location.state?.destinationDepartmentId?.toString() || '');
 
     // Lookup data
     const [branches, setBranches] = useState<BranchOption[]>([]);
-    const [departments, setDepartments] = useState<DepartmentOption[]>([]);
     const [categories, setCategories] = useState<CategoryOption[]>([]);
 
     // UI state
@@ -54,13 +47,11 @@ const NewTransfer = () => {
 
     const fetchLookupData = async () => {
         try {
-            const [branchRes, departmentRes, categoryRes] = await Promise.all([
+            const [branchRes, categoryRes] = await Promise.all([
                 api.get('/lookup/branches'),
-                api.get('/lookup/departments'),
                 api.get('/lookup/categories'),
             ]);
             setBranches(branchRes.data);
-            setDepartments(departmentRes.data);
             setCategories(categoryRes.data);
             
             if (location.state?.categoryName) {
@@ -94,8 +85,8 @@ const NewTransfer = () => {
                 description,
                 categoryId: Number(categoryId),
                 priority,
-                destinationBranchId: Number(destinationBranchId),
-                destinationDepartmentId: destinationDepartmentId ? Number(destinationDepartmentId) : null,
+                destinationBranchId: null,
+                destinationDepartmentId: null,
             };
 
             await api.post('/transfers', payload);
@@ -224,8 +215,8 @@ const NewTransfer = () => {
                     <div className="form-section-header">
                         <span className="section-number">2</span>
                         <div>
-                            <h3>Transfer Routing</h3>
-                            <p>Define the origin and destination for this transfer</p>
+                            <h3>Transfer Routing & HQ Verification</h3>
+                            <p>Define the origin for this transfer. Destination will be allocated by HQ.</p>
                         </div>
                     </div>
 
@@ -239,61 +230,20 @@ const NewTransfer = () => {
                             <span className="field-hint">Auto-assigned from your session</span>
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="destination">Destination Branch <span className="required">*</span></label>
-                            <select
-                                id="destination"
-                                value={destinationBranchId}
-                                onChange={(e) => setDestinationBranchId(e.target.value)}
-                                required
-                            >
-                                <option value="">Select Destination</option>
-                                {branches
-                                    .filter(b => b.id !== user?.branchId)
-                                    .map(b => (
-                                        <option key={b.id} value={b.id}>
-                                            {b.name} ({b.code}) — {b.district}
-                                        </option>
-                                    ))
-                                }
-                            </select>
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="destDept">Target Department</label>
-                            <select
-                                id="destDept"
-                                value={destinationDepartmentId}
-                                onChange={(e) => setDestinationDepartmentId(e.target.value)}
-                            >
-                                <option value="">Select Department (Optional)</option>
-                                {departments.map(d => (
-                                    <option key={d.departmentId} value={d.departmentId}>
-                                        {d.departmentName}
-                                    </option>
-                                ))}
-                            </select>
+                        <div className="form-group full-width" style={{ marginTop: '10px' }}>
+                            <div className="info-card" style={{ borderLeft: '4px solid var(--color-primary-blue)', backgroundColor: '#f8fafc' }}>
+                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '1.5rem' }}>🏛️</span>
+                                    <div>
+                                        <h4 style={{ margin: '0 0 4px 0', color: '#1e293b' }}>Central Logistics Routing</h4>
+                                        <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+                                            To ensure strict audit compliance, the destination branch is assigned directly by the <strong>HQ Logistics Officer</strong> during the verification stage.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
-                    {/* Route Visual */}
-                    {originBranch && destinationBranchId && (
-                        <div className="route-visual">
-                            <div className="route-node">
-                                <span className="route-dot origin"></span>
-                                <span className="route-label">{originBranch.name}</span>
-                            </div>
-                            <div className="route-line">
-                                <span className="route-arrow">→</span>
-                            </div>
-                            <div className="route-node">
-                                <span className="route-dot destination"></span>
-                                <span className="route-label">
-                                    {branches.find(b => b.id === Number(destinationBranchId))?.name}
-                                </span>
-                            </div>
-                        </div>
-                    )}
                 </div>
 
                 {/* Priority Warning */}

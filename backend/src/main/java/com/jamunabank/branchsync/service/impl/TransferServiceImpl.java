@@ -20,6 +20,8 @@ public class TransferServiceImpl implements TransferService {
     private final TransferRequestRepository transferRequestRepository;
     private final UserRepository userRepository;
     private final AuditService auditService;
+    private final BranchRepository branchRepository;
+    private final DepartmentRepository departmentRepository;
 
     private static final List<String> MANAGER_ROLES = List.of(
         "BRANCH_MANAGER", "OPERATION_MANAGER", "FIRST_EXECUTIVE_OFFICER"
@@ -90,11 +92,43 @@ public class TransferServiceImpl implements TransferService {
         return updated;
     }
 
+    @Override
+    @Transactional
+    public TransferRequest rejectInternal(Long requestId, Long approverId, String rejectionNote) {
+        TransferRequest request = getRequest(requestId);
+        User approver = getUser(approverId);
+
+        if (!"PENDING_INTERNAL".equals(request.getStatus())) {
+            throw new com.jamunabank.branchsync.exception.UnauthorizedRoleException("This request is not awaiting internal approval.");
+        }
+
+        String role = approver.getRole().getRoleName();
+        if (!MANAGER_ROLES.contains(role)) {
+            throw new com.jamunabank.branchsync.exception.UnauthorizedRoleException("Only a Manager/FEO can perform internal rejection.");
+        }
+        if (approver.getBranch() == null || !approver.getBranch().getBranchId().equals(request.getOriginBranch().getBranchId())) {
+            throw new com.jamunabank.branchsync.exception.UnauthorizedRoleException("Approver must be from the same source branch.");
+        }
+        if (rejectionNote == null || rejectionNote.trim().isEmpty()) {
+            throw new IllegalArgumentException("Rejection note is required.");
+        }
+
+        String old = request.getStatus();
+        request.setStatus("REJECTED_BY_MANAGER");
+        request.setInternalApprover(approver);
+        request.setFinalNote(rejectionNote);
+        request.setClosedAt(OffsetDateTime.now());
+
+        TransferRequest updated = transferRequestRepository.save(request);
+        auditService.logAction(updated, approver, "REJECTED_INTERNAL", old, updated.getStatus(), rejectionNote, "127.0.0.1");
+        return updated;
+    }
+
     // ── HQ Step: Central Logistics Control officer verifies or rejects ─────────
 
     @Override
     @Transactional
-    public TransferRequest hqVerify(Long requestId, Long hqOfficerId, String rejectionNote, boolean approved) {
+    public TransferRequest hqVerify(Long requestId, Long hqOfficerId, String rejectionNote, boolean approved, Long destinationBranchId, Long destinationDepartmentId) {
         TransferRequest request = getRequest(requestId);
         User hqOfficer = getUser(hqOfficerId);
 
@@ -115,6 +149,19 @@ public class TransferServiceImpl implements TransferService {
         request.setHqApprovedAt(OffsetDateTime.now());
 
         if (approved) {
+            if (destinationBranchId == null) {
+                throw new UnauthorizedRoleException("A destination branch must be assigned by HQ.");
+            }
+            Branch destBranch = branchRepository.findById(destinationBranchId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Destination branch not found: " + destinationBranchId));
+            request.setDestinationBranch(destBranch);
+
+            if (destinationDepartmentId != null) {
+                Department destDept = departmentRepository.findById(destinationDepartmentId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Destination department not found: " + destinationDepartmentId));
+                request.setDestinationDepartment(destDept);
+            }
+
             // Forward to destination branch
             request.setStatus("PENDING_ASSIGNMENT");
             TransferRequest updated = transferRequestRepository.save(request);
@@ -158,6 +205,46 @@ public class TransferServiceImpl implements TransferService {
         return updated;
     }
 
+    @Override
+    @Transactional
+    public TransferRequest rejectDestination(Long requestId, Long rejectorId, String rejectionNote) {
+        TransferRequest request = getRequest(requestId);
+        User rejector = getUser(rejectorId);
+
+        if (!"PENDING_ASSIGNMENT".equals(request.getStatus())) {
+            throw new UnauthorizedRoleException("This request is not awaiting destination acceptance.");
+        }
+
+        // Verify that the rejector is from the destination branch
+        if (rejector.getBranch() == null || !rejector.getBranch().getBranchId().equals(request.getDestinationBranch().getBranchId())) {
+            throw new UnauthorizedRoleException("You must belong to the destination branch to decline this request.");
+        }
+
+        if (rejectionNote == null || rejectionNote.trim().isEmpty()) {
+            throw new IllegalArgumentException("Rejection note is required.");
+        }
+
+        String old = request.getStatus();
+        
+        // Reset destination assignments
+        request.setDestinationBranch(null);
+        request.setDestinationDepartment(null);
+        
+        // Route back to HQ for re-routing / selection
+        request.setStatus("PENDING_HQ_APPROVAL");
+        
+        // Set rejection reason
+        request.setFinalNote(rejectionNote);
+        
+        // Clear previous HQ approval details since it has been returned
+        request.setHqApprover(null);
+        request.setHqApprovedAt(null);
+
+        TransferRequest updated = transferRequestRepository.save(request);
+        auditService.logAction(updated, rejector, "DESTINATION_REJECTED", old, updated.getStatus(), rejectionNote, "127.0.0.1");
+        return updated;
+    }
+
     // ── Step 3: Dest Manager/FEO gives final green light ─────────────────────
 
     @Override
@@ -180,6 +267,51 @@ public class TransferServiceImpl implements TransferService {
 
         TransferRequest updated = transferRequestRepository.save(request);
         auditService.logAction(updated, releaser, "RELEASED", old, updated.getStatus(), null, "127.0.0.1");
+        return updated;
+    }
+
+    @Override
+    @Transactional
+    public TransferRequest rejectRelease(Long requestId, Long releaserId, String rejectionNote) {
+        TransferRequest request = getRequest(requestId);
+        User releaser = getUser(releaserId);
+
+        if (!"PENDING_FINAL_RELEASE".equals(request.getStatus())) {
+            throw new UnauthorizedRoleException("This request is not awaiting final release.");
+        }
+
+        String role = releaser.getRole().getRoleName();
+        if (!MANAGER_ROLES.contains(role)) {
+            throw new UnauthorizedRoleException("Only a Manager/FEO can decline final release.");
+        }
+        if (releaser.getBranch() == null || !releaser.getBranch().getBranchId().equals(request.getDestinationBranch().getBranchId())) {
+            throw new UnauthorizedRoleException("Releaser must be from the destination branch.");
+        }
+
+        if (rejectionNote == null || rejectionNote.trim().isEmpty()) {
+            throw new IllegalArgumentException("Rejection note is required.");
+        }
+
+        String old = request.getStatus();
+
+        // Reset destination assignments & driver & acceptor
+        request.setDestinationBranch(null);
+        request.setDestinationDepartment(null);
+        request.setDeptAcceptor(null);
+        request.setDeliveryPerson(null);
+
+        // Route back to HQ for routing review
+        request.setStatus("PENDING_HQ_APPROVAL");
+
+        // Set rejection reason
+        request.setFinalNote(rejectionNote);
+
+        // Clear previous HQ approval details
+        request.setHqApprover(null);
+        request.setHqApprovedAt(null);
+
+        TransferRequest updated = transferRequestRepository.save(request);
+        auditService.logAction(updated, releaser, "RELEASE_REJECTED", old, updated.getStatus(), rejectionNote, "127.0.0.1");
         return updated;
     }
 

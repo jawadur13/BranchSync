@@ -140,16 +140,16 @@ const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 
         } finally { setSubmitting(false); }
     };
 
-    const handleItemMap = async (categoryId: number, departmentId: string) => {
-        setSubmitting(true); setError(''); setSuccess('');
-        try {
-            await api.put(`/admin/org/items/${categoryId}/map`, { departmentId: departmentId ? Number(departmentId) : null });
-            setSuccess('Item mapping updated!');
-            fetchAll();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to map item.');
-        } finally { setSubmitting(false); }
-    };
+    // const handleItemMap = async (categoryId: number, departmentId: string) => {
+    //     setSubmitting(true); setError(''); setSuccess('');
+    //     try {
+    //         await api.put(`/admin/org/items/${categoryId}/map`, { departmentId: departmentId ? Number(departmentId) : null });
+    //         setSuccess('Item mapping updated!');
+    //         fetchAll();
+    //     } catch (err: any) {
+    //         setError(err.response?.data?.message || 'Failed to map item.');
+    //     } finally { setSubmitting(false); }
+    // };
 
     const openEditItem = (c: CategoryRow) => {
         setEditItemId(c.categoryId);

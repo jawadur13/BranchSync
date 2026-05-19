@@ -18,7 +18,6 @@ public class InitiateTransferRequestDto {
 
     private String priority = "NORMAL";
 
-    @NotNull(message = "Destination Branch ID is required")
     private Long destinationBranchId;
 
     private Long destinationDepartmentId;

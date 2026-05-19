@@ -45,6 +45,7 @@ const Dashboard = () => {
             case 'DELIVERED':
                 return 'badge-received';
             case 'REJECTED_BY_HQ':
+            case 'REJECTED_BY_MANAGER':
             case 'REJECTED_ON_RECEIPT':
             case 'CANCELLED':
                 return 'badge-danger';

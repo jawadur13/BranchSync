@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 15, 2026 at 09:57 PM
+-- Generation Time: May 19, 2026 at 01:29 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -57,7 +57,24 @@ INSERT INTO `audit_logs` (`audit_id`, `request_id`, `actor_id`, `action`, `from_
 (11, 2, 8, 'RELEASED', 'PENDING_FINAL_RELEASE', 'READY_FOR_PICKUP', NULL, '127.0.0.1', '2026-05-10 12:00:14'),
 (12, 2, 33, 'PICKED_UP', 'READY_FOR_PICKUP', 'IN_TRANSIT', NULL, '127.0.0.1', '2026-05-10 12:02:21'),
 (13, 2, 33, 'DELIVERED', 'IN_TRANSIT', 'DELIVERED', NULL, '127.0.0.1', '2026-05-10 12:03:18'),
-(14, 2, 28, 'COMPLETED', 'DELIVERED', 'COMPLETED', '', '127.0.0.1', '2026-05-10 12:05:30');
+(14, 2, 28, 'COMPLETED', 'DELIVERED', 'COMPLETED', '', '127.0.0.1', '2026-05-10 12:05:30'),
+(15, 3, 32, 'CREATED', NULL, 'PENDING_INTERNAL', NULL, '127.0.0.1', '2026-05-15 14:15:22'),
+(16, 3, 9, 'APPROVED_INTERNAL', 'PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', NULL, '127.0.0.1', '2026-05-15 14:16:20'),
+(17, 3, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-15 14:17:45'),
+(18, 3, 40, 'ASSIGNED_DRIVER', 'PENDING_ASSIGNMENT', 'PENDING_FINAL_RELEASE', NULL, '127.0.0.1', '2026-05-17 11:42:20'),
+(19, 3, 40, 'RELEASED', 'PENDING_FINAL_RELEASE', 'READY_FOR_PICKUP', NULL, '127.0.0.1', '2026-05-17 11:46:03'),
+(20, 3, 34, 'PICKED_UP', 'READY_FOR_PICKUP', 'IN_TRANSIT', NULL, '127.0.0.1', '2026-05-17 11:46:21'),
+(21, 3, 34, 'DELIVERED', 'IN_TRANSIT', 'DELIVERED', NULL, '127.0.0.1', '2026-05-17 11:46:25'),
+(22, 3, 32, 'COMPLETED', 'DELIVERED', 'COMPLETED', '', '127.0.0.1', '2026-05-17 12:09:17'),
+(23, 4, 14, 'CREATED', NULL, 'PENDING_INTERNAL', NULL, '127.0.0.1', '2026-05-17 14:44:04'),
+(24, 4, 2, 'APPROVED_INTERNAL', 'PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', NULL, '127.0.0.1', '2026-05-17 14:46:10'),
+(25, 5, 24, 'CREATED', NULL, 'PENDING_INTERNAL', NULL, '127.0.0.1', '2026-05-17 23:48:06'),
+(26, 5, 6, 'APPROVED_INTERNAL', 'PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', NULL, '127.0.0.1', '2026-05-17 23:49:21'),
+(27, 5, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-17 23:50:13'),
+(32, 10, 41, 'CREATED', NULL, 'PENDING_INTERNAL', NULL, '127.0.0.1', '2026-05-19 05:21:04'),
+(33, 10, 12, 'APPROVED_INTERNAL', 'PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', NULL, '127.0.0.1', '2026-05-19 05:21:51'),
+(34, 4, 38, 'HQ_REJECTED', 'PENDING_HQ_APPROVAL', 'REJECTED_BY_HQ', 'invalid request', '127.0.0.1', '2026-05-19 05:23:14'),
+(35, 10, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-19 05:27:55');
 
 -- --------------------------------------------------------
 
@@ -114,6 +131,7 @@ INSERT INTO `branch_departments` (`branch_id`, `department_id`) VALUES
 (1, 4),
 (1, 5),
 (1, 6),
+(1, 7),
 (2, 1),
 (2, 2),
 (2, 3),
@@ -192,7 +210,8 @@ INSERT INTO `item_categories` (`category_id`, `category_name`, `department_id`, 
 (9, 'Office Furniture', 3, 'LOW', 'Chairs, desks, and minor office items', '2026-05-04 16:32:09'),
 (10, 'Security Badge', 4, 'HIGH', 'Access control badges for staff', '2026-05-04 16:32:09'),
 (11, 'CCTV Equipment', 4, 'CRITICAL', 'Surveillance cameras and recording equipment', '2026-05-04 16:32:09'),
-(12, 'First Aid Kit', NULL, 'LOW', 'Medical first aid supplies, open access', '2026-05-04 16:32:09');
+(12, 'First Aid Kit', NULL, 'LOW', 'Medical first aid supplies, open access', '2026-05-04 16:32:09'),
+(13, 'Customer Documents', 6, 'MEDIUM', 'Documents like kyc, personal forms, etc..', '2026-05-19 04:43:09');
 
 -- --------------------------------------------------------
 
@@ -236,7 +255,7 @@ CREATE TABLE `transfer_requests` (
   `origin_department_id` bigint(20) DEFAULT NULL,
   `initiated_by_id` bigint(20) NOT NULL COMMENT 'Original requester — enforces Step 6 restriction',
   `internal_approver_id` bigint(20) DEFAULT NULL COMMENT 'Manager/FEO who approved internally. NULL if bypassed.',
-  `destination_branch_id` bigint(20) NOT NULL,
+  `destination_branch_id` bigint(20) DEFAULT NULL,
   `destination_department_id` bigint(20) DEFAULT NULL,
   `dept_acceptor_id` bigint(20) DEFAULT NULL,
   `final_releaser_id` bigint(20) DEFAULT NULL,
@@ -257,7 +276,11 @@ CREATE TABLE `transfer_requests` (
 
 INSERT INTO `transfer_requests` (`request_id`, `request_code`, `title`, `description`, `category_id`, `priority`, `status`, `origin_branch_id`, `origin_department_id`, `initiated_by_id`, `internal_approver_id`, `destination_branch_id`, `destination_department_id`, `dept_acceptor_id`, `final_releaser_id`, `delivery_person_id`, `picked_up_at`, `delivered_at`, `final_note`, `closed_at`, `requested_at`, `hq_approver_id`, `hq_approved_at`, `hq_rejection_note`) VALUES
 (1, 'REQ-2026-0001', 'Cash require due to shortage', 'Cash required due to shortage of cash balance at our branch. Kindly arrange cash support as soon as possible.\n', 1, 'URGENT', 'COMPLETED', 2, 1, 19, 5, 3, 1, 24, 12, 33, '2026-05-06 11:34:58', '2026-05-06 11:35:23', '', '2026-05-06 11:37:51', '2026-05-06 10:56:17', NULL, NULL, NULL),
-(2, 'REQ-2026-0002', 'Requestion for copy of account opening form ', 'Need a copy of the account opening form of Customer name: Tasnim Jahan (AC#1101008003478)', 8, 'NORMAL', 'COMPLETED', 4, 3, 28, 7, 5, 3, 30, 8, 33, '2026-05-10 12:02:21', '2026-05-10 12:03:18', '', '2026-05-10 12:05:30', '2026-05-10 11:48:11', NULL, NULL, NULL);
+(2, 'REQ-2026-0002', 'Requestion for copy of account opening form ', 'Need a copy of the account opening form of Customer name: Tasnim Jahan (AC#1101008003478)', 8, 'NORMAL', 'COMPLETED', 4, 3, 28, 7, 5, 3, 30, 8, 33, '2026-05-10 12:02:21', '2026-05-10 12:03:18', '', '2026-05-10 12:05:30', '2026-05-10 11:48:11', NULL, NULL, NULL),
+(3, 'REQ-2026-0003', 'Requisation for account opening form', 'as the customer x moved his account from your branch to our one.. send all of his physical document here', 8, 'NORMAL', 'COMPLETED', 6, 3, 32, 9, 7, 3, 40, 40, 34, '2026-05-17 11:46:21', '2026-05-17 11:46:25', '', '2026-05-17 12:09:17', '2026-05-15 14:15:22', 38, '2026-05-15 20:17:45.000000', NULL),
+(4, 'REQ-2026-0004', 'need demand draft', '', 3, 'HIGH', 'REJECTED_BY_HQ', 1, 1, 14, 2, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-19 05:23:14', '2026-05-17 14:44:04', 38, '2026-05-19 11:23:14.000000', 'invalid request'),
+(5, 'REQ-2026-0005', 'test', 'test', 2, 'URGENT', 'PENDING_ASSIGNMENT', 3, 1, 24, 6, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-17 23:48:06', 38, '2026-05-18 05:50:13.000000', NULL),
+(10, 'REQ-2026-0006', 'kyc', 'kyc for 110100', 13, 'URGENT', 'PENDING_ASSIGNMENT', 3, 6, 41, 12, 2, 6, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-19 05:21:04', 38, '2026-05-19 11:27:55.000000', NULL);
 
 -- --------------------------------------------------------
 
@@ -323,7 +346,11 @@ INSERT INTO `users` (`user_id`, `employee_id`, `full_name`, `email`, `phone_numb
 (34, 'DRV-002', 'Faruk Ahmed', 'drv2@jamunabank.com', '01755551002', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 6, NULL, NULL, 1, 1, '2026-05-04 16:32:09', '2026-05-04 16:56:26', NULL),
 (35, 'DRV-003', 'Shamim Mia', 'drv3@jamunabank.com', '01755551003', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 6, NULL, NULL, 1, 1, '2026-05-04 16:32:09', '2026-05-04 16:56:26', NULL),
 (36, 'DRV-004', 'Khorshed Alam', 'drv4@jamunabank.com', '01755551004', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 6, NULL, NULL, 1, 1, '2026-05-04 16:32:09', '2026-05-04 16:56:26', NULL),
-(37, 'DRV-005', 'Biplob Kumar Das', 'drv5@jamunabank.com', '01755551005', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 6, NULL, NULL, 0, 1, '2026-05-04 16:32:09', '2026-05-04 16:56:26', NULL);
+(37, 'DRV-005', 'Biplob Kumar Das', 'drv5@jamunabank.com', '01755551005', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 6, NULL, NULL, 0, 1, '2026-05-04 16:32:09', '2026-05-04 16:56:26', NULL),
+(38, 'EMP-501', 'Rifat Akter', 'rifat@jamunabank.com.bd', '+8801824844522', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 7, 1, 7, 1, 1, '2026-05-15 14:05:01', '2026-05-15 14:05:01', NULL),
+(39, 'EMP-502', 'Rafia Sultana', 'rafia@jamunabank.com.bd', '+8801824844522', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 7, 3, 1, 1, '2026-05-15 14:09:09', '2026-05-15 14:09:09', NULL),
+(40, 'EMP-503', 'Mizanur Rahaman Mizan', 'mizanur@jamunabank.com.bd', '01824844522', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 3, 7, NULL, 1, 1, '2026-05-15 14:10:06', '2026-05-15 14:10:06', NULL),
+(41, 'EMP-509', 'Robai Adnan', 'adnan@jamunabank.bd', '01922333345', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 3, 6, 1, 1, '2026-05-19 05:14:26', '2026-05-19 05:14:26', NULL);
 
 --
 -- Indexes for dumped tables
@@ -410,7 +437,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `audit_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `audit_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `branches`
@@ -428,7 +455,7 @@ ALTER TABLE `departments`
 -- AUTO_INCREMENT for table `item_categories`
 --
 ALTER TABLE `item_categories`
-  MODIFY `category_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `category_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -440,13 +467,13 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `transfer_requests`
 --
 ALTER TABLE `transfer_requests`
-  MODIFY `request_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `request_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `user_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- Constraints for dumped tables

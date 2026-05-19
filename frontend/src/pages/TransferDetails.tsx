@@ -101,6 +101,16 @@ const TransferDetails = () => {
     const [selectedDeliveryPersonId, setSelectedDeliveryPersonId] = useState('');
     const [finalNote, setFinalNote] = useState('');
     const [hqRejectionNote, setHqRejectionNote] = useState('');
+    const [internalRejectionNote, setInternalRejectionNote] = useState('');
+    const [destDeclineNote, setDestDeclineNote] = useState('');
+    const [releaseDeclineNote, setReleaseDeclineNote] = useState('');
+    
+    // HQ Destination Assignment states
+    const [branches, setBranches] = useState<any[]>([]);
+    const [departments, setDepartments] = useState<any[]>([]);
+    const [selectedBranchId, setSelectedBranchId] = useState('');
+    const [selectedDeptId, setSelectedDeptId] = useState('');
+
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
         message: string;
@@ -121,6 +131,40 @@ const TransferDetails = () => {
     useEffect(() => {
         fetchTransferDetails();
     }, [id]);
+
+    useEffect(() => {
+        if (user?.role === 'HQ_LOGISTICS_OFFICER') {
+            fetchHqLookupData();
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (selectedBranchId) {
+            fetchDepartmentsForBranch(selectedBranchId);
+        } else {
+            setDepartments([]);
+            setSelectedDeptId('');
+        }
+    }, [selectedBranchId]);
+
+    const fetchHqLookupData = async () => {
+        try {
+            const branchRes = await api.get('/lookup/branches');
+            setBranches(branchRes.data);
+        } catch (err) {
+            console.error('Failed to load HQ lookup data', err);
+        }
+    };
+
+    const fetchDepartmentsForBranch = async (branchId: string) => {
+        try {
+            const res = await api.get(`/lookup/branches/${branchId}/departments`);
+            setDepartments(res.data);
+            setSelectedDeptId(''); // Reset selected department on branch change
+        } catch (err) {
+            console.error('Failed to load departments for branch', err);
+        }
+    };
 
     const fetchTransferDetails = async () => {
         try {
@@ -156,6 +200,26 @@ const TransferDetails = () => {
         });
     };
 
+    const handleRejectInternal = () => {
+        if (!internalRejectionNote.trim()) {
+            setError('Please provide a rejection reason.');
+            return;
+        }
+        triggerActionWithConfirm('Reject this request internally?', async () => {
+            setActionLoading(true); setActionSuccess(''); setError('');
+            try {
+                await api.post(`/transfers/${id}/reject-internal`, { rejectionNote: internalRejectionNote });
+                setActionSuccess('Request internally rejected.');
+                setInternalRejectionNote('');
+                fetchTransferDetails();
+            } catch (err: any) {
+                setError(err.response?.data?.message || 'Action failed.');
+            } finally {
+                setActionLoading(false);
+            }
+        });
+    };
+
     // Step 2: Accept and Assign
     const handleAcceptAndAssign = () => {
         if (!selectedDeliveryPersonId) {
@@ -176,6 +240,26 @@ const TransferDetails = () => {
         });
     };
 
+    const handleRejectDestination = () => {
+        if (!destDeclineNote.trim()) {
+            setError('Please provide decline feedback.');
+            return;
+        }
+        triggerActionWithConfirm('Decline routing and return this transfer to Central HQ?', async () => {
+            setActionLoading(true); setActionSuccess(''); setError('');
+            try {
+                await api.post(`/transfers/${id}/reject-destination`, { rejectionNote: destDeclineNote });
+                setActionSuccess('Returned to Central HQ for routing review.');
+                setDestDeclineNote('');
+                fetchTransferDetails();
+            } catch (err: any) {
+                setError(err.response?.data?.message || 'Action failed.');
+            } finally {
+                setActionLoading(false);
+            }
+        });
+    };
+
     // Step 3: Final Release
     const handleRelease = () => {
         triggerActionWithConfirm('Give final green light for this transfer?', async () => {
@@ -183,6 +267,26 @@ const TransferDetails = () => {
             try {
                 await api.post(`/transfers/${id}/release`);
                 setActionSuccess('Final release granted! Driver can now pick up.');
+                fetchTransferDetails();
+            } catch (err: any) {
+                setError(err.response?.data?.message || 'Action failed.');
+            } finally {
+                setActionLoading(false);
+            }
+        });
+    };
+
+    const handleRejectRelease = () => {
+        if (!releaseDeclineNote.trim()) {
+            setError('Please provide decline reason.');
+            return;
+        }
+        triggerActionWithConfirm('Decline release and return this transfer to Central HQ?', async () => {
+            setActionLoading(true); setActionSuccess(''); setError('');
+            try {
+                await api.post(`/transfers/${id}/reject-release`, { rejectionNote: releaseDeclineNote });
+                setActionSuccess('Returned to Central HQ for routing review.');
+                setReleaseDeclineNote('');
                 fetchTransferDetails();
             } catch (err: any) {
                 setError(err.response?.data?.message || 'Action failed.');
@@ -247,6 +351,10 @@ const TransferDetails = () => {
 
     // HQ Step: Verify or Reject
     const handleHqVerify = (approved: boolean) => {
+        if (approved && !selectedBranchId) {
+            setError('Please select a destination branch.');
+            return;
+        }
         if (!approved && !hqRejectionNote.trim()) {
             setError('A rejection note is required when rejecting a transfer.');
             return;
@@ -258,6 +366,8 @@ const TransferDetails = () => {
                 await api.post(`/transfers/${id}/hq-verify`, {
                     approved,
                     rejectionNote: hqRejectionNote || null,
+                    destinationBranchId: approved ? Number(selectedBranchId) : null,
+                    destinationDepartmentId: approved && selectedDeptId ? Number(selectedDeptId) : null,
                 });
                 setActionSuccess(approved
                     ? '✅ Transfer verified and forwarded to destination branch!'
@@ -341,7 +451,7 @@ const TransferDetails = () => {
                         </div>
                         <div class="grid-item">
                             <strong>Origin Branch:</strong> ${transfer.originBranchName} (${transfer.originDepartmentName || 'Main Department'})<br/>
-                            <strong>Destination Branch:</strong> ${transfer.destinationBranchName} (${transfer.destinationDepartmentName || 'Clearing Department'})<br/>
+                            <strong>Destination Branch:</strong> ${transfer.destinationBranchName || 'Awaiting HQ Allocation'} (${transfer.destinationDepartmentName || 'Pending Central Routing'})<br/>
                             ${transfer.deliveryPersonFullName ? `<strong>Assigned Courier:</strong> ${transfer.deliveryPersonFullName}<br/>` : ''}
                             ${transfer.closedAt ? `<strong>Date Completed:</strong> ${formatDate(transfer.closedAt)}<br/>` : ''}
                         </div>
@@ -391,6 +501,7 @@ const TransferDetails = () => {
             'DELIVERED':              { class: 'status-received',  icon: '📍' },
             'COMPLETED':              { class: 'status-confirmed', icon: '✔️' },
             'REJECTED_BY_HQ':         { class: 'status-rejected',  icon: '🏛️❌' },
+            'REJECTED_BY_MANAGER':    { class: 'status-rejected',  icon: '❌' },
             'REJECTED_ON_RECEIPT':    { class: 'status-rejected',  icon: '❌' },
             'CANCELLED':              { class: 'status-cancelled', icon: '🚫' },
         };
@@ -514,8 +625,17 @@ const TransferDetails = () => {
                                 <div className="route-marker destination"></div>
                                 <div className="route-info">
                                     <span className="route-label">DESTINATION</span>
-                                    <span className="route-branch">{transfer.destinationBranchName}</span>
-                                    <span className="route-dept">{transfer.destinationDepartmentName || 'General Dept'}</span>
+                                    {transfer.destinationBranchName ? (
+                                        <>
+                                            <span className="route-branch">{transfer.destinationBranchName}</span>
+                                            <span className="route-dept">{transfer.destinationDepartmentName || 'General Dept'}</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="route-branch" style={{ color: '#64748b', fontStyle: 'italic', fontWeight: 'normal' }}>Awaiting HQ Allocation</span>
+                                            <span className="route-dept">Pending central routing</span>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -550,12 +670,26 @@ const TransferDetails = () => {
                         <h3 className="card-title">⚡ Actions</h3>
                         <div className="action-buttons">
                             {canApproveInternal() && (
-                                <button className="action-btn action-approve" onClick={handleApproveInternal} disabled={actionLoading}>
-                                    {actionLoading ? '...' : '✅ Approve Internally'}
-                                </button>
+                                <div className="action-driver-group">
+                                    <textarea
+                                        className="action-textarea"
+                                        value={internalRejectionNote}
+                                        onChange={(e) => setInternalRejectionNote(e.target.value)}
+                                        placeholder="Reason for rejection (mandatory if rejecting)"
+                                    />
+                                    <div className="action-close-buttons">
+                                        <button className="action-btn action-approve" onClick={handleApproveInternal} disabled={actionLoading}>
+                                            ✅ Approve Internally
+                                        </button>
+                                        <button className="action-btn action-rejected" onClick={handleRejectInternal} disabled={actionLoading || !internalRejectionNote.trim()}>
+                                            ❌ Reject Request
+                                        </button>
+                                    </div>
+                                </div>
                             )}
                             {canAcceptAndAssign() && (
                                 <div className="action-driver-group">
+                                    <h4 className="action-subtitle" style={{ fontSize: '0.88rem', margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>🚚 Accept &amp; Assign Courier</h4>
                                     <select
                                         className="action-select"
                                         value={selectedDeliveryPersonId}
@@ -566,16 +700,68 @@ const TransferDetails = () => {
                                             <option key={p.userId} value={p.userId}>{p.fullName}</option>
                                         ))}
                                     </select>
-                                    <button className="action-btn action-approve" onClick={handleAcceptAndAssign} disabled={actionLoading || !selectedDeliveryPersonId}>
-                                        Accept &amp; Assign Driver
-                                    </button>
+                                    <textarea
+                                        className="action-textarea"
+                                        value={destDeclineNote}
+                                        onChange={(e) => setDestDeclineNote(e.target.value)}
+                                        placeholder="Decline feedback (mandatory if returning to HQ)"
+                                        style={{ marginTop: '0.5rem' }}
+                                    />
+                                    <div className="action-close-buttons" style={{ marginTop: '0.5rem' }}>
+                                        <button className="action-btn action-approve" onClick={handleAcceptAndAssign} disabled={actionLoading || !selectedDeliveryPersonId}>
+                                            ✅ Accept &amp; Assign
+                                        </button>
+                                        <button className="action-btn action-rejected" onClick={handleRejectDestination} disabled={actionLoading || !destDeclineNote.trim()}>
+                                            ❌ Return to HQ
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                             {canHqVerify() && (
                                 <div className="action-close-group">
                                     <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                                        🏛️ <strong>HQ Review</strong> — Verify this transfer to forward it to the destination branch, or reject it with a mandatory explanation.
+                                        🏛️ <strong>HQ Review & Allocation</strong> — Select a destination branch and department to verify and forward, or reject with a mandatory explanation.
                                     </p>
+                                    
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '15px' }}>
+                                        <div>
+                                            <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#475569', display: 'block', marginBottom: '4px' }}>
+                                                Destination Branch <span style={{ color: '#ef4444' }}>*</span>
+                                            </label>
+                                            <select
+                                                className="action-select"
+                                                value={selectedBranchId}
+                                                onChange={(e) => setSelectedBranchId(e.target.value)}
+                                                style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                                            >
+                                                <option value="">Select Destination Branch...</option>
+                                                {branches
+                                                    .filter(b => b.id !== transfer.originBranchId)
+                                                    .map(b => (
+                                                        <option key={b.id} value={b.id}>{b.name} ({b.code})</option>
+                                                    ))
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#475569', display: 'block', marginBottom: '4px' }}>
+                                                Target Department (Optional)
+                                            </label>
+                                            <select
+                                                className="action-select"
+                                                value={selectedDeptId}
+                                                onChange={(e) => setSelectedDeptId(e.target.value)}
+                                                style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                                            >
+                                                <option value="">Select Target Department...</option>
+                                                {departments.map(d => (
+                                                    <option key={d.departmentId} value={d.departmentId}>{d.departmentName}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+
                                     <textarea
                                         className="action-textarea"
                                         value={hqRejectionNote}
@@ -583,7 +769,7 @@ const TransferDetails = () => {
                                         placeholder="Rejection reason (required if rejecting)"
                                     />
                                     <div className="action-close-buttons">
-                                        <button className="action-btn action-confirmed" onClick={() => handleHqVerify(true)} disabled={actionLoading}>
+                                        <button className="action-btn action-confirmed" onClick={() => handleHqVerify(true)} disabled={actionLoading || !selectedBranchId}>
                                             ✅ Verify & Forward
                                         </button>
                                         <button className="action-btn action-rejected" onClick={() => handleHqVerify(false)} disabled={actionLoading || !hqRejectionNote.trim()}>
@@ -593,9 +779,24 @@ const TransferDetails = () => {
                                 </div>
                             )}
                             {canRelease() && (
-                                <button className="action-btn action-verify-dest" onClick={handleRelease} disabled={actionLoading}>
-                                    🟢 Final Green Light (Release)
-                                </button>
+                                <div className="action-driver-group">
+                                    <h4 className="action-subtitle" style={{ fontSize: '0.88rem', margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>🟢 Final Green Light &amp; Release</h4>
+                                    <textarea
+                                        className="action-textarea"
+                                        value={releaseDeclineNote}
+                                        onChange={(e) => setReleaseDeclineNote(e.target.value)}
+                                        placeholder="Decline reason (mandatory if returning to HQ)"
+                                        style={{ marginBottom: '0.5rem' }}
+                                    />
+                                    <div className="action-close-buttons">
+                                        <button className="action-btn action-approve" onClick={handleRelease} disabled={actionLoading}>
+                                            🟢 Final Release
+                                        </button>
+                                        <button className="action-btn action-rejected" onClick={handleRejectRelease} disabled={actionLoading || !releaseDeclineNote.trim()}>
+                                            ❌ Return to HQ
+                                        </button>
+                                    </div>
+                                </div>
                             )}
                             {canPickup() && (
                                 <button className="action-btn action-verify-origin" onClick={handlePickup} disabled={actionLoading}>

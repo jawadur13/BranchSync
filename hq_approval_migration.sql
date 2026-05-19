@@ -28,6 +28,10 @@ ALTER TABLE transfer_requests
 INSERT IGNORE INTO departments (department_name, is_hq_only, created_at)
 VALUES ('Central Logistics Control', TRUE, NOW());
 
+-- 6. Make destination_branch_id nullable to support deferred HQ routing
+ALTER TABLE transfer_requests
+    MODIFY COLUMN destination_branch_id BIGINT NULL;
+
 -- ============================================================
 -- VERIFY: Run these SELECT statements to confirm it worked
 -- ============================================================

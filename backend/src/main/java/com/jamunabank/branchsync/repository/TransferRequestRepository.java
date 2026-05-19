@@ -29,7 +29,7 @@ public interface TransferRequestRepository extends JpaRepository<TransferRequest
     // - Destination branch ONLY sees transfers after HQ has approved (status not in pre-HQ states)
     @Query("SELECT t FROM TransferRequest t WHERE " +
            "(t.originBranch.branchId = :branchId) OR " +
-           "(t.destinationBranch.branchId = :branchId AND t.status NOT IN ('PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', 'REJECTED_BY_HQ')) " +
+           "(t.destinationBranch IS NOT NULL AND t.destinationBranch.branchId = :branchId AND t.status NOT IN ('PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', 'REJECTED_BY_HQ')) " +
            "ORDER BY t.requestedAt DESC")
     List<TransferRequest> findByBranchDashboard(@Param("branchId") Long branchId);
 }

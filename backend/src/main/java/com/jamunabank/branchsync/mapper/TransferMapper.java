@@ -18,7 +18,8 @@ public class TransferMapper {
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .priority(dto.getPriority() != null ? dto.getPriority() : "NORMAL")
-                .destinationBranch(Branch.builder().branchId(dto.getDestinationBranchId()).build())
+                .destinationBranch(dto.getDestinationBranchId() != null
+                        ? Branch.builder().branchId(dto.getDestinationBranchId()).build() : null)
                 .destinationDepartment(dto.getDestinationDepartmentId() != null
                         ? Department.builder().departmentId(dto.getDestinationDepartmentId()).build() : null)
                 .category(ItemCategory.builder().categoryId(dto.getCategoryId()).build())
