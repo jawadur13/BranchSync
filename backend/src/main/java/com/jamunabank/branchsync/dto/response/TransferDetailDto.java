@@ -48,11 +48,15 @@ public class TransferDetailDto {
     private String hqRejectionNote;
 
     // Timestamps & Closing
-    private OffsetDateTime requestedAt;
-    private OffsetDateTime pickedUpAt;
-    private OffsetDateTime deliveredAt;
-    private OffsetDateTime closedAt;
+    private java.time.OffsetDateTime requestedAt;
+    private java.time.OffsetDateTime pickedUpAt;
+    private java.time.OffsetDateTime deliveredAt;
+    private java.time.OffsetDateTime closedAt;
     private String finalNote;
+
+    // Cash Bundle
+    private java.math.BigDecimal requestedAmount;
+    private Boolean denominationsSubmitted;
 
     private java.util.List<AuditLogResponseDto> auditLogs;
 }

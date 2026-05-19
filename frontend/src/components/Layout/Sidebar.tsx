@@ -8,6 +8,8 @@ const Sidebar: React.FC = () => {
     const { user } = useAuth();
     const isAdmin = user?.role === 'SYSTEM_ADMIN';
     const isManager = user?.role === 'BRANCH_MANAGER' || user?.role === 'OPERATION_MANAGER' || user?.role === 'FIRST_EXECUTIVE_OFFICER';
+    const isOfficer = user?.role === 'OFFICER';
+    const isCashRelevant = isManager || isOfficer || isAdmin;
 
     return (
         <aside className="sidebar">
@@ -34,6 +36,23 @@ const Sidebar: React.FC = () => {
                 <NavLink to="/transfers/history" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                     <span className="nav-icon">📜</span> History
                 </NavLink>
+
+                {isCashRelevant && (
+                    <>
+                        <div className="sidebar-divider"></div>
+                        <div className="sidebar-section-label">Cash Management</div>
+                        {(isManager || isAdmin) && (
+                            <NavLink to="/cash/ledger" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                                <span className="nav-icon">💰</span> Cash Ledger
+                            </NavLink>
+                        )}
+                        {(isManager || isOfficer) && (
+                            <NavLink to="/cash/adjust" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                                <span className="nav-icon">⚙️</span> Cash Adjustments
+                            </NavLink>
+                        )}
+                    </>
+                )}
 
                 {isAdmin && (
                     <>

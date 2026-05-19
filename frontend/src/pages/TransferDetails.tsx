@@ -39,6 +39,9 @@ interface TransferDetail {
     hqApproverFullName: string | null;
     hqApprovedAt: string | null;
     hqRejectionNote: string | null;
+    // Cash Bundle
+    requestedAmount: number | null;
+    denominationsSubmitted: boolean | null;
     auditLogs?: AuditLogResponse[];
 }
 
@@ -104,6 +107,14 @@ const TransferDetails = () => {
     const [internalRejectionNote, setInternalRejectionNote] = useState('');
     const [destDeclineNote, setDestDeclineNote] = useState('');
     const [releaseDeclineNote, setReleaseDeclineNote] = useState('');
+
+    // Cash tracking state
+    const DENOMINATION_TYPES = [1000, 500, 200, 100, 50, 20, 10, 5, 2, 1];
+    const [denomQtys, setDenomQtys] = useState<Record<number, number>>({});
+    const [denomLoading, setDenomLoading] = useState(false);
+    const [existingDenoms, setExistingDenoms] = useState<any[]>([]);
+    const [branchBalances, setBranchBalances] = useState<Record<number, number>>({});
+    const [destBranchBalance, setDestBranchBalance] = useState<number | null>(null);
     
     // HQ Destination Assignment states
     const [branches, setBranches] = useState<any[]>([]);
@@ -151,6 +162,13 @@ const TransferDetails = () => {
         try {
             const branchRes = await api.get('/lookup/branches');
             setBranches(branchRes.data);
+            // Also fetch all cash balances for HQ routing
+            try {
+                const balRes = await api.get('/cash/balances');
+                const balMap: Record<number, number> = {};
+                balRes.data.forEach((b: any) => { balMap[b.branchId] = b.currentBalance; });
+                setBranchBalances(balMap);
+            } catch { /* ignore */ }
         } catch (err) {
             console.error('Failed to load HQ lookup data', err);
         }
@@ -171,11 +189,32 @@ const TransferDetails = () => {
             setLoading(true);
             const response = await api.get(`/transfers/${id}`);
             setTransfer(response.data);
-            
+
             // If in Step 2, fetch available delivery persons
             if (response.data.status === 'PENDING_ASSIGNMENT') {
                 const delRes = await api.get('/lookup/users/delivery-persons/available');
                 setAvailableDeliveryPersons(delRes.data);
+                // Fetch denominations already submitted (if any)
+                try {
+                    const denomRes = await api.get(`/cash/denominations/${response.data.requestId}`);
+                    setExistingDenoms(denomRes.data);
+                } catch { /* none yet */ }
+                // Fetch destination branch balance for Cash Bundle
+                if (response.data.categoryName?.toLowerCase().includes('cash bundle') &&
+                    response.data.destinationBranchId) {
+                    try {
+                        const balRes = await api.get(`/cash/balance/${response.data.destinationBranchId}`);
+                        setDestBranchBalance(balRes.data.currentBalance);
+                    } catch { /* ignore */ }
+                }
+            }
+            // If user is HQ officer and status is PENDING_HQ_APPROVAL, also load Cash Bundle denominations display
+            if (response.data.categoryName?.toLowerCase().includes('cash bundle') &&
+                response.data.requestId) {
+                try {
+                    const denomRes = await api.get(`/cash/denominations/${response.data.requestId}`);
+                    setExistingDenoms(denomRes.data);
+                } catch { /* ignore */ }
             }
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to load transfer details.');
@@ -226,6 +265,12 @@ const TransferDetails = () => {
             setError('Please select a delivery person.');
             return;
         }
+        const isCashBundle = transfer?.categoryName?.toLowerCase().includes('cash bundle');
+        // Cash Bundle: denominations must be submitted first
+        if (isCashBundle && !transfer?.denominationsSubmitted) {
+            setError('Please submit the denomination breakdown before accepting.');
+            return;
+        }
         triggerActionWithConfirm('Accept this request and assign the selected driver?', async () => {
             setActionLoading(true); setActionSuccess(''); setError('');
             try {
@@ -238,6 +283,27 @@ const TransferDetails = () => {
                 setActionLoading(false);
             }
         });
+    };
+
+    const handleSubmitDenominations = async () => {
+        const entries = DENOMINATION_TYPES
+            .map(d => ({ denomination: d, quantity: denomQtys[d] || 0 }))
+            .filter(e => e.quantity > 0);
+        if (entries.length === 0) {
+            setError('Please enter at least one denomination quantity.');
+            return;
+        }
+        setDenomLoading(true); setError('');
+        try {
+            const res = await api.post(`/cash/denominations/${id}`, { denominations: entries });
+            setExistingDenoms(res.data);
+            setActionSuccess('Denomination breakdown saved!');
+            fetchTransferDetails(); // refresh denominationsSubmitted flag
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Failed to save denominations.');
+        } finally {
+            setDenomLoading(false);
+        }
     };
 
     const handleRejectDestination = () => {
@@ -464,6 +530,34 @@ const TransferDetails = () => {
                     </div>
                     ` : ''}
 
+                    ${transfer.categoryName?.toLowerCase().includes('cash bundle') && existingDenoms.length > 0 ? `
+                    <h3 style="color: #0f172a; font-size: 16px; border-bottom: 2px solid #f59e0b; padding-bottom: 8px; margin-bottom: 12px; margin-top: 30px;">💰 Cash Bundle — Denomination Breakdown</h3>
+                    <div style="margin-bottom: 6px; font-size: 13px; color: #92400e; font-weight: 600;">
+                        Requested Amount: ৳${Number(transfer.requestedAmount).toLocaleString('en-BD')}
+                    </div>
+                    <table style="width: 300px;">
+                        <thead>
+                            <tr>
+                                <th>Denomination</th>
+                                <th style="text-align: right;">Quantity</th>
+                                <th style="text-align: right;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${existingDenoms.map(d => `
+                            <tr>
+                                <td>৳${d.denomination}</td>
+                                <td style="text-align: right;">${d.quantity}</td>
+                                <td style="text-align: right; font-weight: 600;">৳${Number(d.subtotal).toLocaleString('en-BD')}</td>
+                            </tr>`).join('')}
+                            <tr style="background: #fef3c7; font-weight: 700;">
+                                <td colspan="2">Total</td>
+                                <td style="text-align: right;">৳${existingDenoms.reduce((s: number, d: any) => s + Number(d.subtotal), 0).toLocaleString('en-BD')}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    ` : ''}
+
                     <h3 style="color: #0f172a; font-size: 16px; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 12px; margin-top: 30px;">🏛️ Complete Action Lifecycle & Audit Trail</h3>
                     <table>
                         <thead>
@@ -663,6 +757,53 @@ const TransferDetails = () => {
                             <p className="description-text">{transfer.description}</p>
                         </div>
                     )}
+
+                    {/* Cash Bundle Info */}
+                    {transfer.categoryName?.toLowerCase().includes('cash bundle') && (
+                        <div className="detail-card" style={{ borderLeft: '3px solid #f59e0b' }}>
+                            <h3 className="card-title">💰 Cash Bundle Details</h3>
+                            <div className="classification-grid">
+                                <div className="classification-item">
+                                    <span className="cl-label">Requested Amount</span>
+                                    <span className="cl-value" style={{ fontWeight: '700', fontSize: '1.05rem', color: '#92400e' }}>
+                                        {transfer.requestedAmount ? `৳${Number(transfer.requestedAmount).toLocaleString('en-BD')}` : '—'}
+                                    </span>
+                                </div>
+                                <div className="classification-item">
+                                    <span className="cl-label">Denominations</span>
+                                    <span className="cl-value">{transfer.denominationsSubmitted ? '✅ Submitted' : '⏳ Pending'}</span>
+                                </div>
+                            </div>
+                            {existingDenoms.length > 0 && (
+                                <div style={{ marginTop: '12px' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                                        <thead>
+                                            <tr style={{ background: '#fef3c7' }}>
+                                                <th style={{ padding: '6px 8px', textAlign: 'left', borderBottom: '1px solid #f59e0b' }}>Denomination</th>
+                                                <th style={{ padding: '6px 8px', textAlign: 'right', borderBottom: '1px solid #f59e0b' }}>Qty</th>
+                                                <th style={{ padding: '6px 8px', textAlign: 'right', borderBottom: '1px solid #f59e0b' }}>Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {existingDenoms.map((d: any) => (
+                                                <tr key={d.denominationId} style={{ borderBottom: '1px solid #fde68a' }}>
+                                                    <td style={{ padding: '5px 8px' }}>৳{d.denomination}</td>
+                                                    <td style={{ padding: '5px 8px', textAlign: 'right' }}>{d.quantity}</td>
+                                                    <td style={{ padding: '5px 8px', textAlign: 'right', fontWeight: '600' }}>৳{Number(d.subtotal).toLocaleString('en-BD')}</td>
+                                                </tr>
+                                            ))}
+                                            <tr style={{ background: '#fef3c7', fontWeight: '700' }}>
+                                                <td style={{ padding: '6px 8px' }} colSpan={2}>Total</td>
+                                                <td style={{ padding: '6px 8px', textAlign: 'right' }}>
+                                                    ৳{existingDenoms.reduce((s: number, d: any) => s + Number(d.subtotal), 0).toLocaleString('en-BD')}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="details-sidebar">
@@ -690,6 +831,62 @@ const TransferDetails = () => {
                             {canAcceptAndAssign() && (
                                 <div className="action-driver-group">
                                     <h4 className="action-subtitle" style={{ fontSize: '0.88rem', margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>🚚 Accept &amp; Assign Courier</h4>
+
+                                    {/* Cash Bundle Denomination Form */}
+                                    {transfer.categoryName?.toLowerCase().includes('cash bundle') && (
+                                        <div style={{ marginBottom: '1rem', background: '#fffbeb', border: '1px solid #f59e0b', borderRadius: '8px', padding: '12px' }}>
+                                            <div style={{ fontWeight: '600', fontSize: '0.85rem', marginBottom: '8px', color: '#92400e' }}>
+                                                💰 Cash Bundle — Denomination Breakdown Required
+                                            </div>
+                                            {transfer.requestedAmount && (
+                                                <div style={{ fontSize: '0.82rem', color: '#78350f', marginBottom: '8px' }}>
+                                                    Requested Amount: <strong>৳{Number(transfer.requestedAmount).toLocaleString('en-BD')}</strong>
+                                                </div>
+                                            )}
+                                            {destBranchBalance !== null && (
+                                                <div style={{ fontSize: '0.82rem', marginBottom: '10px', color: destBranchBalance < (transfer.requestedAmount || 0) ? '#dc2626' : '#15803d', fontWeight: '600' }}>
+                                                    {destBranchBalance < (transfer.requestedAmount || 0)
+                                                        ? `⛔ Insufficient balance: ৳${destBranchBalance.toLocaleString('en-BD')} available. Add cash balance before accepting.`
+                                                        : `✅ Available balance: ৳${destBranchBalance.toLocaleString('en-BD')}`
+                                                    }
+                                                </div>
+                                            )}
+                                            {DENOMINATION_TYPES.map(denom => (
+                                                <div key={denom} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                                                    <span style={{ width: '60px', fontSize: '0.82rem', color: '#374151', fontWeight: '600' }}>৳{denom}</span>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        placeholder="0"
+                                                        value={denomQtys[denom] || ''}
+                                                        onChange={e => setDenomQtys(prev => ({ ...prev, [denom]: parseInt(e.target.value) || 0 }))}
+                                                        style={{ width: '70px', padding: '4px 8px', border: '1px solid #d1d5db', borderRadius: '4px', fontSize: '0.82rem' }}
+                                                    />
+                                                    <span style={{ fontSize: '0.78rem', color: '#6b7280' }}>
+                                                        = ৳{((denomQtys[denom] || 0) * denom).toLocaleString('en-BD')}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                            <div style={{ borderTop: '1px solid #f59e0b', paddingTop: '8px', marginTop: '6px', fontSize: '0.85rem', fontWeight: '700', color: '#92400e' }}>
+                                                Total: ৳{DENOMINATION_TYPES.reduce((sum, d) => sum + (denomQtys[d] || 0) * d, 0).toLocaleString('en-BD')}
+                                                {transfer.requestedAmount && DENOMINATION_TYPES.reduce((sum, d) => sum + (denomQtys[d] || 0) * d, 0) !== transfer.requestedAmount && (
+                                                    <span style={{ color: '#dc2626', marginLeft: '8px', fontWeight: '600' }}>⚠ Must equal ৳{Number(transfer.requestedAmount).toLocaleString('en-BD')}</span>
+                                                )}
+                                            </div>
+                                            <button
+                                                className="action-btn action-approve"
+                                                style={{ marginTop: '10px', width: '100%' }}
+                                                onClick={handleSubmitDenominations}
+                                                disabled={denomLoading}
+                                            >
+                                                {denomLoading ? 'Saving...' : (transfer.denominationsSubmitted ? '✅ Update Denomination Breakdown' : '💾 Save Denomination Breakdown')}
+                                            </button>
+                                            {transfer.denominationsSubmitted && (
+                                                <div style={{ marginTop: '6px', fontSize: '0.78rem', color: '#15803d', fontWeight: '600' }}>✅ Denominations saved — you can now Accept.</div>
+                                            )}
+                                        </div>
+                                    )}
+
                                     <select
                                         className="action-select"
                                         value={selectedDeliveryPersonId}
@@ -708,7 +905,7 @@ const TransferDetails = () => {
                                         style={{ marginTop: '0.5rem' }}
                                     />
                                     <div className="action-close-buttons" style={{ marginTop: '0.5rem' }}>
-                                        <button className="action-btn action-approve" onClick={handleAcceptAndAssign} disabled={actionLoading || !selectedDeliveryPersonId}>
+                                        <button className="action-btn action-approve" onClick={handleAcceptAndAssign} disabled={actionLoading || !selectedDeliveryPersonId || (transfer.categoryName?.toLowerCase().includes('cash bundle') && !transfer.denominationsSubmitted)}>
                                             ✅ Accept &amp; Assign
                                         </button>
                                         <button className="action-btn action-rejected" onClick={handleRejectDestination} disabled={actionLoading || !destDeclineNote.trim()}>
@@ -735,11 +932,18 @@ const TransferDetails = () => {
                                                 style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
                                             >
                                                 <option value="">Select Destination Branch...</option>
-                                                {branches
+                                                 {branches
                                                     .filter(b => b.id !== transfer.originBranchId)
-                                                    .map(b => (
-                                                        <option key={b.id} value={b.id}>{b.name} ({b.code})</option>
-                                                    ))
+                                                    .map(b => {
+                                                        const isCashBundleReq = transfer.categoryName?.toLowerCase().includes('cash bundle');
+                                                        const bal = branchBalances[b.id];
+                                                        const hasEnough = !isCashBundleReq || bal === undefined || bal >= (transfer.requestedAmount || 0);
+                                                        return (
+                                                            <option key={b.id} value={b.id}>
+                                                                {b.name} ({b.code}){isCashBundleReq && bal !== undefined ? ` — ৳${bal.toLocaleString('en-BD')}${!hasEnough ? ' ⚠️ LOW' : ''}` : ''}
+                                                            </option>
+                                                        );
+                                                    })
                                                 }
                                             </select>
                                         </div>

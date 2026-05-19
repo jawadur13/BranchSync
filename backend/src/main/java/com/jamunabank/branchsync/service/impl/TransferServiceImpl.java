@@ -5,6 +5,7 @@ import com.jamunabank.branchsync.exception.UnauthorizedRoleException;
 import com.jamunabank.branchsync.model.entity.*;
 import com.jamunabank.branchsync.repository.*;
 import com.jamunabank.branchsync.service.AuditService;
+import com.jamunabank.branchsync.service.CashService;
 import com.jamunabank.branchsync.service.TransferService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class TransferServiceImpl implements TransferService {
     private final AuditService auditService;
     private final BranchRepository branchRepository;
     private final DepartmentRepository departmentRepository;
+    private final CashService cashService;
 
     private static final List<String> MANAGER_ROLES = List.of(
         "BRANCH_MANAGER", "OPERATION_MANAGER", "FIRST_EXECUTIVE_OFFICER"
@@ -335,6 +337,15 @@ public class TransferServiceImpl implements TransferService {
 
         TransferRequest updated = transferRequestRepository.save(request);
         auditService.logAction(updated, driver, "PICKED_UP", old, updated.getStatus(), null, "127.0.0.1");
+
+        // Cash Bundle: debit destination branch balance (they are sending the cash)
+        if (isCashBundle(updated)) {
+            java.math.BigDecimal amount = updated.getRequestedAmount();
+            if (amount != null) {
+                cashService.recordTransferOut(updated.getDestinationBranch().getBranchId(), updated.getRequestId(), amount, driverId);
+            }
+        }
+
         return updated;
     }
 
@@ -358,6 +369,15 @@ public class TransferServiceImpl implements TransferService {
 
         TransferRequest updated = transferRequestRepository.save(request);
         auditService.logAction(updated, driver, "DELIVERED", old, updated.getStatus(), null, "127.0.0.1");
+
+        // Cash Bundle: credit origin branch balance (they are receiving the cash)
+        if (isCashBundle(updated)) {
+            java.math.BigDecimal amount = updated.getRequestedAmount();
+            if (amount != null) {
+                cashService.recordTransferIn(updated.getOriginBranch().getBranchId(), updated.getRequestId(), amount, driverId);
+            }
+        }
+
         return updated;
     }
 
@@ -381,6 +401,18 @@ public class TransferServiceImpl implements TransferService {
 
         TransferRequest updated = transferRequestRepository.save(request);
         auditService.logAction(updated, requester, accepted ? "COMPLETED" : "REJECTED", old, updated.getStatus(), finalNote, "127.0.0.1");
+
+        // Cash Bundle: if rejected on receipt, reverse the cash movements
+        if (!accepted && isCashBundle(updated)) {
+            java.math.BigDecimal amount = updated.getRequestedAmount();
+            if (amount != null) {
+                // Origin branch loses the cash back (reversal out)
+                cashService.recordReversal(updated.getOriginBranch().getBranchId(), updated.getRequestId(), amount, requesterId, "OUT");
+                // Destination branch gets the cash back (reversal in)
+                cashService.recordReversal(updated.getDestinationBranch().getBranchId(), updated.getRequestId(), amount, requesterId, "IN");
+            }
+        }
+
         return updated;
     }
 
@@ -487,5 +519,10 @@ public class TransferServiceImpl implements TransferService {
     private User getUser(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
+    }
+
+    private boolean isCashBundle(TransferRequest request) {
+        return request.getCategory() != null
+                && "Cash Bundle".equalsIgnoreCase(request.getCategory().getCategoryName());
     }
 }

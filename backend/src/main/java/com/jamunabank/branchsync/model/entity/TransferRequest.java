@@ -1,6 +1,7 @@
 package com.jamunabank.branchsync.model.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -98,6 +99,13 @@ public class TransferRequest {
     @Column(name = "requested_at", nullable = false, updatable = false)
     private OffsetDateTime requestedAt;
 
+    // Cash Bundle specific fields
+    @Column(name = "requested_amount", precision = 18, scale = 2)
+    private BigDecimal requestedAmount;
+
+    @Column(name = "denominations_submitted")
+    private Boolean denominationsSubmitted = false;
+
     public TransferRequest() {}
 
     // Getters and Setters
@@ -149,6 +157,10 @@ public class TransferRequest {
     public void setHqApprovedAt(OffsetDateTime hqApprovedAt) { this.hqApprovedAt = hqApprovedAt; }
     public String getHqRejectionNote() { return hqRejectionNote; }
     public void setHqRejectionNote(String hqRejectionNote) { this.hqRejectionNote = hqRejectionNote; }
+    public BigDecimal getRequestedAmount() { return requestedAmount; }
+    public void setRequestedAmount(BigDecimal requestedAmount) { this.requestedAmount = requestedAmount; }
+    public Boolean getDenominationsSubmitted() { return denominationsSubmitted; }
+    public void setDenominationsSubmitted(Boolean denominationsSubmitted) { this.denominationsSubmitted = denominationsSubmitted; }
 
     public static class TransferRequestBuilder {
         private TransferRequest t = new TransferRequest();
@@ -176,6 +188,7 @@ public class TransferRequest {
         public TransferRequestBuilder hqApprover(User u) { t.hqApprover = u; return this; }
         public TransferRequestBuilder hqApprovedAt(OffsetDateTime d) { t.hqApprovedAt = d; return this; }
         public TransferRequestBuilder hqRejectionNote(String n) { t.hqRejectionNote = n; return this; }
+        public TransferRequestBuilder requestedAmount(BigDecimal a) { t.requestedAmount = a; return this; }
         public TransferRequest build() { return t; }
     }
     public static TransferRequestBuilder builder() { return new TransferRequestBuilder(); }

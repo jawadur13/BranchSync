@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -26,4 +27,8 @@ public class InitiateTransferRequestDto {
     private String title;
 
     private String description;
+
+    // Cash Bundle only — amount requested
+    private BigDecimal requestedAmount;
 }
+

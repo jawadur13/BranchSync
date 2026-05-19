@@ -23,6 +23,7 @@ public class TransferMapper {
                 .destinationDepartment(dto.getDestinationDepartmentId() != null
                         ? Department.builder().departmentId(dto.getDestinationDepartmentId()).build() : null)
                 .category(ItemCategory.builder().categoryId(dto.getCategoryId()).build())
+                .requestedAmount(dto.getRequestedAmount())
                 .build();
     }
 
@@ -96,7 +97,9 @@ public class TransferMapper {
              .hqApproverFullName(e.getHqApprover().getFullName());
         }
         b.hqApprovedAt(e.getHqApprovedAt())
-         .hqRejectionNote(e.getHqRejectionNote());
+         .hqRejectionNote(e.getHqRejectionNote())
+         .requestedAmount(e.getRequestedAmount())
+         .denominationsSubmitted(e.getDenominationsSubmitted());
         return b.build();
     }
 }

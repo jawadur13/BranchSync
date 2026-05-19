@@ -9,6 +9,8 @@ import UserManagement from './pages/admin/UserManagement';
 import OrgManagement from './pages/admin/OrgManagement';
 import Profile from './pages/Profile';
 import BranchDirectory from './pages/BranchDirectory';
+import CashLedger from './pages/CashLedger';
+import ManualAdjustment from './pages/ManualAdjustment';
 import Layout from './components/Layout/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -34,6 +36,8 @@ function App() {
           <Route path="transfers/history" element={<TransferHistory />} />
           <Route path="branch-directory" element={<BranchDirectory />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="cash/ledger" element={<CashLedger />} />
+          <Route path="cash/adjust" element={<ManualAdjustment />} />
 
           {/* Admin Routes */}
           <Route path="admin/users" element={<UserManagement />} />

@@ -31,6 +31,7 @@ const NewTransfer = () => {
     const [description, setDescription] = useState(location.state?.description || '');
     const [categoryId, setCategoryId] = useState('');
     const [priority, setPriority] = useState(location.state?.priority || 'NORMAL');
+    const [requestedAmount, setRequestedAmount] = useState('');
 
     // Lookup data
     const [branches, setBranches] = useState<BranchOption[]>([]);
@@ -72,6 +73,7 @@ const NewTransfer = () => {
     });
 
     const selectedCategory = categories.find(c => c.id === Number(categoryId));
+    const isCashBundle = selectedCategory?.name?.toLowerCase().includes('cash bundle');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -80,7 +82,7 @@ const NewTransfer = () => {
         setLoading(true);
 
         try {
-            const payload = {
+            const payload: any = {
                 title,
                 description,
                 categoryId: Number(categoryId),
@@ -88,6 +90,9 @@ const NewTransfer = () => {
                 destinationBranchId: null,
                 destinationDepartmentId: null,
             };
+            if (isCashBundle && requestedAmount) {
+                payload.requestedAmount = parseFloat(requestedAmount);
+            }
 
             await api.post('/transfers', payload);
             setSuccess('Transfer request submitted successfully!');
@@ -206,6 +211,27 @@ const NewTransfer = () => {
                                     {selectedCategory.sensitivityLevel}
                                 </span>
                             </div>
+                        </div>
+                    )}
+
+                    {/* Cash Bundle: Amount Requested */}
+                    {isCashBundle && (
+                        <div className="form-group full-width" style={{ marginTop: '12px' }}>
+                            <label htmlFor="requestedAmount">
+                                💵 Amount Requested (৳) <span className="required">*</span>
+                            </label>
+                            <input
+                                type="number"
+                                id="requestedAmount"
+                                min="1"
+                                step="1"
+                                value={requestedAmount}
+                                onChange={(e) => setRequestedAmount(e.target.value)}
+                                placeholder="e.g. 500000"
+                                required={isCashBundle}
+                                style={{ borderLeft: '3px solid #f59e0b' }}
+                            />
+                            <span className="field-hint">The exact cash amount the destination branch will need to prepare and send.</span>
                         </div>
                     )}
                 </div>
