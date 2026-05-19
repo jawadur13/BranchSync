@@ -23,8 +23,8 @@ In a modern banking network like Jamuna Bank PLC, branches frequently need to ex
 To understand the system, it helps to be familiar with the following basic concepts:
 
 *   **Transfer Request**: A digital record representing a physical box, envelope, or asset that needs to be moved. Each request is assigned a unique tracking code (e.g., `REQ-2026-0004`).
-*   **Origin Branch & Department**: The branch and department where the physical asset is currently located.
-*   **Destination Branch & Department**: The final target branch and department where the asset is being sent.
+*   **Origin Branch & Department**: The branch and department that **initiates the request** because they need the physical assets. They are the **recipient of the physical package**.
+*   **Destination Branch & Department**: The branch and department **targeted to fulfill the request** (allocated by HQ). They currently hold the assets and will serve as the **sender/releaser of the physical package**.
 *   **Priority Level**: Indicates how fast the item must move (`NORMAL`, `HIGH`, `URGENT`, `CRITICAL`).
 *   **Sensitivity Level**: Dictates security protocols based on the contents (`LOW` for stationery, `MEDIUM` for standard files, `HIGH` or `CRITICAL` for credit cards, checks, or legal documents).
 *   **Audit Trail**: A digital logbook that automatically stamps every single state change with the date, time, employee name, action description, and computer IP address.
@@ -61,8 +61,8 @@ Every user account in the system has a designated role. What you see and what yo
 *   **Who they are**: The physical couriers responsible for moving items between branches.
 *   **What they do**:
     *   View active transit pipelines.
-    *   Physically pick up the package and click "Confirm Pickup" in the app (starting the transit timer).
-    *   Deliver the package to the destination branch and click "Confirm Delivery" (ending the transit timer).
+    *   Physically pick up the package from the **destination branch (sender)** and click "Confirm Pickup" in the app (starting the transit timer).
+    *   Deliver the package to the **origin branch (requester/recipient)** and click "Confirm Delivery" (ending the transit timer).
 
 ### E. System Administrators (Admins)
 *   **Who they are**: Technical coordinators managing the system.
@@ -88,17 +88,17 @@ The core power of **BranchSync** is its structured, step-by-step state machine. 
     *   The Central HQ officer opens their dashboard.
     *   They audit the request contents, select the appropriate target **Destination Branch**, select the target **Destination Department** (which are filtered automatically to show only departments that are actually present in the selected branch), and click **Verify & Forward** to approve. Alternatively, they can reject the transfer back to the originator.
 *   **Step 4: Acceptance, Driver Assignment & Routing Rejection (Destination Branch)**
-    *   The destination branch's desk team is notified. 
-    *   **Accept**: They accept the upcoming delivery and select the available **Delivery Driver** to go collect the package, advancing the status to **Pending Final Release**.
-    *   **Decline (Return to HQ)**: If they spot a discrepancy or lack storage space, they can decline the routing with a mandatory explanation. The request is **automatically returned straight back to Central HQ** (`PENDING_HQ_APPROVAL`), clearing the assigned destination branch and department so HQ can re-allocate it.
+    *   The destination branch's desk team is notified of the incoming request for assets.
+    *   **Accept**: They accept the request to supply the assets and select an available **Delivery Driver** to go collect the package from their branch and take it to the requesting branch, advancing the status to **Pending Final Release**.
+    *   **Decline (Return to HQ)**: If they spot a mismatch or lack the inventory/assets to fulfill the request, they can decline the routing with a mandatory explanation. The request is **automatically returned straight back to Central HQ** (`PENDING_HQ_APPROVAL`), clearing the assigned destination branch and department so HQ can re-allocate it to another branch that has the assets.
 *   **Step 5: Local Green Light & Release Rejection (Destination Manager)**
-    *   The destination branch manager conducts a final check of the courier arrangements.
-    *   **Release**: They click **Final Release** to authorize the courier to physically pick up the items, advancing the request to **Ready for Pickup**.
-    *   **Decline (Return to HQ)**: Even at this late stage, the manager can decline the release. Doing so clears all routing, acceptor, and driver details, returning the request **straight back to Central HQ** for re-routing.
+    *   The destination branch manager conducts a final check of the package preparation and courier arrangements.
+    *   **Release**: They click **Final Release** to authorize the courier to physically pick up the items from their branch, advancing the request to **Ready for Pickup**.
+    *   **Decline (Return to HQ)**: Even at this late stage, the manager can decline the release. Doing so clears all routing, acceptor, and driver details, returning the request **straight back to Central HQ** for re-routing to a different destination branch.
 *   **Step 6: Transit Handshake (Delivery Driver)**
-    *   The courier arrives at the origin branch, collects the package, and clicks **Confirm Pickup**. The request status changes instantly to **In Transit**.
+    *   The courier arrives at the **destination branch (the sender)**, collects the package, and clicks **Confirm Pickup**. The request status changes instantly to **In Transit**.
 *   **Step 7: Delivery Handshake (Delivery Driver)**
-    *   The courier arrives at the destination branch, hands over the physical package, and clicks **Confirm Delivery**. The package status changes to **Delivered**.
+    *   The courier arrives at the **origin branch (the requester)**, hands over the physical package, and clicks **Confirm Delivery**. The package status changes to **Delivered**.
 *   **Step 8: Final Receipt Verification (Originator)**
     *   The original general officer who requested the transfer inspects the delivered items to ensure nothing was lost or damaged.
     *   They click **Accept & Close** (completing the loop) or **Reject** (which prompts an audit investigation).
@@ -111,6 +111,12 @@ BranchSync is packed with features designed to make daily coordination fast and 
 
 *   **⚡ "Attention Required" Smart Widget**:
     A dynamic, real-time indicator on the dashboard that alerts users immediately if there is a pending action waiting on them (e.g., Managers see requests awaiting approval, Couriers see packages ready for pickup).
+*   **🔄 Fault-Tolerant Redirection & Re-Routing**:
+    If a destination branch receives an incoming request routing allocation to supply physical assets but cannot fulfill it due to inventory or local operational capacity, or if the destination manager halts the courier release, they can decline it with a mandatory comment. Instead of terminating the request, the system automatically clears the routing attributes and safely redirects the request **straight back to Central HQ** for re-allocation.
+*   **🎯 Intelligent Department Filtering**:
+    When HQ Logistics allocates a target department inside the destination branch (where the package will be prepared and sent from), the system dynamically filters choices in real-time, showing **only departments that are physically established inside that selected branch**, guaranteeing zero routing input mistakes.
+*   **📈 Real-Time 360° Admin Tracking Board**:
+    System Administrators possess complete oversight of the entire logistics pipeline. Unlike general users who only see closed files, Admins can track active, in-transit, or processing transfers, supported by an auto-fitting, responsive dashboard stats card tracker.
 *   **📋 One-Click Reordering (Duplicate Request)**:
     Allows officers to recreate repetitive, frequent transfers with a single click, copying historical classifications while keeping strict security boundaries (HQ officers and Drivers cannot access this shortcut).
 *   **🖨️ Professional Printed Slips**:
