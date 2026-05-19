@@ -431,9 +431,12 @@ public class TransferServiceImpl implements TransferService {
     public List<TransferRequest> getTransferHistory(Long actorId) {
         User actor = getUser(actorId);
         String role = actor.getRole().getRoleName();
-        List<String> terminalStatuses = List.of("COMPLETED", "REJECTED_ON_RECEIPT", "CANCELLED", "REJECTED_BY_HQ");
+        List<String> terminalStatuses = List.of("COMPLETED", "REJECTED_ON_RECEIPT", "CANCELLED", "REJECTED_BY_HQ", "REJECTED_BY_MANAGER");
 
-        if ("SYSTEM_ADMIN".equals(role) || "HQ_LOGISTICS_OFFICER".equals(role)) {
+        if ("SYSTEM_ADMIN".equals(role)) {
+            return transferRequestRepository.findAllByOrderByRequestedAtDesc();
+        }
+        if ("HQ_LOGISTICS_OFFICER".equals(role)) {
             return transferRequestRepository.findAllByOrderByRequestedAtDesc().stream()
                     .filter(t -> terminalStatuses.contains(t.getStatus()))
                     .toList();

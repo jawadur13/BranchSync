@@ -60,7 +60,7 @@
 /* ── Stat Cards ── */
 .hist-stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: var(--spacing-4);
     margin-bottom: var(--spacing-5);
 }
@@ -100,11 +100,13 @@
 .hist-stat-completed .hist-stat-num { color: #059669; }
 .hist-stat-rejected  .hist-stat-num { color: #dc2626; }
 .hist-stat-cancelled .hist-stat-num { color: #d97706; }
+.hist-stat-active    .hist-stat-num { color: #3b82f6; }
 
 .hist-stat-total     { border-left: 4px solid var(--color-neutral-400); }
 .hist-stat-completed { border-left: 4px solid #059669; }
 .hist-stat-rejected  { border-left: 4px solid #dc2626; }
 .hist-stat-cancelled { border-left: 4px solid #d97706; }
+.hist-stat-active    { border-left: 4px solid #3b82f6; }
 
 /* ── Error ── */
 .hist-error {
