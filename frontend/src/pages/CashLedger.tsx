@@ -200,8 +200,8 @@ const CashLedger = () => {
                                 <tr key={e.ledgerId} className={`ledger-row ${getEntryStyle(e.entryType)}`}>
                                     <td className="ledger-date">{formatDate(e.createdAt)}</td>
                                     <td><span className={`ledger-badge ${getEntryStyle(e.entryType)}`}>{getEntryLabel(e.entryType)}</span></td>
-                                    <td className={`ledger-amount ${e.entryType.includes('OUT') ? 'amt-out' : 'amt-in'}`}>
-                                        {e.entryType.includes('OUT') ? '-' : '+'}{formatAmt(e.amount)}
+                                    <td className={`ledger-amount ${e.balanceAfter < e.balanceBefore ? 'amt-out' : 'amt-in'}`}>
+                                        {e.balanceAfter < e.balanceBefore ? '-' : '+'}{formatAmt(e.amount)}
                                     </td>
                                     <td className="ledger-bal">{formatAmt(e.balanceBefore)}</td>
                                     <td className="ledger-bal ledger-bal-after">{formatAmt(e.balanceAfter)}</td>

@@ -164,26 +164,30 @@ public class CashServiceImpl implements CashService {
     @Override
     @Transactional
     public void recordTransferOut(Long branchId, Long requestId, BigDecimal amount, Long actorId) {
-        applyMovement(branchId, requestId, amount.negate(), "TRANSFER_OUT", actorId, null);
+        TransferRequest request = transferRequestRepository.findById(requestId).orElse(null);
+        String reason = request != null ? "Cash transfer sent (Req: " + request.getRequestCode() + ")" : "Transfer Out";
+        applyMovement(branchId, requestId, amount.negate(), "TRANSFER_OUT", actorId, null, reason);
     }
 
     @Override
     @Transactional
     public void recordTransferIn(Long branchId, Long requestId, BigDecimal amount, Long actorId) {
-        applyMovement(branchId, requestId, amount, "TRANSFER_IN", actorId, null);
+        TransferRequest request = transferRequestRepository.findById(requestId).orElse(null);
+        String reason = request != null ? "Cash transfer received (Req: " + request.getRequestCode() + ")" : "Transfer In";
+        applyMovement(branchId, requestId, amount, "TRANSFER_IN", actorId, null, reason);
     }
 
     @Override
     @Transactional
     public void recordReversal(Long branchId, Long requestId, BigDecimal amount, Long actorId, String direction) {
-        // direction = "IN" → credit back (reversal for origin branch)
-        // direction = "OUT" → debit back? No. Reversal: dest gets money back (REVERSAL_IN), origin loses it (REVERSAL_OUT)
         String type = "IN".equals(direction) ? "REVERSAL_IN" : "REVERSAL_OUT";
         BigDecimal signed = "IN".equals(direction) ? amount : amount.negate();
-        applyMovement(branchId, requestId, signed, type, actorId, null);
+        TransferRequest request = transferRequestRepository.findById(requestId).orElse(null);
+        String reason = request != null ? "Transfer reversed (Req: " + request.getRequestCode() + ")" : "Reversal";
+        applyMovement(branchId, requestId, signed, type, actorId, null, reason);
     }
 
-    private void applyMovement(Long branchId, Long requestId, BigDecimal signedAmount, String type, Long actorId, Long approverId) {
+    private void applyMovement(Long branchId, Long requestId, BigDecimal signedAmount, String type, Long actorId, Long approverId, String reason) {
         BranchCashBalance balance = getOrCreateBalance(branchId);
         BigDecimal before = balance.getCurrentBalance();
         BigDecimal after = before.add(signedAmount);
@@ -207,6 +211,7 @@ public class CashServiceImpl implements CashService {
         if (approverId != null) {
             entry.setApprover(userRepository.findById(approverId).orElse(null));
         }
+        entry.setReason(reason);
         entry.setCreatedAt(OffsetDateTime.now());
         ledgerRepository.save(entry);
     }
@@ -273,7 +278,7 @@ public class CashServiceImpl implements CashService {
         if (approved) {
             adj.setStatus("APPROVED");
             // Apply to balance
-            applyMovement(adj.getBranch().getBranchId(), null, adj.getAmount(), "MANUAL_ADJUSTMENT", adj.getSubmittedBy().getUserId(), approverId);
+            applyMovement(adj.getBranch().getBranchId(), null, adj.getAmount(), "MANUAL_ADJUSTMENT", adj.getSubmittedBy().getUserId(), approverId, adj.getReason());
         } else {
             adj.setStatus("REJECTED");
         }
