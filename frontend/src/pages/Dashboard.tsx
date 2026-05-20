@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axiosConfig';
 import type { TransferResponseDto } from '../types/transfer';
 import { useAuth } from '../context/AuthContext';
@@ -7,19 +7,30 @@ import './Dashboard.css';
 
 const Dashboard = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [transfers, setTransfers] = useState<TransferResponseDto[]>([]);
+    const [pendingAdjustments, setPendingAdjustments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    const isManager = user?.role === 'BRANCH_MANAGER' || user?.role === 'OPERATION_MANAGER' || user?.role === 'FIRST_EXECUTIVE_OFFICER';
+
     useEffect(() => {
-        fetchTransfers();
+        fetchData();
     }, []);
 
-    const fetchTransfers = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
             const response = await api.get('/transfers');
             setTransfers(response.data);
+
+            if (isManager) {
+                try {
+                    const adjRes = await api.get('/cash/adjust/pending');
+                    setPendingAdjustments(adjRes.data);
+                } catch { /* ignore */ }
+            }
         } catch (err) {
             setError('Failed to fetch transfers. Please try again later.');
             console.error('Error fetching dashboard transfers:', err);
@@ -101,17 +112,29 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {attentionTransfers.length > 0 && (
+            {(attentionTransfers.length > 0 || pendingAdjustments.length > 0) && (
                 <div className="attention-widget">
                     <div className="attention-header">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span className="attention-icon">🔔</span>
                             <h3 className="attention-title">Attention Required</h3>
                         </div>
-                        <span className="attention-badge">{attentionTransfers.length} Action{attentionTransfers.length !== 1 ? 's' : ''} Pending</span>
+                        <span className="attention-badge">{attentionTransfers.length + pendingAdjustments.length} Action{attentionTransfers.length + pendingAdjustments.length !== 1 ? 's' : ''} Pending</span>
                     </div>
-                    <p className="attention-subtitle">You have active transfers that require your immediate input or approval.</p>
+                    <p className="attention-subtitle">You have active requests that require your immediate input or approval.</p>
                     <div className="attention-list">
+                        {pendingAdjustments.length > 0 && (
+                            <div className="attention-item" onClick={() => navigate('/cash/adjust')} style={{ cursor: 'pointer', background: '#fffbeb', borderLeft: '4px solid #f59e0b' }}>
+                                <div className="attention-item-code">⚙️ CASH ADJUSTMENTS</div>
+                                <div className="attention-item-title">
+                                    You have <strong>{pendingAdjustments.length}</strong> pending cash adjustment request{pendingAdjustments.length > 1 ? 's' : ''} waiting for your approval.
+                                </div>
+                                <div className="attention-item-status">
+                                    <span className="badge badge-warning">PENDING APPROVAL</span>
+                                </div>
+                                <div className="attention-item-arrow">→</div>
+                            </div>
+                        )}
                         {attentionTransfers.map(t => (
                             <Link key={t.requestId} to={`/transfers/${t.requestId}`} className="attention-item">
                                 <div className="attention-item-code">{t.requestCode}</div>

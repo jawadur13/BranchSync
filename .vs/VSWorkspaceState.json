@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\backend",
+    "\\backend\\src",
+    "\\backend\\src\\main",
+    "\\backend\\src\\main\\java",
+    "\\backend\\src\\main\\java\\com",
+    "\\backend\\src\\main\\java\\com\\jamunabank",
+    "\\backend\\src\\main\\java\\com\\jamunabank\\branchsync"
+  ],
+  "SelectedNode": "\\backend\\src\\main\\java\\com\\jamunabank\\branchsync\\BranchSyncApplication.java",
+  "PreviewInSolutionExplorer": false
+}

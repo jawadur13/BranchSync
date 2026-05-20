@@ -86,33 +86,41 @@
 
 .adj-type-btn {
     flex: 1;
-    padding: 10px 16px;
-    border: 2px solid var(--border-subtle);
+    padding: 12px 16px;
+    border: 2px solid #cbd5e1;
     border-radius: 8px;
-    background: transparent;
+    background: #f8fafc;
     cursor: pointer;
-    font-size: 0.88rem;
+    font-size: 0.95rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #475569;
     transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.adj-type-btn:hover {
+    background: #f1f5f9;
 }
 
 .adj-type-btn.active-credit {
     border-color: #16a34a;
-    background: #f0fdf4;
+    background: #dcfce7;
     color: #166534;
+    box-shadow: 0 0 0 1px #16a34a;
 }
 
 .adj-type-btn.active-debit {
     border-color: #dc2626;
-    background: #fff1f2;
+    background: #fee2e2;
     color: #991b1b;
+    box-shadow: 0 0 0 1px #dc2626;
 }
 
 .adj-form-row {
     display: grid;
-    grid-template-columns: 180px 1fr;
-    gap: 16px;
+    grid-template-columns: 200px 1fr;
+    gap: 24px;
+    margin-top: 8px;
 }
 
 .adj-form-group {
@@ -122,48 +130,54 @@
 }
 
 .adj-form-group label {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 4px;
 }
 
 .adj-form-group input,
 .adj-form-group textarea {
-    padding: 10px 12px;
-    border: 1.5px solid var(--border-subtle);
+    padding: 12px 14px;
+    border: 2px solid #cbd5e1;
     border-radius: 8px;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--text-primary);
-    background: var(--surface-base);
-    transition: border-color 0.2s;
+    background: #ffffff;
+    transition: all 0.2s;
     resize: vertical;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
 }
 
 .adj-form-group input:focus,
 .adj-form-group textarea:focus {
     outline: none;
     border-color: var(--color-primary-blue);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15), inset 0 1px 3px rgba(0,0,0,0.06);
 }
 
 .required { color: #ef4444; }
 
 .adj-submit-btn {
-    padding: 12px 24px;
+    padding: 14px 28px;
     background: var(--color-primary-blue);
     color: #fff;
     border: none;
     border-radius: 10px;
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
     align-self: flex-start;
     transition: all 0.2s ease;
+    margin-top: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .adj-submit-btn:hover:not(:disabled) {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
+    background: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .adj-submit-btn:disabled {
@@ -267,36 +281,50 @@
 
 .adj-decision-form {
     display: flex;
+    flex-direction: column;
     gap: 12px;
-    align-items: flex-start;
+    align-items: stretch;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #cbd5e1;
 }
 
 .adj-decision-textarea {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid var(--border-subtle);
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #cbd5e1;
     border-radius: 8px;
-    font-size: 0.84rem;
+    font-size: 0.95rem;
     color: var(--text-primary);
-    background: var(--surface-base);
+    background: #ffffff;
     resize: vertical;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+    transition: all 0.2s;
+}
+
+.adj-decision-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary-blue);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15), inset 0 1px 3px rgba(0,0,0,0.06);
 }
 
 .adj-decision-btns {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    gap: 12px;
+    justify-content: flex-end;
 }
 
 .adj-btn {
-    padding: 8px 16px;
+    padding: 10px 24px;
     border: none;
     border-radius: 8px;
-    font-size: 0.84rem;
+    font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .adj-btn:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -310,6 +338,8 @@
 .adj-btn-approve:hover:not(:disabled) {
     background: #16a34a;
     color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .adj-btn-reject {
@@ -321,6 +351,8 @@
 .adj-btn-reject:hover:not(:disabled) {
     background: #dc2626;
     color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .adj-decision-result {
