@@ -236,6 +236,16 @@ public class CashServiceImpl implements CashService {
             throw new IllegalArgumentException("A reason is mandatory for manual adjustments.");
         }
 
+        // If it's a debit (negative amount), check if branch has enough balance
+        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+            BranchCashBalance balance = getOrCreateBalance(branchId);
+            BigDecimal absoluteDebit = amount.abs();
+            if (balance.getCurrentBalance().compareTo(absoluteDebit) < 0) {
+                throw new IllegalArgumentException("Insufficient cash balance. Available: ৳" 
+                        + balance.getCurrentBalance() + ", Requested debit: ৳" + absoluteDebit);
+            }
+        }
+
         Branch branch = branchRepository.findById(branchId)
                 .orElseThrow(() -> new ResourceNotFoundException("Branch not found: " + branchId));
 
@@ -277,6 +287,15 @@ public class CashServiceImpl implements CashService {
 
         if (approved) {
             adj.setStatus("APPROVED");
+            // If it's a debit (negative amount), check if branch has enough balance
+            if (adj.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+                BranchCashBalance balance = getOrCreateBalance(adj.getBranch().getBranchId());
+                BigDecimal absoluteDebit = adj.getAmount().abs();
+                if (balance.getCurrentBalance().compareTo(absoluteDebit) < 0) {
+                    throw new IllegalArgumentException("Insufficient cash balance to approve this debit. Available: ৳" 
+                            + balance.getCurrentBalance() + ", Required: ৳" + absoluteDebit);
+                }
+            }
             // Apply to balance
             applyMovement(adj.getBranch().getBranchId(), null, adj.getAmount(), "MANUAL_ADJUSTMENT", adj.getSubmittedBy().getUserId(), approverId, adj.getReason());
         } else {

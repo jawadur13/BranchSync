@@ -35,6 +35,7 @@ const ManualAdjustment = () => {
     const [isCredit, setIsCredit] = useState(true);
     const [reason, setReason] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [currentBalance, setCurrentBalance] = useState<number | null>(null);
 
     // Manager decision states
     const [decisionNote, setDecisionNote] = useState<Record<number, string>>({});
@@ -42,7 +43,20 @@ const ManualAdjustment = () => {
 
     useEffect(() => {
         fetchAdjustments();
+        if (user?.branchId) {
+            fetchBranchBalance();
+        }
     }, []);
+
+    const fetchBranchBalance = async () => {
+        if (!user?.branchId) return;
+        try {
+            const res = await api.get(`/cash/balance/${user.branchId}`);
+            setCurrentBalance(res.data.currentBalance);
+        } catch (err) {
+            console.error('Failed to load branch cash balance', err);
+        }
+    };
 
     const fetchAdjustments = async () => {
         setLoading(true);
@@ -59,13 +73,26 @@ const ManualAdjustment = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!amount || !reason.trim()) { setError('Amount and reason are required.'); return; }
+        
+        const numericAmount = parseFloat(amount);
+        if (isNaN(numericAmount) || numericAmount <= 0) {
+            setError('Please enter a valid positive amount.');
+            return;
+        }
+
+        if (!isCredit && currentBalance !== null && numericAmount > currentBalance) {
+            setError(`Insufficient cash balance! Your branch currently has ৳${currentBalance.toLocaleString('en-BD')}, so you cannot request a debit of ৳${numericAmount.toLocaleString('en-BD')}.`);
+            return;
+        }
+
         setSubmitting(true); setError(''); setSuccess('');
         try {
-            const signedAmount = isCredit ? parseFloat(amount) : -parseFloat(amount);
+            const signedAmount = isCredit ? numericAmount : -numericAmount;
             await api.post('/cash/adjust', { amount: signedAmount, reason });
             setSuccess('Adjustment submitted! Awaiting manager approval.');
             setAmount(''); setReason('');
             fetchAdjustments();
+            fetchBranchBalance();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to submit adjustment.');
         } finally {
@@ -129,10 +156,19 @@ const ManualAdjustment = () => {
             {/* Officer: Submit form */}
             {isOfficer && (
                 <div className="adj-form-card">
-                    <h3 className="adj-card-title">📝 Submit Adjustment Request</h3>
-                    <p className="adj-card-subtitle">
-                        Manual adjustments must be approved by your branch Manager or FEO before they take effect.
-                    </p>
+                    <div className="adj-form-header-row">
+                        <div>
+                            <h3 className="adj-card-title">📝 Submit Adjustment Request</h3>
+                            <p className="adj-card-subtitle">
+                                Manual adjustments must be approved by your branch Manager or FEO before they take effect.
+                            </p>
+                        </div>
+                        {currentBalance !== null && (
+                            <div className="adj-balance-badge">
+                                Branch Cash Balance: <strong>৳{currentBalance.toLocaleString('en-BD')}</strong>
+                            </div>
+                        )}
+                    </div>
                     <form onSubmit={handleSubmit} className="adj-form">
                         <div className="adj-type-toggle">
                             <button
