@@ -34,6 +34,7 @@ const CashLedger = () => {
 
     const isAdmin = user?.role === 'SYSTEM_ADMIN';
     const isManager = user?.role === 'BRANCH_MANAGER' || user?.role === 'OPERATION_MANAGER' || user?.role === 'FIRST_EXECUTIVE_OFFICER';
+    const isCashOfficer = user?.role === 'OFFICER' && user?.departmentName?.toLowerCase().includes('cash');
 
     const [entries, setEntries] = useState<LedgerEntry[]>([]);
     const [balance, setBalance] = useState<BranchBalance | null>(null);
@@ -101,11 +102,11 @@ const CashLedger = () => {
     };
 
     // Access control
-    if (!isAdmin && !isManager) {
+    if (!isAdmin && !isManager && !isCashOfficer) {
         return (
             <div className="ledger-container">
                 <div className="ledger-access-denied">
-                    🔒 Access Denied — Only Branch Managers and System Administrators can view the Cash Ledger.
+                    🔒 Access Denied — Only Branch Managers, Cash Department Officers, and System Administrators can view the Cash Ledger.
                 </div>
             </div>
         );
@@ -118,7 +119,7 @@ const CashLedger = () => {
                     <h1 className="ledger-title">💰 Cash Ledger</h1>
                     <p className="ledger-subtitle">Per-branch cash balance & movement audit trail</p>
                 </div>
-                {isManager && (
+                {(isManager || isCashOfficer) && (
                     <button className="btn-ghost" onClick={() => navigate('/cash/adjust')}>
                         ⚙️ Manual Adjustment
                     </button>

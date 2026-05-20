@@ -135,15 +135,28 @@ public class CashServiceImpl implements CashService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + actorId));
         String role = actor.getRole().getRoleName();
 
-        // Managers can only see their own branch
+        if ("SYSTEM_ADMIN".equals(role)) {
+            return ledgerRepository.findByBranch_BranchIdOrderByCreatedAtDesc(branchId);
+        }
+
+        if (actor.getBranch() == null || !actor.getBranch().getBranchId().equals(branchId)) {
+            throw new UnauthorizedRoleException("You can only view the ledger for your own branch.");
+        }
+
         if (MANAGER_ROLES.contains(role)) {
-            if (actor.getBranch() == null || !actor.getBranch().getBranchId().equals(branchId)) {
-                throw new UnauthorizedRoleException("You can only view the ledger for your own branch.");
+            return ledgerRepository.findByBranch_BranchIdOrderByCreatedAtDesc(branchId);
+        }
+
+        if ("OFFICER".equals(role)) {
+            boolean isCashDept = actor.getDepartment() != null 
+                    && actor.getDepartment().getDepartmentName() != null 
+                    && actor.getDepartment().getDepartmentName().toLowerCase().contains("cash");
+            if (isCashDept) {
+                return ledgerRepository.findByBranch_BranchIdOrderByCreatedAtDesc(branchId);
             }
         }
-        // SYSTEM_ADMIN can see any branch — no additional check needed
 
-        return ledgerRepository.findByBranch_BranchIdOrderByCreatedAtDesc(branchId);
+        throw new UnauthorizedRoleException("You do not have permission to view the cash ledger.");
     }
 
     // ── Internal Balance Movements (called from TransferServiceImpl) ───────────

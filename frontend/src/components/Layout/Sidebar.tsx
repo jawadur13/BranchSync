@@ -9,6 +9,7 @@ const Sidebar: React.FC = () => {
     const isAdmin = user?.role === 'SYSTEM_ADMIN';
     const isManager = user?.role === 'BRANCH_MANAGER' || user?.role === 'OPERATION_MANAGER' || user?.role === 'FIRST_EXECUTIVE_OFFICER';
     const isOfficer = user?.role === 'OFFICER';
+    const isCashOfficer = isOfficer && user?.departmentName?.toLowerCase().includes('cash');
     const isCashRelevant = isManager || isOfficer || isAdmin;
 
     return (
@@ -41,7 +42,7 @@ const Sidebar: React.FC = () => {
                     <>
                         <div className="sidebar-divider"></div>
                         <div className="sidebar-section-label">Cash Management</div>
-                        {(isManager || isAdmin) && (
+                        {(isManager || isAdmin || isCashOfficer) && (
                             <NavLink to="/cash/ledger" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                                 <span className="nav-icon">💰</span> Cash Ledger
                             </NavLink>

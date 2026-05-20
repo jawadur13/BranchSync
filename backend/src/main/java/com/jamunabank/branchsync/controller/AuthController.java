@@ -44,6 +44,7 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return ResponseEntity.ok(new JwtResponseDto(jwt, "Bearer", userDetails.getUserId(),
-                userDetails.getUsername(), user.getFullName(), role, userDetails.getBranchId(), userDetails.getDepartmentId()));
+                userDetails.getUsername(), user.getFullName(), role, userDetails.getBranchId(), userDetails.getDepartmentId(),
+                user.getDepartment() != null ? user.getDepartment().getDepartmentName() : null));
     }
 }

@@ -9,6 +9,7 @@ export interface User {
     role: string;
     branchId: number;
     departmentId: number;
+    departmentName?: string;
 }
 
 interface AuthContextType {
