@@ -1,38 +1,43 @@
 # BranchSync - Jamuna Bank PLC
 
-BranchSync is an internal inter-branch transfer and requisition tracking system for Jamuna Bank PLC. It manages the movement of sensitive operational assets between branches, including cash bundles, cheque books, demand drafts, IT equipment, stationery, security items, and other branch resources.
+BranchSync is an internal inter-branch transfer and requisition tracking system for Jamuna Bank PLC. It manages the movement of sensitive operational assets between branches, including cash bundles, cheque books, demand drafts, IT equipment, stationery, security items, and other branch resources. It features a fully-fledged **💰 Cash Stock Tracking and Vault Ledger System** with notes denomination tracking, balance validations, and manual adjustments auditing.
 
-The current project is a monorepo with a Spring Boot backend, a React/Vite frontend, MySQL schema and seed data, JWT authentication, role-aware transfer workflow screens, user profile support, transfer history, and admin tools for users, branches, departments, and item categories.
+The project is a monorepo with a Spring Boot backend, a React/Vite frontend, MariaDB schema and seed data, JWT authentication, role-aware transfer workflow screens, user profile support, transfer history, and admin tools for users, branches, departments, and item categories.
 
 ## Current Project Status
 
-The project currently has a working end-to-end transfer workflow across backend and frontend.
+The project currently has a working end-to-end transfer workflow across backend and frontend, plus a real-time vault balance audit trail.
 
 Implemented areas:
 
-- Employee ID/password login with JWT authentication.
+- Employee ID/password login with JWT authentication (propagating `departmentName`).
 - Protected frontend routes with persisted auth state.
 - User profile page backed by `/api/users/profile`.
-- Dashboard for role/branch-scoped active transfers.
-- New transfer request form.
+- Dashboard for role/branch-scoped active transfers and pending action alerts.
+- New transfer request form (with duplicate prefill).
 - Transfer details page with role-aware workflow actions.
-- Transfer history page for completed, rejected, and cancelled transfers.
+- Transfer history page for completed, rejected, and cancelled transfers with date, category, branch, and status filtering.
+- **💰 Cash Stock Tracking & Ledger System**:
+  - Automatically debits sending branch balance upon physical courier pickup (`recordTransferOut`) and credits receiving branch balance upon physical delivery (`recordTransferIn`). On final receipt rejection, the ledger automatically reverses the movement (`recordReversal`).
+  - Strict scope: applied only to the **Cash Bundle** category; all other item categories remain simple physical trackings.
+  - **Denomination breakdown**: Dest branch staff must input denomination counts (৳1000, ৳500, ৳200, ৳100, ৳50, etc.) on acceptance. The system calculates and validates that the total matches the request amount, displaying this breakdown on the printed slip.
+  - **Low Cash Warnings**: HQ Approval page flags sending branches with a `⚠️ LOW` warning if their vault balance is less than the requested amount. Cash officers are blocked from accepting if their branch balance is too low.
+  - **Manual Adjustments Panel**: Scoped screen for Officers to submit vault corrections with a mandatory reason, and Managers to approve/reject them.
+  - **Double Balance Guard**: Validates both on the frontend (instant form alerts with live balance indicators) and backend (exception throws in service layer) that no user can submit or approve a manual debit adjustment that exceeds the branch's current cash balance.
+  - **Ledger Reason Audit**: Every ledger record saves a descriptive reason column, displaying the officer's typed manual reasoning or clear automated transfer status logs.
+  - **Premium Button styling**: Header controls styled as solid, modern white buttons with borders, depth shadows, bold typography, and hover translations.
+  - **Audit Printing & PDF Exports**:
+    - **Single Branch Landscape Report**: Formatted Landscape printout for branch users showing full balance movements, credit/debit totals, and timestamps.
+    - **Consolidated Portrait Report**: Formatted portrait printout for `SYSTEM_ADMIN` users showing all branches cash balances and total system cash reserves.
+    - **Toggleable Deselection**: Admins can deselect selected branches by clicking again on cards.
 - Admin user management with create, edit, profile view, filtering, and activation toggling.
 - Admin branch management with branch create/update and department assignment.
 - Admin department management with global department create/update.
 - Admin item category management with create/update, sensitivity level, description, and responsible department mapping.
-- MySQL schema and seed/test data scripts.
+- MariaDB / MySQL schema and seed/test data scripts.
 - Transactional audit logging for transfer status changes.
 - Backend service and repository tests.
 - Custom BranchSync logo/favicon assets in the frontend.
-
-Known rough or incomplete areas:
-
-- Some frontend source text still contains encoding/mojibake artifacts for icons and special characters.
-- Method-level `@PreAuthorize` is enabled but not consistently used; most business authorization is currently enforced in service logic and route authentication.
-- Docker Compose exists, but Dockerfiles were not present during review, so the Docker path may need more setup.
-- `application.properties` still contains Supabase reference values, but the Java app is currently configured to use local MySQL.
-- The backend uses a custom SHA-256 password encoder, while some older comments still mention BCrypt.
 
 ## Core Purpose
 
@@ -40,10 +45,10 @@ BranchSync is a controlled banking workflow system. It is meant to:
 
 - Request assets from one branch to another.
 - Enforce source branch approval before destination processing.
-- Let destination staff accept requests and assign available delivery personnel.
+- Let destination staff accept requests, supply note breakdowns (for cash), and assign available delivery personnel.
 - Require destination manager-level release before pickup.
-- Track pickup, transit, delivery, and final requester verification.
-- Keep an audit trail of workflow actions.
+- Track pickup, transit, delivery, and final requester verification, dynamically updating branch cash balances for cash transfers.
+- Keep a detailed audit trail of workflow actions and vault movements.
 - Restrict visibility and actions by role, branch, department, and item ownership.
 
 ## Workflow
@@ -60,7 +65,7 @@ The transfer lifecycle is implemented as a six-step process.
    - Status changes from `PENDING_INTERNAL` to `PENDING_ASSIGNMENT`.
 
 3. Destination acceptance and delivery assignment
-   - Destination branch staff accepts the request.
+   - Destination branch staff accepts the request (inputs note denomination counts for Cash Bundle transfers).
    - An available delivery person is assigned.
    - Status changes to `PENDING_FINAL_RELEASE`.
 
@@ -70,18 +75,18 @@ The transfer lifecycle is implemented as a six-step process.
 
 5. Pickup and delivery
    - The assigned delivery person marks pickup.
-   - Status changes to `IN_TRANSIT`, and the delivery person becomes unavailable.
+   - Status changes to `IN_TRANSIT`, the delivery person becomes unavailable, and cash balances are debited for Cash Bundle transfers.
    - The same delivery person marks delivery.
-   - Status changes to `DELIVERED`, and the delivery person becomes available again.
+   - Status changes to `DELIVERED`, the delivery person becomes available again, and cash balances are credited for Cash Bundle transfers.
 
 6. Final requester verification
    - The original requester accepts or rejects the delivered item.
    - Accepted requests become `COMPLETED`.
-   - Rejected requests become `REJECTED_ON_RECEIPT`.
+   - Rejected requests become `REJECTED_ON_RECEIPT` (automatically reversing cash balances if it is a Cash Bundle transfer).
 
 ## Status Values
 
-Transfer requests currently use string status values:
+Transfer requests use string status values:
 
 - `PENDING_INTERNAL`
 - `PENDING_ASSIGNMENT`
@@ -93,15 +98,9 @@ Transfer requests currently use string status values:
 - `REJECTED_ON_RECEIPT`
 - `CANCELLED`
 
-The history view shows terminal records:
-
-- `COMPLETED`
-- `REJECTED_ON_RECEIPT`
-- `CANCELLED`
-
 ## Roles
 
-The current seed data and backend logic use these roles:
+The seed data and backend logic use these roles:
 
 - `SYSTEM_ADMIN`
 - `FIRST_EXECUTIVE_OFFICER`
@@ -110,119 +109,12 @@ The current seed data and backend logic use these roles:
 - `OFFICER`
 - `DELIVERY_PERSON`
 
-Manager-level workflow permissions are grouped in backend service logic as:
-
-- `BRANCH_MANAGER`
-- `OPERATION_MANAGER`
-- `FIRST_EXECUTIVE_OFFICER`
-
-## Branch Types
-
-The current `BranchType` enum supports:
-
-- `HQ`
-- `AD_BRANCH`
-- `SUB_BRANCH`
-
-## Architecture
-
-### Backend
-
-- Java 21
-- Spring Boot 3.4.0
-- Spring Web
-- Spring Data JPA
-- Spring Security
-- JWT using `jjwt`
-- Jakarta Bean Validation
-- MySQL connector
-- H2 for tests
-- Lombok dependency present; many entities still use manual getters, setters, and builders
-
-Backend root:
-
-```text
-backend/
-```
-
-Main backend packages:
-
-```text
-backend/src/main/java/com/jamunabank/branchsync/
-  controller/
-  dto/
-  exception/
-  mapper/
-  model/
-  repository/
-  security/
-  service/
-```
-
-### Frontend
-
-- React 19
-- Vite 8
-- TypeScript
-- React Router 7
-- Axios
-- Plain CSS files by page/layout
-- Custom PNG logo and favicon assets
-
-Frontend root:
-
-```text
-frontend/
-```
-
-Main frontend areas:
-
-```text
-frontend/src/
-  api/
-  components/
-  context/
-  pages/
-  types/
-```
-
-## Database
-
-The current application configuration targets local MySQL, commonly through XAMPP:
-
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/branchsync?serverTimezone=UTC
-spring.datasource.username=root
-spring.datasource.password=
-```
-
-Schema and test data are located in:
-
-```text
-backend/src/main/resources/db/migration/schema_mysql.sql
-backend/src/main/resources/db/test data/test_data_mysql.sql
-```
-
-Additional data/update scripts exist in:
-
-```text
-backend/src/main/resources/db/test data/
-```
-
 ## Main API Areas
 
 Authentication:
-
 - `POST /api/auth/login`
 
-Current login response includes token, type, user id, employee id, full name, role, branch id, and department id.
-
-Profile:
-
-- `GET /api/users/profile`
-
 Lookups:
-
 - `GET /api/lookup/branches`
 - `GET /api/lookup/departments`
 - `GET /api/lookup/roles`
@@ -230,7 +122,6 @@ Lookups:
 - `GET /api/lookup/users/delivery-persons/available`
 
 Transfers:
-
 - `GET /api/transfers`
 - `GET /api/transfers/history`
 - `GET /api/transfers/{requestId}`
@@ -242,22 +133,22 @@ Transfers:
 - `POST /api/transfers/{requestId}/deliver`
 - `POST /api/transfers/{requestId}/close`
 
-Admin organization:
+Cash Vault & Ledger:
+- `GET /api/cash/balances` (Admin only)
+- `GET /api/cash/balance/{branchId}`
+- `GET /api/cash/ledger/{branchId}`
+- `POST /api/cash/adjust`
+- `POST /api/cash/adjust/{id}/decide`
+- `GET /api/cash/adjust/all`
+- `GET /api/cash/adjust/pending`
 
+Admin organization:
 - `GET /api/admin/org/branches`
 - `POST /api/admin/org/branches`
-- `PUT /api/admin/org/branches/{id}`
 - `GET /api/admin/org/departments`
-- `POST /api/admin/org/departments`
-- `PUT /api/admin/org/departments/{id}`
-- `GET /api/admin/org/roles`
 - `GET /api/admin/org/items`
-- `POST /api/admin/org/items`
-- `PUT /api/admin/org/items/{categoryId}`
-- `PUT /api/admin/org/items/{categoryId}/map`
 
 Admin users:
-
 - `GET /api/admin/users`
 - `POST /api/admin/users`
 - `PUT /api/admin/users/{userId}`
@@ -266,16 +157,16 @@ Admin users:
 ## Frontend Routes
 
 Public:
-
 - `/login`
 
 Protected:
-
 - `/`
 - `/profile`
 - `/transfers/new`
 - `/transfers/history`
 - `/transfers/:id`
+- `/cash/ledger`
+- `/cash/adjust`
 - `/admin/users`
 - `/admin/branches`
 - `/admin/departments`
@@ -288,109 +179,24 @@ Protected:
 - Java 21
 - Maven 3.9+
 - Node.js 22+
-- MySQL, for example through XAMPP
-- Docker and Docker Compose, optional and not currently the most reliable path
+- MariaDB / MySQL (XAMPP / Local server)
 
-### Backend
+### Backend Setup
 
-Create a local MySQL database named:
+1. Create a local MariaDB/MySQL database named `branchsync`.
+2. Apply schema and seed data scripts:
+   - `backend/src/main/resources/db/migration/schema_mysql.sql`
+   - `backend/src/main/resources/db/test data/test_data_mysql.sql`
+3. Run the Spring Boot application:
+   - `cd backend`
+   - `mvn spring-boot:run` (Server runs on `http://localhost:8080`)
 
-```text
-branchsync
-```
+### Frontend Setup
 
-Apply the MySQL schema and seed data:
-
-```text
-backend/src/main/resources/db/migration/schema_mysql.sql
-backend/src/main/resources/db/test data/test_data_mysql.sql
-```
-
-Run the backend:
-
-```bash
-cd backend
-mvn spring-boot:run
-```
-
-Default backend URL:
-
-```text
-http://localhost:8080
-```
-
-### Frontend
-
-Install dependencies and run Vite:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Default frontend URL:
-
-```text
-http://localhost:5173
-```
-
-The frontend API client currently points to:
-
-```text
-http://localhost:8080/api
-```
-
-## Test Data
-
-The main MySQL seed script creates:
-
-- Roles for admin, manager-level users, officers, and delivery persons.
-- Branches across Bangladesh.
-- Global departments.
-- Branch-to-department assignments.
-- Item categories with sensitivity levels and responsible departments.
-- Users for each role.
-- Floating delivery persons with available/busy state.
-
-The seed script comments may still mention `password123` and BCrypt. The current backend password encoder is `Sha256PasswordEncoder`, so test credentials depend on the SHA-256 hashes currently stored in the scripts.
-
-## Testing
-
-Backend tests are located in:
-
-```text
-backend/src/test/java/com/jamunabank/branchsync/
-```
-
-Run backend tests with:
-
-```bash
-cd backend
-mvn test
-```
-
-Frontend build check:
-
-```bash
-cd frontend
-npm run build
-```
-
-Frontend lint:
-
-```bash
-cd frontend
-npm run lint
-```
-
-## Repository Notes
-
-- This is a monorepo containing both backend and frontend.
-- `PROJECT_OVERVIEW.md` describes the business workflow and is still useful for understanding the intended domain model.
-- The current source is closer to a local MySQL development setup than the older Supabase/PostgreSQL direction.
-- `docker-compose.yml` exists, but the present repo file list did not include Dockerfiles.
-- The frontend has moved from the single `/admin/org` route to separate admin routes for branches, departments, and items.
+1. Install dependencies and run Vite:
+   - `cd frontend`
+   - `npm install`
+   - `npm run dev` (Client runs on `http://localhost:5173`)
 
 ---
 
