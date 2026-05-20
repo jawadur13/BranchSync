@@ -200,4 +200,4 @@ Protected:
 
 ---
 
-Developed by [Jawadur Rafid](https://jawadur.pro.bd)
+Developed by [Jawadur Rafid](https://jawadur.me)
