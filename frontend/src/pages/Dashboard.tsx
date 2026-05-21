@@ -191,7 +191,16 @@ const Dashboard = () => {
                                 <tr key={t.requestId}>
                                     <td className="fw-semibold">{t.requestCode}</td>
                                     <td>{t.title}</td>
-                                    <td>{t.categoryName}</td>
+                                    <td>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <span>{t.categoryName}</span>
+                                            {t.behaviorType && (
+                                                <span className={`type-badge behavior-${t.behaviorType.toLowerCase()}`} style={{ alignSelf: 'flex-start', padding: '1px 6px', fontSize: '10px', width: 'fit-content' }}>
+                                                    {t.behaviorType}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
                                     <td>{t.originBranchName}</td>
                                     <td>{t.destinationBranchName}</td>
                                     <td>

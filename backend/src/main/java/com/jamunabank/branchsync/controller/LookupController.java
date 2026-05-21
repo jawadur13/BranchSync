@@ -4,6 +4,7 @@ import com.jamunabank.branchsync.model.entity.Branch;
 import com.jamunabank.branchsync.model.entity.ItemCategory;
 import com.jamunabank.branchsync.repository.BranchRepository;
 import com.jamunabank.branchsync.repository.ItemCategoryRepository;
+import com.jamunabank.branchsync.repository.StockItemRepository;
 import com.jamunabank.branchsync.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,17 +22,20 @@ public class LookupController {
     private final com.jamunabank.branchsync.repository.DepartmentRepository departmentRepository;
     private final com.jamunabank.branchsync.repository.RoleRepository roleRepository;
     private final UserRepository userRepository;
+    private final StockItemRepository stockItemRepository;
 
     public LookupController(BranchRepository branchRepository, 
                           ItemCategoryRepository itemCategoryRepository,
                           com.jamunabank.branchsync.repository.DepartmentRepository departmentRepository,
                           com.jamunabank.branchsync.repository.RoleRepository roleRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,
+                          StockItemRepository stockItemRepository) {
         this.branchRepository = branchRepository;
         this.itemCategoryRepository = itemCategoryRepository;
         this.departmentRepository = departmentRepository;
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
+        this.stockItemRepository = stockItemRepository;
     }
 
     @GetMapping("/branches")
@@ -100,11 +104,28 @@ public class LookupController {
                     map.put("id", c.getCategoryId());
                     map.put("name", c.getCategoryName());
                     map.put("sensitivityLevel", c.getSensitivityLevel());
+                    map.put("behaviorType", c.getBehaviorType() != null ? c.getBehaviorType().name() : "DOCUMENT_CASE");
                     map.put("departmentId", c.getDepartment() != null ? c.getDepartment().getDepartmentId() : null);
                     return map;
                 })
                 .collect(Collectors.toList());
         return ResponseEntity.ok(categories);
+    }
+
+    @GetMapping("/stock-items/{categoryId}")
+    public ResponseEntity<List<Map<String, Object>>> getStockItemsByCategory(@PathVariable Long categoryId) {
+        List<Map<String, Object>> stockItems = stockItemRepository.findByCategory_CategoryIdAndIsActiveTrue(categoryId).stream()
+                .map(item -> {
+                    java.util.Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("stockItemId", item.getStockItemId());
+                    map.put("itemName", item.getItemName());
+                    map.put("itemCode", item.getItemCode());
+                    map.put("unit", item.getUnit());
+                    map.put("description", item.getDescription());
+                    return map;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(stockItems);
     }
 
     @GetMapping("/users/delivery-persons/available")

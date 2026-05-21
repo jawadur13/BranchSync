@@ -150,6 +150,7 @@ public class OrgManagementController {
                     map.put("categoryName", c.getCategoryName());
                     map.put("sensitivityLevel", c.getSensitivityLevel());
                     map.put("description", c.getDescription());
+                    map.put("behaviorType", c.getBehaviorType() != null ? c.getBehaviorType().name() : "DOCUMENT_CASE");
                     map.put("departmentId", c.getDepartment() != null ? c.getDepartment().getDepartmentId() : null);
                     map.put("departmentName", c.getDepartment() != null ? c.getDepartment().getDepartmentName() : "Open Access");
                     map.put("isActive", c.getIsActive());
@@ -205,6 +206,81 @@ public class OrgManagementController {
         try {
             managementService.deleteItemCategory(categoryId);
             return ResponseEntity.ok(Map.of("message", "Item category physically deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    // ── Stock Item Administrative Management ────────────────────────────────
+
+    @GetMapping("/items/{categoryId}/stock-items")
+    public ResponseEntity<List<Map<String, Object>>> listStockItems(@PathVariable Long categoryId) {
+        List<Map<String, Object>> list = managementService.getStockItemsByCategory(categoryId).stream()
+                .map(item -> {
+                    Map<String, Object> map = new java.util.LinkedHashMap<>();
+                    map.put("stockItemId", item.getStockItemId());
+                    map.put("categoryId", item.getCategory().getCategoryId());
+                    map.put("itemName", item.getItemName());
+                    map.put("itemCode", item.getItemCode());
+                    map.put("unit", item.getUnit());
+                    map.put("description", item.getDescription());
+                    map.put("isActive", item.getIsActive());
+                    return map;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(list);
+    }
+
+    @PostMapping("/items/{categoryId}/stock-items")
+    public ResponseEntity<Map<String, Object>> createStockItem(
+            @PathVariable Long categoryId,
+            @RequestBody Map<String, String> payload) {
+        try {
+            com.jamunabank.branchsync.model.entity.StockItem item = managementService.createStockItem(
+                categoryId,
+                payload.get("itemName"),
+                payload.get("itemCode"),
+                payload.get("unit"),
+                payload.get("description")
+            );
+            return new ResponseEntity<>(Map.of(
+                    "message", "Stock item created successfully",
+                    "stockItemId", item.getStockItemId()
+            ), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/stock-items/{stockItemId}")
+    public ResponseEntity<Map<String, Object>> updateStockItem(
+            @PathVariable Long stockItemId,
+            @RequestBody Map<String, String> payload) {
+        try {
+            com.jamunabank.branchsync.model.entity.StockItem item = managementService.updateStockItem(
+                stockItemId,
+                payload.get("itemName"),
+                payload.get("itemCode"),
+                payload.get("unit"),
+                payload.get("description")
+            );
+            return ResponseEntity.ok(Map.of(
+                    "message", "Stock item updated successfully",
+                    "stockItemId", item.getStockItemId()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/stock-items/{stockItemId}/toggle-active")
+    public ResponseEntity<Map<String, Object>> toggleStockItemActive(@PathVariable Long stockItemId) {
+        try {
+            com.jamunabank.branchsync.model.entity.StockItem item = managementService.toggleStockItemStatus(stockItemId);
+            return ResponseEntity.ok(Map.of(
+                    "message", item.getIsActive() ? "Stock item activated" : "Stock item deactivated",
+                    "isActive", item.getIsActive()
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

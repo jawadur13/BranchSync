@@ -7,6 +7,7 @@ import com.jamunabank.branchsync.dto.request.CreateUserDto;
 import com.jamunabank.branchsync.model.entity.Branch;
 import com.jamunabank.branchsync.model.entity.Department;
 import com.jamunabank.branchsync.model.entity.ItemCategory;
+import com.jamunabank.branchsync.model.entity.StockItem;
 import com.jamunabank.branchsync.model.entity.User;
 
 import java.util.List;
@@ -36,4 +37,10 @@ public interface ManagementService {
     ItemCategory updateItemCategory(Long categoryId, CreateItemCategoryDto dto);
     ItemCategory toggleItemCategoryStatus(Long categoryId);
     void deleteItemCategory(Long categoryId);
+
+    // Stock Item Management
+    List<StockItem> getStockItemsByCategory(Long categoryId);
+    StockItem createStockItem(Long categoryId, String itemName, String itemCode, String unit, String description);
+    StockItem updateStockItem(Long stockItemId, String itemName, String itemCode, String unit, String description);
+    StockItem toggleStockItemStatus(Long stockItemId);
 }

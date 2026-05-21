@@ -1,5 +1,6 @@
 package com.jamunabank.branchsync.model.entity;
 
+import com.jamunabank.branchsync.model.enums.CategoryBehavior;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
@@ -30,6 +31,19 @@ public class ItemCategory {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
+    /**
+     * Drives runtime behavior for this category.
+     * CASH    = vault balance tracking, denominations, cash ledger, manual adjustments
+     * STOCK   = quantity tracking, stock ledger, stock manual adjustments
+     * DOCUMENT_CASE = plain transfer workflow, no quantity/balance tracking
+     *
+     * Defaults to DOCUMENT_CASE for backward compatibility.
+     * IMPORTANT: Run DB migration to set 'Cash Bundle' to CASH after deployment.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "behavior_type", nullable = false, length = 20)
+    private CategoryBehavior behaviorType = CategoryBehavior.DOCUMENT_CASE;
+
     public ItemCategory() {}
 
     public Long getCategoryId() { return categoryId; }
@@ -46,6 +60,8 @@ public class ItemCategory {
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
     public boolean getIsActive() { return isActive; }
     public void setIsActive(boolean active) { this.isActive = active; }
+    public CategoryBehavior getBehaviorType() { return behaviorType; }
+    public void setBehaviorType(CategoryBehavior behaviorType) { this.behaviorType = behaviorType; }
 
     public static class ItemCategoryBuilder {
         private ItemCategory c = new ItemCategory();
@@ -56,7 +72,9 @@ public class ItemCategory {
         public ItemCategoryBuilder description(String d) { c.description = d; return this; }
         public ItemCategoryBuilder createdAt(OffsetDateTime t) { c.createdAt = t; return this; }
         public ItemCategoryBuilder isActive(boolean active) { c.isActive = active; return this; }
+        public ItemCategoryBuilder behaviorType(CategoryBehavior b) { c.behaviorType = b; return this; }
         public ItemCategory build() { return c; }
     }
     public static ItemCategoryBuilder builder() { return new ItemCategoryBuilder(); }
 }
+

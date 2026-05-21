@@ -42,6 +42,10 @@ interface TransferDetail {
     // Cash Bundle
     requestedAmount: number | null;
     denominationsSubmitted: boolean | null;
+    behaviorType?: string;
+    stockItemId?: number | null;
+    stockItemName?: string | null;
+    quantity?: number | null;
     auditLogs?: AuditLogResponse[];
 }
 
@@ -115,6 +119,7 @@ const TransferDetails = () => {
     const [existingDenoms, setExistingDenoms] = useState<any[]>([]);
     const [branchBalances, setBranchBalances] = useState<Record<number, number>>({});
     const [destBranchBalance, setDestBranchBalance] = useState<number | null>(null);
+    const [destStockBalance, setDestStockBalance] = useState<number | null>(null);
     
     // HQ Destination Assignment states
     const [branches, setBranches] = useState<any[]>([]);
@@ -190,27 +195,43 @@ const TransferDetails = () => {
             const response = await api.get(`/transfers/${id}`);
             setTransfer(response.data);
 
+            const isCash = response.data.behaviorType === 'CASH' || response.data.categoryName?.toLowerCase().includes('cash bundle');
+            const isStock = response.data.behaviorType === 'STOCK';
+
             // If in Step 2, fetch available delivery persons
             if (response.data.status === 'PENDING_ASSIGNMENT') {
                 const delRes = await api.get('/lookup/users/delivery-persons/available');
                 setAvailableDeliveryPersons(delRes.data);
-                // Fetch denominations already submitted (if any)
-                try {
-                    const denomRes = await api.get(`/cash/denominations/${response.data.requestId}`);
-                    setExistingDenoms(denomRes.data);
-                } catch { /* none yet */ }
-                // Fetch destination branch balance for Cash Bundle
-                if (response.data.categoryName?.toLowerCase().includes('cash bundle') &&
-                    response.data.destinationBranchId) {
+                
+                if (isCash) {
+                    // Fetch denominations already submitted (if any)
                     try {
-                        const balRes = await api.get(`/cash/balance/${response.data.destinationBranchId}`);
-                        setDestBranchBalance(balRes.data.currentBalance);
+                        const denomRes = await api.get(`/cash/denominations/${response.data.requestId}`);
+                        setExistingDenoms(denomRes.data);
+                    } catch { /* none yet */ }
+                    // Fetch destination branch balance for Cash Bundle
+                    if (response.data.destinationBranchId) {
+                        try {
+                            const balRes = await api.get(`/cash/balance/${response.data.destinationBranchId}`);
+                            setDestBranchBalance(balRes.data.currentBalance);
+                        } catch { /* ignore */ }
+                    }
+                }
+
+                if (isStock && response.data.destinationBranchId && response.data.stockItemId) {
+                    try {
+                        const stockBalRes = await api.get(`/stock/balances/${response.data.destinationBranchId}`);
+                        const itemBal = stockBalRes.data.find((b: any) => b.stockItemId === response.data.stockItemId);
+                        if (itemBal) {
+                            setDestStockBalance(itemBal.quantity);
+                        } else {
+                            setDestStockBalance(0);
+                        }
                     } catch { /* ignore */ }
                 }
             }
             // If user is HQ officer and status is PENDING_HQ_APPROVAL, also load Cash Bundle denominations display
-            if (response.data.categoryName?.toLowerCase().includes('cash bundle') &&
-                response.data.requestId) {
+            if (isCash && response.data.requestId) {
                 try {
                     const denomRes = await api.get(`/cash/denominations/${response.data.requestId}`);
                     setExistingDenoms(denomRes.data);
@@ -265,10 +286,17 @@ const TransferDetails = () => {
             setError('Please select a delivery person.');
             return;
         }
-        const isCashBundle = transfer?.categoryName?.toLowerCase().includes('cash bundle');
+        const isCash = transfer?.behaviorType === 'CASH' || transfer?.categoryName?.toLowerCase().includes('cash bundle');
+        const isStock = transfer?.behaviorType === 'STOCK';
+
         // Cash Bundle: denominations must be submitted first
-        if (isCashBundle && !transfer?.denominationsSubmitted) {
+        if (isCash && !transfer?.denominationsSubmitted) {
             setError('Please submit the denomination breakdown before accepting.');
+            return;
+        }
+        // Stock: sufficient stock check
+        if (isStock && destStockBalance !== null && transfer?.quantity && destStockBalance < transfer.quantity) {
+            setError(`Cannot accept: Insufficient stock. Request requires ${transfer.quantity} items, but branch only has ${destStockBalance} available.`);
             return;
         }
         triggerActionWithConfirm('Accept this request and assign the selected driver?', async () => {
@@ -530,7 +558,15 @@ const TransferDetails = () => {
                     </div>
                     ` : ''}
 
-                    ${transfer.categoryName?.toLowerCase().includes('cash bundle') && existingDenoms.length > 0 ? `
+                     ${(transfer.behaviorType === 'STOCK') ? `
+                    <h3 style="color: #0f172a; font-size: 16px; border-bottom: 2px solid #003366; padding-bottom: 8px; margin-bottom: 12px; margin-top: 30px;">📦 Stock Details</h3>
+                    <div style="font-size: 13px; line-height: 1.6; color: #334155; background: #ffffff; padding: 15px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 20px;">
+                        <strong>Requested Stock Item:</strong> ${transfer.stockItemName || '—'}<br/>
+                        <strong>Quantity:</strong> ${transfer.quantity || 0}
+                    </div>
+                    ` : ''}
+
+                    ${(transfer.behaviorType === 'CASH' || transfer.categoryName?.toLowerCase().includes('cash bundle')) && existingDenoms.length > 0 ? `
                     <h3 style="color: #0f172a; font-size: 16px; border-bottom: 2px solid #f59e0b; padding-bottom: 8px; margin-bottom: 12px; margin-top: 30px;">💰 Cash Bundle — Denomination Breakdown</h3>
                     <div style="margin-bottom: 6px; font-size: 13px; color: #92400e; font-weight: 600;">
                         Requested Amount: ৳${Number(transfer.requestedAmount).toLocaleString('en-BD')}
@@ -758,8 +794,41 @@ const TransferDetails = () => {
                         </div>
                     )}
 
+                    {/* Stock behavior Details */}
+                    {transfer.behaviorType === 'STOCK' && (
+                        <div className="detail-card" style={{ borderLeft: '3px solid var(--color-primary-blue)' }}>
+                            <h3 className="card-title">📦 Stock Details</h3>
+                            <div className="classification-grid">
+                                <div className="classification-item">
+                                    <span className="cl-label">Requested Stock Item</span>
+                                    <span className="cl-value" style={{ fontWeight: '700', fontSize: '1.05rem', color: 'var(--color-primary-blue)' }}>
+                                        {transfer.stockItemName || '—'}
+                                    </span>
+                                </div>
+                                <div className="classification-item">
+                                    <span className="cl-label">Quantity Requested</span>
+                                    <span className="cl-value" style={{ fontWeight: '700' }}>{transfer.quantity || 0}</span>
+                                </div>
+                            </div>
+
+                            {destStockBalance !== null && (
+                                <div style={{ marginTop: '12px', padding: '10px', borderRadius: '6px', backgroundColor: destStockBalance < (transfer.quantity || 0) ? '#fff5f5' : '#f0fff4', border: `1px solid ${destStockBalance < (transfer.quantity || 0) ? '#feb2b2' : '#98e2c6'}` }}>
+                                    {destStockBalance < (transfer.quantity || 0) ? (
+                                        <div style={{ color: '#c53030', fontWeight: '600', fontSize: '0.85rem' }}>
+                                            ⚠️ LOW STOCK ALERT: Only {destStockBalance} available at destination branch.
+                                        </div>
+                                    ) : (
+                                        <div style={{ color: '#2f855a', fontWeight: '600', fontSize: '0.85rem' }}>
+                                            ✅ Sufficient Stock: {destStockBalance} available at destination branch.
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {/* Cash Bundle Info */}
-                    {transfer.categoryName?.toLowerCase().includes('cash bundle') && (
+                    {(transfer.behaviorType === 'CASH' || transfer.categoryName?.toLowerCase().includes('cash bundle')) && (
                         <div className="detail-card" style={{ borderLeft: '3px solid #f59e0b' }}>
                             <h3 className="card-title">💰 Cash Bundle Details</h3>
                             <div className="classification-grid">
@@ -833,7 +902,7 @@ const TransferDetails = () => {
                                     <h4 className="action-subtitle" style={{ fontSize: '0.88rem', margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>🚚 Accept &amp; Assign Courier</h4>
 
                                     {/* Cash Bundle Denomination Form */}
-                                    {transfer.categoryName?.toLowerCase().includes('cash bundle') && (
+                                    {(transfer.behaviorType === 'CASH' || transfer.categoryName?.toLowerCase().includes('cash bundle')) && (
                                         <div style={{ marginBottom: '1rem', background: '#fffbeb', border: '1px solid #f59e0b', borderRadius: '8px', padding: '12px' }}>
                                             <div style={{ fontWeight: '600', fontSize: '0.85rem', marginBottom: '8px', color: '#92400e' }}>
                                                 💰 Cash Bundle — Denomination Breakdown Required

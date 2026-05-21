@@ -11,6 +11,8 @@ import Profile from './pages/Profile';
 import BranchDirectory from './pages/BranchDirectory';
 import CashLedger from './pages/CashLedger';
 import ManualAdjustment from './pages/ManualAdjustment';
+import StockLedger from './pages/StockLedger';
+import StockAdjustment from './pages/StockAdjustment';
 import Layout from './components/Layout/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
@@ -38,6 +40,8 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="cash/ledger" element={<CashLedger />} />
           <Route path="cash/adjust" element={<ManualAdjustment />} />
+          <Route path="stock/ledger" element={<StockLedger />} />
+          <Route path="stock/adjust" element={<StockAdjustment />} />
 
           {/* Admin Routes */}
           <Route path="admin/users" element={<UserManagement />} />

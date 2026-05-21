@@ -30,5 +30,8 @@ public class InitiateTransferRequestDto {
 
     // Cash Bundle only — amount requested
     private BigDecimal requestedAmount;
-}
 
+    // STOCK behavior fields
+    private Long stockItemId;
+    private Integer quantity;
+}

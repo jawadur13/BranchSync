@@ -6,7 +6,9 @@ import com.jamunabank.branchsync.model.entity.*;
 import com.jamunabank.branchsync.repository.*;
 import com.jamunabank.branchsync.service.AuditService;
 import com.jamunabank.branchsync.service.CashService;
+import com.jamunabank.branchsync.service.StockService;
 import com.jamunabank.branchsync.service.TransferService;
+import com.jamunabank.branchsync.model.enums.CategoryBehavior;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ public class TransferServiceImpl implements TransferService {
     private final BranchRepository branchRepository;
     private final DepartmentRepository departmentRepository;
     private final CashService cashService;
+    private final StockService stockService;
 
     private static final List<String> MANAGER_ROLES = List.of(
         "BRANCH_MANAGER", "OPERATION_MANAGER", "FIRST_EXECUTIVE_OFFICER"
@@ -338,11 +341,24 @@ public class TransferServiceImpl implements TransferService {
         TransferRequest updated = transferRequestRepository.save(request);
         auditService.logAction(updated, driver, "PICKED_UP", old, updated.getStatus(), null, "127.0.0.1");
 
-        // Cash Bundle: debit destination branch balance (they are sending the cash)
-        if (isCashBundle(updated)) {
+        // CASH behavior: debit destination branch balance (they are sending the cash)
+        if (isCashBehavior(updated)) {
             java.math.BigDecimal amount = updated.getRequestedAmount();
             if (amount != null) {
                 cashService.recordTransferOut(updated.getDestinationBranch().getBranchId(), updated.getRequestId(), amount, driverId);
+            }
+        }
+
+        // STOCK behavior: debit destination branch stock quantity (they are sending the stock items)
+        if (isStockBehavior(updated)) {
+            if (updated.getStockItem() != null && updated.getQuantity() != null) {
+                stockService.recordTransferOut(
+                    updated.getDestinationBranch().getBranchId(),
+                    updated.getStockItem().getStockItemId(),
+                    updated.getRequestId(),
+                    updated.getQuantity(),
+                    driverId
+                );
             }
         }
 
@@ -370,11 +386,24 @@ public class TransferServiceImpl implements TransferService {
         TransferRequest updated = transferRequestRepository.save(request);
         auditService.logAction(updated, driver, "DELIVERED", old, updated.getStatus(), null, "127.0.0.1");
 
-        // Cash Bundle: credit origin branch balance (they are receiving the cash)
-        if (isCashBundle(updated)) {
+        // CASH behavior: credit origin branch balance (they are receiving the cash)
+        if (isCashBehavior(updated)) {
             java.math.BigDecimal amount = updated.getRequestedAmount();
             if (amount != null) {
                 cashService.recordTransferIn(updated.getOriginBranch().getBranchId(), updated.getRequestId(), amount, driverId);
+            }
+        }
+
+        // STOCK behavior: credit origin branch stock quantity (they are receiving the stock items)
+        if (isStockBehavior(updated)) {
+            if (updated.getStockItem() != null && updated.getQuantity() != null) {
+                stockService.recordTransferIn(
+                    updated.getOriginBranch().getBranchId(),
+                    updated.getStockItem().getStockItemId(),
+                    updated.getRequestId(),
+                    updated.getQuantity(),
+                    driverId
+                );
             }
         }
 
@@ -402,14 +431,38 @@ public class TransferServiceImpl implements TransferService {
         TransferRequest updated = transferRequestRepository.save(request);
         auditService.logAction(updated, requester, accepted ? "COMPLETED" : "REJECTED", old, updated.getStatus(), finalNote, "127.0.0.1");
 
-        // Cash Bundle: if rejected on receipt, reverse the cash movements
-        if (!accepted && isCashBundle(updated)) {
+        // CASH behavior: if rejected on receipt, reverse the cash movements
+        if (!accepted && isCashBehavior(updated)) {
             java.math.BigDecimal amount = updated.getRequestedAmount();
             if (amount != null) {
                 // Origin branch loses the cash back (reversal out)
                 cashService.recordReversal(updated.getOriginBranch().getBranchId(), updated.getRequestId(), amount, requesterId, "OUT");
                 // Destination branch gets the cash back (reversal in)
                 cashService.recordReversal(updated.getDestinationBranch().getBranchId(), updated.getRequestId(), amount, requesterId, "IN");
+            }
+        }
+
+        // STOCK behavior: if rejected on receipt, reverse the stock movements
+        if (!accepted && isStockBehavior(updated)) {
+            if (updated.getStockItem() != null && updated.getQuantity() != null) {
+                // Origin branch loses the stock items back (reversal out)
+                stockService.recordReversal(
+                    updated.getOriginBranch().getBranchId(),
+                    updated.getStockItem().getStockItemId(),
+                    updated.getRequestId(),
+                    updated.getQuantity(),
+                    requesterId,
+                    "OUT"
+                );
+                // Destination branch gets the stock items back (reversal in)
+                stockService.recordReversal(
+                    updated.getDestinationBranch().getBranchId(),
+                    updated.getStockItem().getStockItemId(),
+                    updated.getRequestId(),
+                    updated.getQuantity(),
+                    requesterId,
+                    "IN"
+                );
             }
         }
 
@@ -521,8 +574,13 @@ public class TransferServiceImpl implements TransferService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
     }
 
-    private boolean isCashBundle(TransferRequest request) {
+    private boolean isCashBehavior(TransferRequest request) {
         return request.getCategory() != null
-                && "Cash Bundle".equalsIgnoreCase(request.getCategory().getCategoryName());
+                && request.getCategory().getBehaviorType() == CategoryBehavior.CASH;
+    }
+
+    private boolean isStockBehavior(TransferRequest request) {
+        return request.getCategory() != null
+                && request.getCategory().getBehaviorType() == CategoryBehavior.STOCK;
     }
 }

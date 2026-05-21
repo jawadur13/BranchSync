@@ -20,4 +20,7 @@ public class TransferResponseDto {
     private OffsetDateTime requestedAt;
     private Long deliveryPersonId;
     private String deliveryPersonFullName;
+    private String behaviorType;
+    private String stockItemName;
+    private Integer quantity;
 }

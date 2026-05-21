@@ -6,6 +6,7 @@ import com.jamunabank.branchsync.dto.request.CreateItemCategoryDto;
 import com.jamunabank.branchsync.dto.request.CreateUserDto;
 import com.jamunabank.branchsync.model.entity.*;
 import com.jamunabank.branchsync.model.enums.BranchType;
+import com.jamunabank.branchsync.model.enums.CategoryBehavior;
 import com.jamunabank.branchsync.repository.*;
 import com.jamunabank.branchsync.service.ManagementService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class ManagementServiceImpl implements ManagementService {
     private final BranchRepository branchRepository;
     private final DepartmentRepository departmentRepository;
     private final ItemCategoryRepository itemCategoryRepository;
+    private final StockItemRepository stockItemRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -237,10 +239,19 @@ public class ManagementServiceImpl implements ManagementService {
         if (itemCategoryRepository.findByCategoryName(dto.getCategoryName()).isPresent()) {
             throw new RuntimeException("Category name already exists: " + dto.getCategoryName());
         }
+        CategoryBehavior behavior = CategoryBehavior.DOCUMENT_CASE;
+        if (dto.getBehaviorType() != null) {
+            try {
+                behavior = CategoryBehavior.valueOf(dto.getBehaviorType().toUpperCase().trim());
+            } catch (IllegalArgumentException e) {
+                // fall back to default
+            }
+        }
         ItemCategory category = ItemCategory.builder()
                 .categoryName(dto.getCategoryName().trim())
                 .sensitivityLevel(dto.getSensitivityLevel() != null ? dto.getSensitivityLevel() : "LOW")
                 .description(dto.getDescription())
+                .behaviorType(behavior)
                 .createdAt(OffsetDateTime.now())
                 .build();
         if (dto.getDepartmentId() != null) {
@@ -258,6 +269,13 @@ public class ManagementServiceImpl implements ManagementService {
         category.setCategoryName(dto.getCategoryName().trim());
         category.setSensitivityLevel(dto.getSensitivityLevel() != null ? dto.getSensitivityLevel() : "LOW");
         category.setDescription(dto.getDescription());
+        if (dto.getBehaviorType() != null) {
+            try {
+                category.setBehaviorType(CategoryBehavior.valueOf(dto.getBehaviorType().toUpperCase().trim()));
+            } catch (IllegalArgumentException e) {
+                // fall back or keep previous
+            }
+        }
         if (dto.getDepartmentId() != null) {
             Department dept = departmentRepository.findById(dto.getDepartmentId())
                     .orElseThrow(() -> new RuntimeException("Department not found"));
@@ -285,5 +303,92 @@ public class ManagementServiceImpl implements ManagementService {
         } catch (Exception e) {
             throw new RuntimeException("Cannot delete item category '" + category.getCategoryName() + "'. It is currently referenced by physical asset transfer request records in the database. Please deactivate it instead.");
         }
+    }
+
+    // ── Stock Item Management ───────────────────────────────────────────────
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StockItem> getStockItemsByCategory(Long categoryId) {
+        return stockItemRepository.findByCategory_CategoryId(categoryId);
+    }
+
+    @Override
+    public StockItem createStockItem(Long categoryId, String itemName, String itemCode, String unit, String description) {
+        ItemCategory category = itemCategoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Item Category not found: " + categoryId));
+        
+        if (category.getBehaviorType() != CategoryBehavior.STOCK) {
+            throw new RuntimeException("Cannot create stock items for non-STOCK category behaviors.");
+        }
+
+        if (itemName == null || itemName.trim().isEmpty()) {
+            throw new RuntimeException("Stock item name is required.");
+        }
+
+        if (stockItemRepository.findByCategory_CategoryIdAndItemName(categoryId, itemName.trim()).isPresent()) {
+            throw new RuntimeException("A stock item with name '" + itemName.trim() + "' already exists under this category.");
+        }
+
+        if (itemCode != null && !itemCode.trim().isEmpty()) {
+            if (stockItemRepository.findByItemCode(itemCode.trim()).isPresent()) {
+                throw new RuntimeException("Stock item code '" + itemCode.trim() + "' already exists globally.");
+            }
+        }
+
+        StockItem item = StockItem.builder()
+                .category(category)
+                .itemName(itemName.trim())
+                .itemCode(itemCode != null ? itemCode.trim() : null)
+                .unit(unit != null && !unit.trim().isEmpty() ? unit.trim() : "pcs")
+                .description(description)
+                .isActive(true)
+                .createdAt(OffsetDateTime.now())
+                .build();
+
+        return stockItemRepository.save(item);
+    }
+
+    @Override
+    public StockItem updateStockItem(Long stockItemId, String itemName, String itemCode, String unit, String description) {
+        StockItem item = stockItemRepository.findById(stockItemId)
+                .orElseThrow(() -> new RuntimeException("Stock Item not found: " + stockItemId));
+
+        if (itemName == null || itemName.trim().isEmpty()) {
+            throw new RuntimeException("Stock item name is required.");
+        }
+
+        // Check for duplicate name under same category (excluding current item)
+        stockItemRepository.findByCategory_CategoryIdAndItemName(item.getCategory().getCategoryId(), itemName.trim())
+                .ifPresent(existing -> {
+                    if (!existing.getStockItemId().equals(stockItemId)) {
+                        throw new RuntimeException("Another stock item with name '" + itemName.trim() + "' already exists under this category.");
+                    }
+                });
+
+        // Check for duplicate code globally (excluding current item)
+        if (itemCode != null && !itemCode.trim().isEmpty()) {
+            stockItemRepository.findByItemCode(itemCode.trim())
+                    .ifPresent(existing -> {
+                        if (!existing.getStockItemId().equals(stockItemId)) {
+                            throw new RuntimeException("Stock item code '" + itemCode.trim() + "' already exists globally.");
+                        }
+                    });
+        }
+
+        item.setItemName(itemName.trim());
+        item.setItemCode(itemCode != null ? itemCode.trim() : null);
+        item.setUnit(unit != null && !unit.trim().isEmpty() ? unit.trim() : "pcs");
+        item.setDescription(description);
+
+        return stockItemRepository.save(item);
+    }
+
+    @Override
+    public StockItem toggleStockItemStatus(Long stockItemId) {
+        StockItem item = stockItemRepository.findById(stockItemId)
+                .orElseThrow(() -> new RuntimeException("Stock Item not found: " + stockItemId));
+        item.setIsActive(!item.getIsActive());
+        return stockItemRepository.save(item);
     }
 }

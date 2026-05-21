@@ -58,5 +58,11 @@ public class TransferDetailDto {
     private java.math.BigDecimal requestedAmount;
     private Boolean denominationsSubmitted;
 
+    // STOCK behavior fields
+    private Long stockItemId;
+    private String stockItemName;
+    private Integer quantity;
+    private String behaviorType;
+
     private java.util.List<AuditLogResponseDto> auditLogs;
 }

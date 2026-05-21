@@ -13,6 +13,8 @@ public class CreateItemCategoryDto {
 
     private String description;
 
+    private String behaviorType = "DOCUMENT_CASE"; // CASH | STOCK | DOCUMENT_CASE
+
     public String getCategoryName() { return categoryName; }
     public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
     public Long getDepartmentId() { return departmentId; }
@@ -21,4 +23,6 @@ public class CreateItemCategoryDto {
     public void setSensitivityLevel(String sensitivityLevel) { this.sensitivityLevel = sensitivityLevel; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public String getBehaviorType() { return behaviorType; }
+    public void setBehaviorType(String behaviorType) { this.behaviorType = behaviorType; }
 }

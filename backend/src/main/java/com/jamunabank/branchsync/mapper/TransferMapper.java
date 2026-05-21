@@ -6,6 +6,7 @@ import com.jamunabank.branchsync.dto.response.TransferResponseDto;
 import com.jamunabank.branchsync.model.entity.Branch;
 import com.jamunabank.branchsync.model.entity.Department;
 import com.jamunabank.branchsync.model.entity.ItemCategory;
+import com.jamunabank.branchsync.model.entity.StockItem;
 import com.jamunabank.branchsync.model.entity.TransferRequest;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +25,9 @@ public class TransferMapper {
                         ? Department.builder().departmentId(dto.getDestinationDepartmentId()).build() : null)
                 .category(ItemCategory.builder().categoryId(dto.getCategoryId()).build())
                 .requestedAmount(dto.getRequestedAmount())
+                .stockItem(dto.getStockItemId() != null
+                        ? StockItem.builder().stockItemId(dto.getStockItemId()).build() : null)
+                .quantity(dto.getQuantity())
                 .build();
     }
 
@@ -42,6 +46,9 @@ public class TransferMapper {
                 .initiatedByFullName(e.getInitiatedBy() != null ? e.getInitiatedBy().getFullName() : null)
                 .deliveryPersonId(e.getDeliveryPerson() != null ? e.getDeliveryPerson().getUserId() : null)
                 .deliveryPersonFullName(e.getDeliveryPerson() != null ? e.getDeliveryPerson().getFullName() : null)
+                .behaviorType(e.getCategory() != null && e.getCategory().getBehaviorType() != null ? e.getCategory().getBehaviorType().name() : null)
+                .stockItemName(e.getStockItem() != null ? e.getStockItem().getItemName() : null)
+                .quantity(e.getQuantity())
                 .build();
     }
 
@@ -80,7 +87,8 @@ public class TransferMapper {
         }
         if (e.getCategory() != null) {
             b.categoryName(e.getCategory().getCategoryName())
-             .sensitivityLevel(e.getCategory().getSensitivityLevel());
+             .sensitivityLevel(e.getCategory().getSensitivityLevel())
+             .behaviorType(e.getCategory().getBehaviorType() != null ? e.getCategory().getBehaviorType().name() : null);
         }
         if (e.getInitiatedBy() != null) {
             b.initiatedByUserId(e.getInitiatedBy().getUserId())
@@ -96,10 +104,15 @@ public class TransferMapper {
             b.hqApproverId(e.getHqApprover().getUserId())
              .hqApproverFullName(e.getHqApprover().getFullName());
         }
+        if (e.getStockItem() != null) {
+            b.stockItemId(e.getStockItem().getStockItemId())
+             .stockItemName(e.getStockItem().getItemName());
+        }
         b.hqApprovedAt(e.getHqApprovedAt())
-         .hqRejectionNote(e.getHqRejectionNote())
-         .requestedAmount(e.getRequestedAmount())
-         .denominationsSubmitted(e.getDenominationsSubmitted());
+          .hqRejectionNote(e.getHqRejectionNote())
+          .requestedAmount(e.getRequestedAmount())
+          .denominationsSubmitted(e.getDenominationsSubmitted())
+          .quantity(e.getQuantity());
         return b.build();
     }
 }

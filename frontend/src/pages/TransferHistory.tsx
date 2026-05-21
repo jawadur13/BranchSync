@@ -329,7 +329,16 @@ const TransferHistory = () => {
                                     <td className="hist-num">{i + 1}</td>
                                     <td className="hist-code">{t.requestCode}</td>
                                     <td className="hist-title-cell">{t.title}</td>
-                                    <td>{t.categoryName}</td>
+                                    <td>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <span>{t.categoryName}</span>
+                                            {t.behaviorType && (
+                                                <span className={`type-badge behavior-${t.behaviorType.toLowerCase()}`} style={{ alignSelf: 'flex-start', padding: '1px 6px', fontSize: '10px', width: 'fit-content' }}>
+                                                    {t.behaviorType}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
                                     <td>
                                         <div className="hist-route-flex">
                                             <span className="hist-branch">{t.originBranchName}</span>

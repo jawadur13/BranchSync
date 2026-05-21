@@ -10,4 +10,7 @@ export interface TransferResponseDto {
     requestType: string;
     initiatedByFullName: string;
     requestedAt: string;
+    behaviorType?: string;
+    stockItemName?: string;
+    quantity?: number;
 }

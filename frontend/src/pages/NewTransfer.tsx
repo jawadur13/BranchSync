@@ -17,6 +17,7 @@ interface CategoryOption {
     name: string;
     sensitivityLevel: string;
     departmentId: number | null;
+    behaviorType?: string;
 }
 
 
@@ -32,6 +33,11 @@ const NewTransfer = () => {
     const [categoryId, setCategoryId] = useState('');
     const [priority, setPriority] = useState(location.state?.priority || 'NORMAL');
     const [requestedAmount, setRequestedAmount] = useState('');
+    
+    // Stock states
+    const [stockItems, setStockItems] = useState<any[]>([]);
+    const [selectedStockItemId, setSelectedStockItemId] = useState('');
+    const [stockQuantity, setStockQuantity] = useState('');
 
     // Lookup data
     const [branches, setBranches] = useState<BranchOption[]>([]);
@@ -73,7 +79,27 @@ const NewTransfer = () => {
     });
 
     const selectedCategory = categories.find(c => c.id === Number(categoryId));
-    const isCashBundle = selectedCategory?.name?.toLowerCase().includes('cash bundle');
+    const isCashBehavior = selectedCategory?.behaviorType === 'CASH' || selectedCategory?.name?.toLowerCase().includes('cash bundle');
+    const isStockBehavior = selectedCategory?.behaviorType === 'STOCK';
+
+    useEffect(() => {
+        if (selectedCategory && selectedCategory.behaviorType === 'STOCK') {
+            fetchStockItemsForCategory(selectedCategory.id);
+        } else {
+            setStockItems([]);
+            setSelectedStockItemId('');
+            setStockQuantity('');
+        }
+    }, [categoryId, categories]);
+
+    const fetchStockItemsForCategory = async (catId: number) => {
+        try {
+            const res = await api.get(`/lookup/stock-items/${catId}`);
+            setStockItems(res.data);
+        } catch (err) {
+            console.error("Failed to load stock items for category", err);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -90,8 +116,12 @@ const NewTransfer = () => {
                 destinationBranchId: null,
                 destinationDepartmentId: null,
             };
-            if (isCashBundle && requestedAmount) {
+            if (isCashBehavior && requestedAmount) {
                 payload.requestedAmount = parseFloat(requestedAmount);
+            }
+            if (isStockBehavior && selectedStockItemId && stockQuantity) {
+                payload.stockItemId = Number(selectedStockItemId);
+                payload.quantity = parseInt(stockQuantity, 10);
             }
 
             await api.post('/transfers', payload);
@@ -214,8 +244,8 @@ const NewTransfer = () => {
                         </div>
                     )}
 
-                    {/* Cash Bundle: Amount Requested */}
-                    {isCashBundle && (
+                    {/* Cash Behavior: Amount Requested */}
+                    {isCashBehavior && (
                         <div className="form-group full-width" style={{ marginTop: '12px' }}>
                             <label htmlFor="requestedAmount">
                                 💵 Amount Requested (৳) <span className="required">*</span>
@@ -228,10 +258,45 @@ const NewTransfer = () => {
                                 value={requestedAmount}
                                 onChange={(e) => setRequestedAmount(e.target.value)}
                                 placeholder="e.g. 500000"
-                                required={isCashBundle}
+                                required={isCashBehavior}
                                 style={{ borderLeft: '3px solid #f59e0b' }}
                             />
                             <span className="field-hint">The exact cash amount the destination branch will need to prepare and send.</span>
+                        </div>
+                    )}
+
+                    {/* Stock Behavior: Item & Quantity */}
+                    {isStockBehavior && (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '12px' }}>
+                            <div className="form-group">
+                                <label htmlFor="stockItemId">📦 Select Stock Item <span className="required">*</span></label>
+                                <select 
+                                    id="stockItemId"
+                                    value={selectedStockItemId}
+                                    onChange={e => setSelectedStockItemId(e.target.value)}
+                                    required={isStockBehavior}
+                                    style={{ borderLeft: '3px solid var(--color-primary-blue)' }}
+                                >
+                                    <option value="">-- Choose Stock Item --</option>
+                                    {stockItems.map(item => (
+                                        <option key={item.stockItemId} value={item.stockItemId}>{item.itemName} ({item.itemCode || 'No Code'})</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="stockQuantity">🔢 Quantity <span className="required">*</span></label>
+                                <input 
+                                    type="number"
+                                    id="stockQuantity"
+                                    min="1"
+                                    step="1"
+                                    value={stockQuantity}
+                                    onChange={e => setStockQuantity(e.target.value)}
+                                    placeholder="e.g. 10"
+                                    required={isStockBehavior}
+                                    style={{ borderLeft: '3px solid var(--color-primary-blue)' }}
+                                />
+                            </div>
                         </div>
                     )}
                 </div>

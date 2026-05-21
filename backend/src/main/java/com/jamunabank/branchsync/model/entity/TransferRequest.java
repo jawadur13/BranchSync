@@ -106,6 +106,14 @@ public class TransferRequest {
     @Column(name = "denominations_submitted")
     private Boolean denominationsSubmitted = false;
 
+    // STOCK behavior specific fields
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "stock_item_id")
+    private StockItem stockItem;
+
+    @Column(name = "quantity")
+    private Integer quantity;
+
     public TransferRequest() {}
 
     // Getters and Setters
@@ -161,6 +169,10 @@ public class TransferRequest {
     public void setRequestedAmount(BigDecimal requestedAmount) { this.requestedAmount = requestedAmount; }
     public Boolean getDenominationsSubmitted() { return denominationsSubmitted; }
     public void setDenominationsSubmitted(Boolean denominationsSubmitted) { this.denominationsSubmitted = denominationsSubmitted; }
+    public StockItem getStockItem() { return stockItem; }
+    public void setStockItem(StockItem stockItem) { this.stockItem = stockItem; }
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
 
     public static class TransferRequestBuilder {
         private TransferRequest t = new TransferRequest();
@@ -189,6 +201,8 @@ public class TransferRequest {
         public TransferRequestBuilder hqApprovedAt(OffsetDateTime d) { t.hqApprovedAt = d; return this; }
         public TransferRequestBuilder hqRejectionNote(String n) { t.hqRejectionNote = n; return this; }
         public TransferRequestBuilder requestedAmount(BigDecimal a) { t.requestedAmount = a; return this; }
+        public TransferRequestBuilder stockItem(StockItem s) { t.stockItem = s; return this; }
+        public TransferRequestBuilder quantity(Integer q) { t.quantity = q; return this; }
         public TransferRequest build() { return t; }
     }
     public static TransferRequestBuilder builder() { return new TransferRequestBuilder(); }

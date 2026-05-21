@@ -141,6 +141,11 @@
     color: var(--color-primary-blue);
 }
 
+/* Behavior Type Badges */
+.behavior-cash { background: #fef3c7 !important; color: #b45309 !important; border: 1px solid #fde68a; }
+.behavior-stock { background: #dbeafe !important; color: #1e40af !important; border: 1px solid #bfdbfe; }
+.behavior-document { background: #f1f5f9 !important; color: #475569 !important; border: 1px solid #e2e8f0; }
+
 /* Sensitivity Level Badges */
 .sensitivity-low    { background: #d1fae5; color: #065f46; }
 .sensitivity-medium { background: #dbeafe; color: #1e40af; }

@@ -11,6 +11,7 @@ const Sidebar: React.FC = () => {
     const isOfficer = user?.role === 'OFFICER';
     const isCashOfficer = isOfficer && user?.departmentName?.toLowerCase().includes('cash');
     const isCashRelevant = isManager || isOfficer || isAdmin;
+    const isStockRelevant = isManager || isOfficer || isAdmin;
 
     return (
         <aside className="sidebar">
@@ -50,6 +51,21 @@ const Sidebar: React.FC = () => {
                         {(isManager || isOfficer) && (
                             <NavLink to="/cash/adjust" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                                 <span className="nav-icon">⚙️</span> Cash Adjustments
+                            </NavLink>
+                        )}
+                    </>
+                )}
+
+                {isStockRelevant && (
+                    <>
+                        <div className="sidebar-divider"></div>
+                        <div className="sidebar-section-label">Stock Management</div>
+                        <NavLink to="/stock/ledger" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                            <span className="nav-icon">📦</span> Stock Ledger
+                        </NavLink>
+                        {(isManager || isOfficer) && (
+                            <NavLink to="/stock/adjust" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                                <span className="nav-icon">⚙️</span> Stock Adjustments
                             </NavLink>
                         )}
                     </>
