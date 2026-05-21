@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 19, 2026 at 01:29 PM
+-- Generation Time: May 21, 2026 at 09:49 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -74,7 +74,37 @@ INSERT INTO `audit_logs` (`audit_id`, `request_id`, `actor_id`, `action`, `from_
 (32, 10, 41, 'CREATED', NULL, 'PENDING_INTERNAL', NULL, '127.0.0.1', '2026-05-19 05:21:04'),
 (33, 10, 12, 'APPROVED_INTERNAL', 'PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', NULL, '127.0.0.1', '2026-05-19 05:21:51'),
 (34, 4, 38, 'HQ_REJECTED', 'PENDING_HQ_APPROVAL', 'REJECTED_BY_HQ', 'invalid request', '127.0.0.1', '2026-05-19 05:23:14'),
-(35, 10, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-19 05:27:55');
+(35, 10, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-19 05:27:55'),
+(36, 11, 39, 'CREATED', NULL, 'PENDING_INTERNAL', NULL, '127.0.0.1', '2026-05-19 06:42:37'),
+(37, 11, 42, 'APPROVED_INTERNAL', 'PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', NULL, '127.0.0.1', '2026-05-19 06:50:31'),
+(38, 11, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-19 06:51:56'),
+(39, 11, 32, 'DESTINATION_REJECTED', 'PENDING_ASSIGNMENT', 'PENDING_HQ_APPROVAL', 'not available at the branch', '127.0.0.1', '2026-05-19 07:14:02'),
+(40, 11, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-19 07:14:46'),
+(41, 11, 28, 'ASSIGNED_DRIVER', 'PENDING_ASSIGNMENT', 'PENDING_FINAL_RELEASE', NULL, '127.0.0.1', '2026-05-19 07:16:11'),
+(42, 11, 7, 'RELEASE_REJECTED', 'PENDING_FINAL_RELEASE', 'PENDING_HQ_APPROVAL', 'not available', '127.0.0.1', '2026-05-19 07:32:25'),
+(43, 12, 19, 'CREATED', NULL, 'PENDING_INTERNAL', NULL, '127.0.0.1', '2026-05-19 17:09:52'),
+(44, 12, 3, 'APPROVED_INTERNAL', 'PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', NULL, '127.0.0.1', '2026-05-19 17:10:29'),
+(45, 12, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-19 17:11:12'),
+(46, 12, 17, 'ASSIGNED_DRIVER', 'PENDING_ASSIGNMENT', 'PENDING_FINAL_RELEASE', NULL, '127.0.0.1', '2026-05-19 17:13:18'),
+(47, 12, 2, 'RELEASED', 'PENDING_FINAL_RELEASE', 'READY_FOR_PICKUP', NULL, '127.0.0.1', '2026-05-19 17:13:44'),
+(48, 12, 33, 'PICKED_UP', 'READY_FOR_PICKUP', 'IN_TRANSIT', NULL, '127.0.0.1', '2026-05-19 17:14:13'),
+(49, 12, 33, 'DELIVERED', 'IN_TRANSIT', 'DELIVERED', NULL, '127.0.0.1', '2026-05-19 17:14:17'),
+(50, 13, 22, 'CREATED', NULL, 'PENDING_INTERNAL', NULL, '127.0.0.1', '2026-05-19 23:04:28'),
+(51, 13, 11, 'APPROVED_INTERNAL', 'PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', NULL, '127.0.0.1', '2026-05-19 23:06:01'),
+(52, 13, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-19 23:10:26'),
+(53, 13, 24, 'ASSIGNED_DRIVER', 'PENDING_ASSIGNMENT', 'PENDING_FINAL_RELEASE', NULL, '127.0.0.1', '2026-05-19 23:12:32'),
+(54, 13, 6, 'RELEASED', 'PENDING_FINAL_RELEASE', 'READY_FOR_PICKUP', NULL, '127.0.0.1', '2026-05-19 23:13:31'),
+(55, 13, 36, 'PICKED_UP', 'READY_FOR_PICKUP', 'IN_TRANSIT', NULL, '127.0.0.1', '2026-05-19 23:13:49'),
+(56, 13, 36, 'DELIVERED', 'IN_TRANSIT', 'DELIVERED', NULL, '127.0.0.1', '2026-05-19 23:13:51'),
+(57, 13, 22, 'COMPLETED', 'DELIVERED', 'COMPLETED', '', '127.0.0.1', '2026-05-19 23:14:58'),
+(58, 14, 5, 'CREATED', NULL, 'PENDING_HQ_APPROVAL', NULL, '127.0.0.1', '2026-05-20 01:06:43'),
+(59, 14, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-20 01:08:44'),
+(60, 14, 24, 'ASSIGNED_DRIVER', 'PENDING_ASSIGNMENT', 'PENDING_FINAL_RELEASE', NULL, '127.0.0.1', '2026-05-20 01:10:04'),
+(61, 14, 6, 'RELEASED', 'PENDING_FINAL_RELEASE', 'READY_FOR_PICKUP', NULL, '127.0.0.1', '2026-05-20 01:11:04'),
+(62, 14, 33, 'PICKED_UP', 'READY_FOR_PICKUP', 'IN_TRANSIT', NULL, '127.0.0.1', '2026-05-20 01:11:41'),
+(63, 14, 33, 'DELIVERED', 'IN_TRANSIT', 'DELIVERED', NULL, '127.0.0.1', '2026-05-20 01:11:46'),
+(64, 14, 5, 'COMPLETED', 'DELIVERED', 'COMPLETED', '', '127.0.0.1', '2026-05-20 01:16:09'),
+(65, 12, 19, 'COMPLETED', 'DELIVERED', 'COMPLETED', '', '127.0.0.1', '2026-05-20 13:15:45');
 
 -- --------------------------------------------------------
 
@@ -108,6 +138,31 @@ INSERT INTO `branches` (`branch_id`, `branch_code`, `branch_name`, `branch_type`
 (5, 'BR-RAJ-001', 'Rajshahi Station Road Branch', 'SUB_BRANCH', 'Rajshahi', 'Rajshahi', 'Station Road, Rajshahi-6000', '0721-812345', 'rajshahi@jamunabank.com', 1, '2026-05-04 16:32:09'),
 (6, 'BR-KHL-001', 'Khulna KDA Branch', 'SUB_BRANCH', 'Khulna', 'Khulna', 'KDA Avenue, Khulna-9100', '041-723456', 'khulna@jamunabank.com', 1, '2026-05-04 16:32:09'),
 (7, 'BR-FAR-001', 'Jhiltuli Branch', 'AD_BRANCH', 'Faridpur', 'Dhaka', '8B, Jhiltuli, Faridpur - 7800', '01824844522', NULL, 1, '2026-05-06 09:37:06');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `branch_cash_balance`
+--
+
+CREATE TABLE `branch_cash_balance` (
+  `branch_id` bigint(20) NOT NULL,
+  `current_balance` decimal(18,2) NOT NULL DEFAULT 0.00,
+  `last_updated_at` datetime(6) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Live cash balance per branch — updated on every transfer/adjustment';
+
+--
+-- Dumping data for table `branch_cash_balance`
+--
+
+INSERT INTO `branch_cash_balance` (`branch_id`, `current_balance`, `last_updated_at`) VALUES
+(1, 359000000.00, '2026-05-20 04:58:59.000000'),
+(2, 2200000.00, '2026-05-20 19:30:08.000000'),
+(3, 34475326.00, '2026-05-20 07:11:41.000000'),
+(4, 12345002.00, '2026-05-20 04:51:15.000000'),
+(5, 450000.00, '2026-05-20 04:52:09.000000'),
+(6, 13000000.00, '2026-05-20 04:53:34.000000'),
+(7, 45001205.00, '2026-05-20 04:56:00.000000');
 
 -- --------------------------------------------------------
 
@@ -152,6 +207,115 @@ INSERT INTO `branch_departments` (`branch_id`, `department_id`) VALUES
 (7, 1),
 (7, 3),
 (7, 6);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cash_ledger`
+--
+
+CREATE TABLE `cash_ledger` (
+  `ledger_id` bigint(20) NOT NULL,
+  `branch_id` bigint(20) NOT NULL,
+  `entry_type` varchar(40) NOT NULL COMMENT 'TRANSFER_OUT | TRANSFER_IN | REVERSAL_IN | REVERSAL_OUT | MANUAL_ADJUSTMENT',
+  `request_id` bigint(20) DEFAULT NULL,
+  `amount` decimal(18,2) NOT NULL,
+  `balance_before` decimal(18,2) NOT NULL,
+  `balance_after` decimal(18,2) NOT NULL,
+  `actor_id` bigint(20) DEFAULT NULL,
+  `approver_id` bigint(20) DEFAULT NULL,
+  `reason` text DEFAULT NULL,
+  `created_at` datetime(6) NOT NULL DEFAULT current_timestamp(6)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Immutable audit-ready cash ledger — no updates, only inserts';
+
+--
+-- Dumping data for table `cash_ledger`
+--
+
+INSERT INTO `cash_ledger` (`ledger_id`, `branch_id`, `entry_type`, `request_id`, `amount`, `balance_before`, `balance_after`, `actor_id`, `approver_id`, `reason`, `created_at`) VALUES
+(1, 1, 'MANUAL_ADJUSTMENT', NULL, 10000000.00, 0.00, 10000000.00, 14, 4, NULL, '2026-05-19 23:07:45.000000'),
+(2, 1, 'TRANSFER_OUT', 12, 1000000.00, 10000000.00, 9000000.00, 33, NULL, NULL, '2026-05-19 23:14:13.000000'),
+(3, 2, 'TRANSFER_IN', 12, 1000000.00, 0.00, 1000000.00, 33, NULL, NULL, '2026-05-19 23:14:17.000000'),
+(4, 3, 'MANUAL_ADJUSTMENT', NULL, 36475326.00, 0.00, 36475326.00, 24, 12, NULL, '2026-05-20 04:50:10.000000'),
+(5, 4, 'MANUAL_ADJUSTMENT', NULL, 12345002.00, 0.00, 12345002.00, 27, 7, NULL, '2026-05-20 04:51:15.000000'),
+(6, 5, 'MANUAL_ADJUSTMENT', NULL, 450000.00, 0.00, 450000.00, 29, 8, NULL, '2026-05-20 04:52:09.000000'),
+(7, 6, 'MANUAL_ADJUSTMENT', NULL, 13000000.00, 0.00, 13000000.00, 31, 9, NULL, '2026-05-20 04:53:34.000000'),
+(8, 7, 'MANUAL_ADJUSTMENT', NULL, 45001205.00, 0.00, 45001205.00, 43, 42, NULL, '2026-05-20 04:56:00.000000'),
+(9, 1, 'MANUAL_ADJUSTMENT', NULL, 350000000.00, 9000000.00, 359000000.00, 17, 10, NULL, '2026-05-20 04:58:59.000000'),
+(10, 2, 'MANUAL_ADJUSTMENT', NULL, 50000.00, 1000000.00, 1050000.00, 19, 11, NULL, '2026-05-20 05:05:40.000000'),
+(11, 3, 'TRANSFER_OUT', 13, 1000000.00, 36475326.00, 35475326.00, 36, NULL, NULL, '2026-05-20 05:13:49.000000'),
+(12, 2, 'TRANSFER_IN', 13, 1000000.00, 1050000.00, 2050000.00, 36, NULL, NULL, '2026-05-20 05:13:51.000000'),
+(13, 2, 'MANUAL_ADJUSTMENT', NULL, 1000000.00, 2050000.00, 1050000.00, 22, 5, NULL, '2026-05-20 07:03:51.000000'),
+(14, 3, 'TRANSFER_OUT', 14, 1000000.00, 35475326.00, 34475326.00, 33, NULL, NULL, '2026-05-20 07:11:41.000000'),
+(15, 2, 'TRANSFER_IN', 14, 1000000.00, 1050000.00, 2050000.00, 33, NULL, NULL, '2026-05-20 07:11:46.000000'),
+(16, 2, 'MANUAL_ADJUSTMENT', NULL, 50000.00, 2050000.00, 2000000.00, 19, 5, NULL, '2026-05-20 19:21:13.000000'),
+(17, 2, 'MANUAL_ADJUSTMENT', NULL, 200000.00, 2000000.00, 2200000.00, 19, 5, 'Customer Deposit', '2026-05-20 19:30:08.000000');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cash_manual_adjustments`
+--
+
+CREATE TABLE `cash_manual_adjustments` (
+  `adjustment_id` bigint(20) NOT NULL,
+  `branch_id` bigint(20) NOT NULL,
+  `amount` decimal(18,2) NOT NULL COMMENT 'Positive = credit, negative = debit',
+  `reason` text NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING | APPROVED | REJECTED',
+  `submitted_by_id` bigint(20) DEFAULT NULL,
+  `submitted_at` datetime(6) DEFAULT NULL,
+  `approved_by_id` bigint(20) DEFAULT NULL,
+  `decided_at` datetime(6) DEFAULT NULL,
+  `decision_note` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Manual cash balance adjustments requiring manager approval';
+
+--
+-- Dumping data for table `cash_manual_adjustments`
+--
+
+INSERT INTO `cash_manual_adjustments` (`adjustment_id`, `branch_id`, `amount`, `reason`, `status`, `submitted_by_id`, `submitted_at`, `approved_by_id`, `decided_at`, `decision_note`) VALUES
+(1, 1, 10000000.00, 'customer deposit', 'APPROVED', 14, '2026-05-19 23:06:57.000000', 4, '2026-05-19 23:07:45.000000', ''),
+(2, 2, 50000.00, 'deposit', 'APPROVED', 19, '2026-05-19 23:08:59.000000', 11, '2026-05-20 05:05:40.000000', ''),
+(3, 3, 36475326.00, 'Initial balance', 'APPROVED', 24, '2026-05-20 04:46:51.000000', 12, '2026-05-20 04:50:10.000000', ''),
+(4, 4, 12345002.00, 'initial', 'APPROVED', 27, '2026-05-20 04:50:59.000000', 7, '2026-05-20 04:51:15.000000', ''),
+(5, 5, 450000.00, 'initial', 'APPROVED', 29, '2026-05-20 04:51:47.000000', 8, '2026-05-20 04:52:09.000000', ''),
+(6, 6, 13000000.00, 'initial', 'APPROVED', 31, '2026-05-20 04:52:45.000000', 9, '2026-05-20 04:53:34.000000', ''),
+(7, 7, 45001205.00, 'initial balance', 'APPROVED', 43, '2026-05-20 04:55:31.000000', 42, '2026-05-20 04:56:00.000000', ''),
+(8, 1, 350000000.00, 'received', 'APPROVED', 17, '2026-05-20 04:58:32.000000', 10, '2026-05-20 04:58:59.000000', ''),
+(9, 2, -1000000.00, 'withdraw', 'APPROVED', 22, '2026-05-20 07:02:46.000000', 5, '2026-05-20 07:03:51.000000', ''),
+(10, 2, -5000000.00, 'withdraw', 'REJECTED', 22, '2026-05-20 07:03:04.000000', 5, '2026-05-20 07:04:06.000000', ''),
+(11, 2, -50000.00, 'withdraw', 'APPROVED', 19, '2026-05-20 19:20:47.000000', 5, '2026-05-20 19:21:13.000000', ''),
+(12, 2, 200000.00, 'Customer Deposit', 'APPROVED', 19, '2026-05-20 19:29:33.000000', 5, '2026-05-20 19:30:08.000000', '');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cash_transfer_denominations`
+--
+
+CREATE TABLE `cash_transfer_denominations` (
+  `denomination_id` bigint(20) NOT NULL,
+  `request_id` bigint(20) NOT NULL,
+  `denomination` int(11) NOT NULL COMMENT 'Note face value e.g. 1000, 500, 200',
+  `quantity` int(11) NOT NULL,
+  `subtotal` decimal(18,2) NOT NULL COMMENT 'denomination × quantity',
+  `submitted_by_id` bigint(20) DEFAULT NULL,
+  `submitted_at` datetime(6) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Per-denomination note quantities submitted by destination branch for Cash Bundle transfers';
+
+--
+-- Dumping data for table `cash_transfer_denominations`
+--
+
+INSERT INTO `cash_transfer_denominations` (`denomination_id`, `request_id`, `denomination`, `quantity`, `subtotal`, `submitted_by_id`, `submitted_at`) VALUES
+(1, 12, 1000, 500, 500000.00, 17, '2026-05-19 23:12:55.000000'),
+(2, 12, 500, 1000, 500000.00, 17, '2026-05-19 23:12:55.000000'),
+(3, 13, 1000, 400, 400000.00, 24, '2026-05-20 05:12:12.000000'),
+(4, 13, 500, 700, 350000.00, 24, '2026-05-20 05:12:12.000000'),
+(5, 13, 200, 1000, 200000.00, 24, '2026-05-20 05:12:12.000000'),
+(6, 13, 100, 500, 50000.00, 24, '2026-05-20 05:12:12.000000'),
+(7, 14, 1000, 1000, 1000000.00, 24, '2026-05-20 07:09:38.000000');
 
 -- --------------------------------------------------------
 
@@ -267,20 +431,26 @@ CREATE TABLE `transfer_requests` (
   `requested_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `hq_approver_id` bigint(20) DEFAULT NULL,
   `hq_approved_at` datetime(6) DEFAULT NULL,
-  `hq_rejection_note` longtext DEFAULT NULL
+  `hq_rejection_note` longtext DEFAULT NULL,
+  `requested_amount` decimal(18,2) DEFAULT NULL COMMENT 'Cash Bundle: amount requested by origin branch',
+  `denominations_submitted` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Cash Bundle: whether dest branch submitted denomination breakdown'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `transfer_requests`
 --
 
-INSERT INTO `transfer_requests` (`request_id`, `request_code`, `title`, `description`, `category_id`, `priority`, `status`, `origin_branch_id`, `origin_department_id`, `initiated_by_id`, `internal_approver_id`, `destination_branch_id`, `destination_department_id`, `dept_acceptor_id`, `final_releaser_id`, `delivery_person_id`, `picked_up_at`, `delivered_at`, `final_note`, `closed_at`, `requested_at`, `hq_approver_id`, `hq_approved_at`, `hq_rejection_note`) VALUES
-(1, 'REQ-2026-0001', 'Cash require due to shortage', 'Cash required due to shortage of cash balance at our branch. Kindly arrange cash support as soon as possible.\n', 1, 'URGENT', 'COMPLETED', 2, 1, 19, 5, 3, 1, 24, 12, 33, '2026-05-06 11:34:58', '2026-05-06 11:35:23', '', '2026-05-06 11:37:51', '2026-05-06 10:56:17', NULL, NULL, NULL),
-(2, 'REQ-2026-0002', 'Requestion for copy of account opening form ', 'Need a copy of the account opening form of Customer name: Tasnim Jahan (AC#1101008003478)', 8, 'NORMAL', 'COMPLETED', 4, 3, 28, 7, 5, 3, 30, 8, 33, '2026-05-10 12:02:21', '2026-05-10 12:03:18', '', '2026-05-10 12:05:30', '2026-05-10 11:48:11', NULL, NULL, NULL),
-(3, 'REQ-2026-0003', 'Requisation for account opening form', 'as the customer x moved his account from your branch to our one.. send all of his physical document here', 8, 'NORMAL', 'COMPLETED', 6, 3, 32, 9, 7, 3, 40, 40, 34, '2026-05-17 11:46:21', '2026-05-17 11:46:25', '', '2026-05-17 12:09:17', '2026-05-15 14:15:22', 38, '2026-05-15 20:17:45.000000', NULL),
-(4, 'REQ-2026-0004', 'need demand draft', '', 3, 'HIGH', 'REJECTED_BY_HQ', 1, 1, 14, 2, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-19 05:23:14', '2026-05-17 14:44:04', 38, '2026-05-19 11:23:14.000000', 'invalid request'),
-(5, 'REQ-2026-0005', 'test', 'test', 2, 'URGENT', 'PENDING_ASSIGNMENT', 3, 1, 24, 6, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-17 23:48:06', 38, '2026-05-18 05:50:13.000000', NULL),
-(10, 'REQ-2026-0006', 'kyc', 'kyc for 110100', 13, 'URGENT', 'PENDING_ASSIGNMENT', 3, 6, 41, 12, 2, 6, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-19 05:21:04', 38, '2026-05-19 11:27:55.000000', NULL);
+INSERT INTO `transfer_requests` (`request_id`, `request_code`, `title`, `description`, `category_id`, `priority`, `status`, `origin_branch_id`, `origin_department_id`, `initiated_by_id`, `internal_approver_id`, `destination_branch_id`, `destination_department_id`, `dept_acceptor_id`, `final_releaser_id`, `delivery_person_id`, `picked_up_at`, `delivered_at`, `final_note`, `closed_at`, `requested_at`, `hq_approver_id`, `hq_approved_at`, `hq_rejection_note`, `requested_amount`, `denominations_submitted`) VALUES
+(1, 'REQ-2026-0001', 'Cash require due to shortage', 'Cash required due to shortage of cash balance at our branch. Kindly arrange cash support as soon as possible.\n', 1, 'URGENT', 'COMPLETED', 2, 1, 19, 5, 3, 1, 24, 12, 33, '2026-05-06 11:34:58', '2026-05-06 11:35:23', '', '2026-05-06 11:37:51', '2026-05-06 10:56:17', NULL, NULL, NULL, NULL, 0),
+(2, 'REQ-2026-0002', 'Requestion for copy of account opening form ', 'Need a copy of the account opening form of Customer name: Tasnim Jahan (AC#1101008003478)', 8, 'NORMAL', 'COMPLETED', 4, 3, 28, 7, 5, 3, 30, 8, 33, '2026-05-10 12:02:21', '2026-05-10 12:03:18', '', '2026-05-10 12:05:30', '2026-05-10 11:48:11', NULL, NULL, NULL, NULL, 0),
+(3, 'REQ-2026-0003', 'Requisation for account opening form', 'as the customer x moved his account from your branch to our one.. send all of his physical document here', 8, 'NORMAL', 'COMPLETED', 6, 3, 32, 9, 7, 3, 40, 40, 34, '2026-05-17 11:46:21', '2026-05-17 11:46:25', '', '2026-05-17 12:09:17', '2026-05-15 14:15:22', 38, '2026-05-15 20:17:45.000000', NULL, NULL, 0),
+(4, 'REQ-2026-0004', 'need demand draft', '', 3, 'HIGH', 'REJECTED_BY_HQ', 1, 1, 14, 2, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-19 05:23:14', '2026-05-17 14:44:04', 38, '2026-05-19 11:23:14.000000', 'invalid request', NULL, 0),
+(5, 'REQ-2026-0005', 'test', 'test', 2, 'URGENT', 'PENDING_ASSIGNMENT', 3, 1, 24, 6, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-17 23:48:06', 38, '2026-05-18 05:50:13.000000', NULL, NULL, 0),
+(10, 'REQ-2026-0006', 'kyc', 'kyc for 110100', 13, 'URGENT', 'PENDING_ASSIGNMENT', 3, 6, 41, 12, 2, 6, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-19 05:21:04', 38, '2026-05-19 11:27:55.000000', NULL, NULL, 0),
+(11, 'REQ-2026-0007', 'FDR opening form', 'need supply of 100-200 blank FDR opening form ', 8, 'NORMAL', 'PENDING_HQ_APPROVAL', 7, 3, 39, 42, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not available', NULL, '2026-05-19 06:42:37', NULL, NULL, NULL, NULL, 0),
+(12, 'REQ-2026-0008', 'Cash Require', 'need cash due to shortage', 1, 'URGENT', 'COMPLETED', 2, 1, 19, 3, 1, 1, 17, 2, 33, '2026-05-19 17:14:13', '2026-05-19 17:14:17', '', '2026-05-20 13:15:45', '2026-05-19 17:09:52', 38, '2026-05-19 23:11:12.000000', NULL, 1000000.00, 1),
+(13, 'REQ-2026-0009', 'Cash requirement', 'Cash requirement due to shortage', 1, 'URGENT', 'COMPLETED', 2, 1, 22, 11, 3, 1, 24, 6, 36, '2026-05-19 23:13:49', '2026-05-19 23:13:51', '', '2026-05-19 23:14:58', '2026-05-19 23:04:28', 38, '2026-05-20 05:10:26.000000', NULL, 1000000.00, 1),
+(14, 'REQ-2026-0010', 'cash shortage', 'test', 1, 'URGENT', 'COMPLETED', 2, NULL, 5, 5, 3, 1, 24, 6, 33, '2026-05-20 01:11:41', '2026-05-20 01:11:46', '', '2026-05-20 01:16:09', '2026-05-20 01:06:43', 38, '2026-05-20 07:08:44.000000', NULL, 1000000.00, 1);
 
 -- --------------------------------------------------------
 
@@ -350,7 +520,9 @@ INSERT INTO `users` (`user_id`, `employee_id`, `full_name`, `email`, `phone_numb
 (38, 'EMP-501', 'Rifat Akter', 'rifat@jamunabank.com.bd', '+8801824844522', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 7, 1, 7, 1, 1, '2026-05-15 14:05:01', '2026-05-15 14:05:01', NULL),
 (39, 'EMP-502', 'Rafia Sultana', 'rafia@jamunabank.com.bd', '+8801824844522', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 7, 3, 1, 1, '2026-05-15 14:09:09', '2026-05-15 14:09:09', NULL),
 (40, 'EMP-503', 'Mizanur Rahaman Mizan', 'mizanur@jamunabank.com.bd', '01824844522', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 3, 7, NULL, 1, 1, '2026-05-15 14:10:06', '2026-05-15 14:10:06', NULL),
-(41, 'EMP-509', 'Robai Adnan', 'adnan@jamunabank.bd', '01922333345', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 3, 6, 1, 1, '2026-05-19 05:14:26', '2026-05-19 05:14:26', NULL);
+(41, 'EMP-509', 'Robai Adnan', 'adnan@jamunabank.bd', '01922333345', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 3, 6, 1, 1, '2026-05-19 05:14:26', '2026-05-19 05:14:26', NULL),
+(42, 'EMP-510', 'Salam Mia', 'salam@jb.plc', '01922333345', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 2, 7, NULL, 1, 1, '2026-05-19 06:50:07', '2026-05-19 06:50:07', NULL),
+(43, 'EMP-190', 'Ahnab Tahmid', 'ahnab.fr@jamunabank.bd', '01922333345', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 7, 1, 1, 1, '2026-05-19 22:55:01', '2026-05-19 22:55:01', NULL);
 
 --
 -- Indexes for dumped tables
@@ -372,11 +544,46 @@ ALTER TABLE `branches`
   ADD UNIQUE KEY `branch_code` (`branch_code`);
 
 --
+-- Indexes for table `branch_cash_balance`
+--
+ALTER TABLE `branch_cash_balance`
+  ADD PRIMARY KEY (`branch_id`);
+
+--
 -- Indexes for table `branch_departments`
 --
 ALTER TABLE `branch_departments`
   ADD PRIMARY KEY (`branch_id`,`department_id`),
   ADD KEY `department_id` (`department_id`);
+
+--
+-- Indexes for table `cash_ledger`
+--
+ALTER TABLE `cash_ledger`
+  ADD PRIMARY KEY (`ledger_id`),
+  ADD KEY `fk_cl_actor` (`actor_id`),
+  ADD KEY `fk_cl_approver` (`approver_id`),
+  ADD KEY `idx_cl_branch` (`branch_id`),
+  ADD KEY `idx_cl_request` (`request_id`),
+  ADD KEY `idx_cl_created` (`created_at`);
+
+--
+-- Indexes for table `cash_manual_adjustments`
+--
+ALTER TABLE `cash_manual_adjustments`
+  ADD PRIMARY KEY (`adjustment_id`),
+  ADD KEY `fk_cma_submitter` (`submitted_by_id`),
+  ADD KEY `fk_cma_approver` (`approved_by_id`),
+  ADD KEY `idx_cma_branch` (`branch_id`),
+  ADD KEY `idx_cma_status` (`status`);
+
+--
+-- Indexes for table `cash_transfer_denominations`
+--
+ALTER TABLE `cash_transfer_denominations`
+  ADD PRIMARY KEY (`denomination_id`),
+  ADD KEY `fk_ctd_submitter` (`submitted_by_id`),
+  ADD KEY `idx_ctd_request` (`request_id`);
 
 --
 -- Indexes for table `departments`
@@ -437,13 +644,31 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `audit_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `audit_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT for table `branches`
 --
 ALTER TABLE `branches`
   MODIFY `branch_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `cash_ledger`
+--
+ALTER TABLE `cash_ledger`
+  MODIFY `ledger_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+
+--
+-- AUTO_INCREMENT for table `cash_manual_adjustments`
+--
+ALTER TABLE `cash_manual_adjustments`
+  MODIFY `adjustment_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- AUTO_INCREMENT for table `cash_transfer_denominations`
+--
+ALTER TABLE `cash_transfer_denominations`
+  MODIFY `denomination_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `departments`
@@ -467,13 +692,13 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `transfer_requests`
 --
 ALTER TABLE `transfer_requests`
-  MODIFY `request_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `request_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `user_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- Constraints for dumped tables
@@ -487,11 +712,41 @@ ALTER TABLE `audit_logs`
   ADD CONSTRAINT `audit_logs_ibfk_2` FOREIGN KEY (`actor_id`) REFERENCES `users` (`user_id`);
 
 --
+-- Constraints for table `branch_cash_balance`
+--
+ALTER TABLE `branch_cash_balance`
+  ADD CONSTRAINT `fk_bcb_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`);
+
+--
 -- Constraints for table `branch_departments`
 --
 ALTER TABLE `branch_departments`
   ADD CONSTRAINT `branch_departments_ibfk_1` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`),
   ADD CONSTRAINT `branch_departments_ibfk_2` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`);
+
+--
+-- Constraints for table `cash_ledger`
+--
+ALTER TABLE `cash_ledger`
+  ADD CONSTRAINT `fk_cl_actor` FOREIGN KEY (`actor_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_cl_approver` FOREIGN KEY (`approver_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_cl_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`),
+  ADD CONSTRAINT `fk_cl_request` FOREIGN KEY (`request_id`) REFERENCES `transfer_requests` (`request_id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `cash_manual_adjustments`
+--
+ALTER TABLE `cash_manual_adjustments`
+  ADD CONSTRAINT `fk_cma_approver` FOREIGN KEY (`approved_by_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_cma_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`),
+  ADD CONSTRAINT `fk_cma_submitter` FOREIGN KEY (`submitted_by_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `cash_transfer_denominations`
+--
+ALTER TABLE `cash_transfer_denominations`
+  ADD CONSTRAINT `fk_ctd_request` FOREIGN KEY (`request_id`) REFERENCES `transfer_requests` (`request_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_ctd_submitter` FOREIGN KEY (`submitted_by_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `item_categories`
