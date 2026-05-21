@@ -34,4 +34,6 @@ public interface ManagementService {
     List<ItemCategory> getAllItemCategories();
     ItemCategory createItemCategory(CreateItemCategoryDto dto);
     ItemCategory updateItemCategory(Long categoryId, CreateItemCategoryDto dto);
+    ItemCategory toggleItemCategoryStatus(Long categoryId);
+    void deleteItemCategory(Long categoryId);
 }

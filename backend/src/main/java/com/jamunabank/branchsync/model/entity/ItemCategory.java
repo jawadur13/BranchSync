@@ -27,6 +27,9 @@ public class ItemCategory {
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
+
     public ItemCategory() {}
 
     public Long getCategoryId() { return categoryId; }
@@ -41,6 +44,8 @@ public class ItemCategory {
     public void setDescription(String description) { this.description = description; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+    public boolean getIsActive() { return isActive; }
+    public void setIsActive(boolean active) { this.isActive = active; }
 
     public static class ItemCategoryBuilder {
         private ItemCategory c = new ItemCategory();
@@ -50,6 +55,7 @@ public class ItemCategory {
         public ItemCategoryBuilder sensitivityLevel(String s) { c.sensitivityLevel = s; return this; }
         public ItemCategoryBuilder description(String d) { c.description = d; return this; }
         public ItemCategoryBuilder createdAt(OffsetDateTime t) { c.createdAt = t; return this; }
+        public ItemCategoryBuilder isActive(boolean active) { c.isActive = active; return this; }
         public ItemCategory build() { return c; }
     }
     public static ItemCategoryBuilder builder() { return new ItemCategoryBuilder(); }

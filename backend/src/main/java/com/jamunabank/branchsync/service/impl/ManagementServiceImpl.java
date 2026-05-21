@@ -267,4 +267,23 @@ public class ManagementServiceImpl implements ManagementService {
         }
         return itemCategoryRepository.save(category);
     }
+
+    @Override
+    public ItemCategory toggleItemCategoryStatus(Long categoryId) {
+        ItemCategory category = itemCategoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Item Category not found: " + categoryId));
+        category.setIsActive(!category.getIsActive());
+        return itemCategoryRepository.save(category);
+    }
+
+    @Override
+    public void deleteItemCategory(Long categoryId) {
+        ItemCategory category = itemCategoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Item Category not found: " + categoryId));
+        try {
+            itemCategoryRepository.delete(category);
+        } catch (Exception e) {
+            throw new RuntimeException("Cannot delete item category '" + category.getCategoryName() + "'. It is currently referenced by physical asset transfer request records in the database. Please deactivate it instead.");
+        }
+    }
 }

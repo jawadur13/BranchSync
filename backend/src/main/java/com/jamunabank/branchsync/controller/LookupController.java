@@ -94,6 +94,7 @@ public class LookupController {
     @GetMapping("/categories")
     public ResponseEntity<List<Map<String, Object>>> getAllCategories() {
         List<Map<String, Object>> categories = itemCategoryRepository.findAll().stream()
+                .filter(ItemCategory::getIsActive)
                 .map(c -> {
                     java.util.Map<String, Object> map = new java.util.HashMap<>();
                     map.put("id", c.getCategoryId());

@@ -18,6 +18,7 @@ interface CategoryRow {
     description: string | null;
     departmentId: number | null;
     departmentName: string;
+    isActive?: boolean;
 }
 
 const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 'departments' | 'items' }) => {
@@ -186,6 +187,29 @@ const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to save item category.');
         } finally { setSubmitting(false); }
+    };
+
+    const handleToggleItemActive = async (categoryId: number) => {
+        setError(''); setSuccess('');
+        try {
+            const res = await api.put(`/admin/org/items/${categoryId}/toggle-active`);
+            setSuccess(res.data.message || 'Item category status updated!');
+            fetchAll();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Failed to toggle status.');
+        }
+    };
+
+    const handleDeleteItem = async (categoryId: number, categoryName: string) => {
+        if (!window.confirm(`Are you sure you want to delete the item category "${categoryName}"?`)) return;
+        setError(''); setSuccess('');
+        try {
+            const res = await api.delete(`/admin/org/items/${categoryId}`);
+            setSuccess(res.data.message || 'Item category deleted successfully.');
+            fetchAll();
+        } catch (err: any) {
+            setError(err.response?.data?.message || 'Failed to delete item category.');
+        }
     };
 
     const filteredBranches = branches.filter(b => 
@@ -500,12 +524,13 @@ const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 
                                 <th>Sensitivity</th>
                                 <th>Responsible Dept</th>
                                 <th>Description</th>
+                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {filteredCategories.map(cat => (
-                                <tr key={cat.categoryId}>
+                                <tr key={cat.categoryId} className={cat.isActive === false ? 'row-inactive' : ''}>
                                     <td className="fw-semibold">{cat.categoryName}</td>
                                     <td>
                                         <span className={`type-badge sensitivity-${cat.sensitivityLevel?.toLowerCase()}`}>
@@ -517,15 +542,35 @@ const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 
                                         {cat.description || <span style={{ color: '#a0aec0' }}>—</span>}
                                     </td>
                                     <td>
-                                        <div className="action-group" style={{ display: 'flex', gap: '8px' }}>
+                                        <span className={`status-dot ${cat.isActive !== false ? 'dot-active' : 'dot-inactive'}`}></span>
+                                        {cat.isActive !== false ? 'Active' : 'Inactive'}
+                                    </td>
+                                    <td>
+                                        <div className="action-group" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                             <button className="btn-icon" onClick={() => setViewItem(cat)} title="View Details">👁️</button>
                                             <button className="btn-icon" onClick={() => openEditItem(cat)} title="Edit Category">✏️</button>
+                                            <button 
+                                                className="btn-icon" 
+                                                onClick={() => handleToggleItemActive(cat.categoryId)} 
+                                                title={cat.isActive !== false ? "Deactivate" : "Activate"}
+                                                style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: '4px' }}
+                                            >
+                                                🔄
+                                            </button>
+                                            <button 
+                                                className="btn-icon btn-delete" 
+                                                onClick={() => handleDeleteItem(cat.categoryId, cat.categoryName)} 
+                                                title="Delete Category"
+                                                style={{ color: '#e53e3e', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px' }}
+                                            >
+                                                🗑️
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
                             ))}
                             {filteredCategories.length === 0 && (
-                                <tr><td colSpan={5} className="empty-row">No item categories found.</td></tr>
+                                <tr><td colSpan={6} className="empty-row">No item categories found.</td></tr>
                             )}
                         </tbody>
                     </table>

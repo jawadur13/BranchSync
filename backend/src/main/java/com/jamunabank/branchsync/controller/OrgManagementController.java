@@ -152,6 +152,7 @@ public class OrgManagementController {
                     map.put("description", c.getDescription());
                     map.put("departmentId", c.getDepartment() != null ? c.getDepartment().getDepartmentId() : null);
                     map.put("departmentName", c.getDepartment() != null ? c.getDepartment().getDepartmentName() : "Open Access");
+                    map.put("isActive", c.getIsActive());
                     return map;
                 })
                 .collect(Collectors.toList());
@@ -181,6 +182,29 @@ public class OrgManagementController {
                     "message", "Item category updated successfully",
                     "categoryId", saved.getCategoryId()
             ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/items/{categoryId}/toggle-active")
+    public ResponseEntity<Map<String, Object>> toggleItemCategoryActive(@PathVariable Long categoryId) {
+        try {
+            ItemCategory category = managementService.toggleItemCategoryStatus(categoryId);
+            return ResponseEntity.ok(Map.of(
+                    "message", category.getIsActive() ? "Item category activated" : "Item category deactivated",
+                    "isActive", category.getIsActive()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/items/{categoryId}")
+    public ResponseEntity<Map<String, Object>> deleteItemCategory(@PathVariable Long categoryId) {
+        try {
+            managementService.deleteItemCategory(categoryId);
+            return ResponseEntity.ok(Map.of("message", "Item category physically deleted successfully"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
