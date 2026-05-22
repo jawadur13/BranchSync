@@ -10,7 +10,7 @@ const Sidebar: React.FC = () => {
     const isManager = user?.role === 'BRANCH_MANAGER' || user?.role === 'OPERATION_MANAGER' || user?.role === 'FIRST_EXECUTIVE_OFFICER';
     const isOfficer = user?.role === 'OFFICER';
     const isCashOfficer = isOfficer && user?.departmentName?.toLowerCase().includes('cash');
-    const isCashRelevant = isManager || isOfficer || isAdmin;
+    const isCashRelevant = isManager || isCashOfficer || isAdmin;
     const isStockRelevant = isManager || isOfficer || isAdmin;
 
     return (
@@ -48,7 +48,7 @@ const Sidebar: React.FC = () => {
                                 <span className="nav-icon">💰</span> Cash Ledger
                             </NavLink>
                         )}
-                        {(isManager || isOfficer) && (
+                        {(isManager || isCashOfficer) && (
                             <NavLink to="/cash/adjust" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                                 <span className="nav-icon">⚙️</span> Cash Adjustments
                             </NavLink>

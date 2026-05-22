@@ -23,7 +23,7 @@ const ManualAdjustment = () => {
     const navigate = useNavigate();
 
     const isManager = user?.role === 'BRANCH_MANAGER' || user?.role === 'OPERATION_MANAGER' || user?.role === 'FIRST_EXECUTIVE_OFFICER';
-    const isOfficer = user?.role === 'OFFICER';
+    const isOfficer = user?.role === 'OFFICER' && user?.departmentName?.toLowerCase().includes('cash');
 
     const [adjustments, setAdjustments] = useState<Adjustment[]>([]);
     const [loading, setLoading] = useState(true);
@@ -133,7 +133,7 @@ const ManualAdjustment = () => {
     if (!isOfficer && !isManager) {
         return (
             <div className="adj-container">
-                <div className="adj-access-denied">🔒 Access Denied — Cash adjustments are only accessible to Officers and Managers.</div>
+                <div className="adj-access-denied">🔒 Access Denied — Cash adjustments are only accessible to Cash Officers and Managers.</div>
             </div>
         );
     }

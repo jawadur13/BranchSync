@@ -228,6 +228,13 @@ public class CashServiceImpl implements CashService {
             throw new UnauthorizedRoleException("Only Officers can submit manual adjustments.");
         }
 
+        boolean isCashDept = actor.getDepartment() != null 
+                && actor.getDepartment().getDepartmentName() != null 
+                && actor.getDepartment().getDepartmentName().toLowerCase().contains("cash");
+        if (!isCashDept) {
+            throw new UnauthorizedRoleException("Only Officers of the Cash Operations department can submit cash adjustments.");
+        }
+
         if (actor.getBranch() == null || !actor.getBranch().getBranchId().equals(branchId)) {
             throw new UnauthorizedRoleException("You can only submit adjustments for your own branch.");
         }
@@ -307,11 +314,40 @@ public class CashServiceImpl implements CashService {
 
     @Override
     public List<CashManualAdjustment> getPendingAdjustments(Long branchId) {
+        validateCashOperationsAccess();
         return adjustmentRepository.findByBranch_BranchIdAndStatusOrderBySubmittedAtDesc(branchId, "PENDING");
     }
 
     @Override
     public List<CashManualAdjustment> getAllAdjustments(Long branchId) {
+        validateCashOperationsAccess();
         return adjustmentRepository.findByBranch_BranchIdOrderBySubmittedAtDesc(branchId);
+    }
+
+    private void validateCashOperationsAccess() {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof CustomUserDetails)) {
+            throw new UnauthorizedRoleException("Anonymous access denied.");
+        }
+        CustomUserDetails principal = (CustomUserDetails) auth.getPrincipal();
+        User actor = userRepository.findById(principal.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + principal.getUserId()));
+        String role = actor.getRole().getRoleName();
+
+        if ("SYSTEM_ADMIN".equals(role)) {
+            return; // Admins can access
+        }
+        if (MANAGER_ROLES.contains(role)) {
+            return; // Managers can access
+        }
+        if ("OFFICER".equals(role)) {
+            boolean isCashDept = actor.getDepartment() != null 
+                    && actor.getDepartment().getDepartmentName() != null 
+                    && actor.getDepartment().getDepartmentName().toLowerCase().contains("cash");
+            if (isCashDept) {
+                return; // Cash Officers can access
+            }
+        }
+        throw new UnauthorizedRoleException("Access denied. Cash operations are restricted to Cash Officers and Managers.");
     }
 }
