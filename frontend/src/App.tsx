@@ -6,7 +6,9 @@ import NewTransfer from './pages/NewTransfer';
 import TransferHistory from './pages/TransferHistory';
 import TransferDetails from './pages/TransferDetails';
 import UserManagement from './pages/admin/UserManagement';
-import OrgManagement from './pages/admin/OrgManagement';
+import BranchManagement from './pages/admin/BranchManagement';
+import DepartmentManagement from './pages/admin/DepartmentManagement';
+import ItemManagement from './pages/admin/ItemManagement';
 import Profile from './pages/Profile';
 import BranchDirectory from './pages/BranchDirectory';
 import CashLedger from './pages/CashLedger';
@@ -45,9 +47,9 @@ function App() {
 
           {/* Admin Routes */}
           <Route path="admin/users" element={<UserManagement />} />
-          <Route path="admin/branches" element={<OrgManagement defaultTab="branches" />} />
-          <Route path="admin/departments" element={<OrgManagement defaultTab="departments" />} />
-          <Route path="admin/items" element={<OrgManagement defaultTab="items" />} />
+          <Route path="admin/branches" element={<BranchManagement />} />
+          <Route path="admin/departments" element={<DepartmentManagement />} />
+          <Route path="admin/items" element={<ItemManagement />} />
         </Route>
 
         {/* Fallback */}
