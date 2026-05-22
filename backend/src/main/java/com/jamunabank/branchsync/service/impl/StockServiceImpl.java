@@ -71,7 +71,7 @@ public class StockServiceImpl implements StockService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + actorId));
 
         String role = actor.getRole().getRoleName();
-        if ("SYSTEM_ADMIN".equals(role)) {
+        if ("SYSTEM_ADMIN".equals(role) || "HQ_LOGISTICS_OFFICER".equals(role)) {
             if (stockItemId == 0) {
                 return ledgerRepository.findByBranch_BranchIdOrderByCreatedAtDesc(branchId);
             }

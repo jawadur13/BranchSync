@@ -54,19 +54,19 @@ const StockLedger = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    const isAdmin = user?.role === 'SYSTEM_ADMIN';
+    const isNetworkViewer = user?.role === 'SYSTEM_ADMIN' || user?.role === 'HQ_LOGISTICS_OFFICER';
 
     const [entries, setEntries] = useState<StockLedgerEntry[]>([]);
     const [balances, setBalances] = useState<StockBalance[]>([]);
     const [branchSummaries, setBranchSummaries] = useState<BranchStockSummary[]>([]);
-    const [selectedBranchId, setSelectedBranchId] = useState<number | null>(isAdmin ? null : user?.branchId || null);
+    const [selectedBranchId, setSelectedBranchId] = useState<number | null>(isNetworkViewer ? null : user?.branchId || null);
     const [selectedBranchName, setSelectedBranchName] = useState<string>('');
     const [selectedStockItemId, setSelectedStockItemId] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        if (isAdmin) {
+        if (isNetworkViewer) {
             loadBranchSummaries();
         } else if (user?.branchId) {
             loadLedger(user.branchId);
@@ -120,7 +120,7 @@ const StockLedger = () => {
                 // Select All Items (0) by default
                 loadLedgerForItem(branchId, 0);
             } else {
-                setSelectedBranchName(isAdmin ? `Branch #${branchId}` : 'Your Branch');
+                setSelectedBranchName(isNetworkViewer ? `Branch #${branchId}` : 'Your Branch');
                 setEntries([]);
                 setSelectedStockItemId(null);
                 setLoading(false);
@@ -254,14 +254,14 @@ const StockLedger = () => {
                 <div>
                     <h1 className="ledger-title">📦 Operational Stock Ledger</h1>
                     <p className="ledger-subtitle">
-                        {isAdmin
+                        {isNetworkViewer
                             ? 'Monitor countable branch inventory, assets, and audit trials across the entire network.'
                             : `Audit trial and current asset balances for your branch.`}
                     </p>
                 </div>
                 {selectedBranchId && (
                     <div style={{ display: 'flex', gap: '10px' }}>
-                        {isAdmin && (
+                        {isNetworkViewer && (
                             <button className="btn-ghost" onClick={() => { setSelectedBranchId(null); setEntries([]); setBalances([]); setSelectedStockItemId(null); }}>
                                 🔙 Back to Branches
                             </button>
@@ -275,7 +275,7 @@ const StockLedger = () => {
 
             {error && <div className="ledger-alert ledger-alert-error">{error}</div>}
 
-            {isAdmin && !selectedBranchId ? (
+            {isNetworkViewer && !selectedBranchId ? (
                 /* Admin View: Grid of Branches showing summaries */
                 <div className="branches-grid">
                     {branchSummaries.map((summary) => (

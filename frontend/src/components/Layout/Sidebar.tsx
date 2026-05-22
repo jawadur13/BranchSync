@@ -11,7 +11,7 @@ const Sidebar: React.FC = () => {
     const isOfficer = user?.role === 'OFFICER';
     const isCashOfficer = isOfficer && user?.departmentName?.toLowerCase().includes('cash');
     const isCashRelevant = isManager || isCashOfficer || isAdmin;
-    const isStockRelevant = isManager || isOfficer || isAdmin;
+    const isStockRelevant = isManager || isOfficer || isAdmin || user?.role === 'HQ_LOGISTICS_OFFICER';
 
     return (
         <aside className="sidebar">
