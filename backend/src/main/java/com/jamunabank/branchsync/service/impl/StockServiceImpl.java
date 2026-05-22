@@ -56,6 +56,12 @@ public class StockServiceImpl implements StockService {
         return balanceRepository.findByBranch_BranchId(branchId);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<BranchStockBalance> getAllStockBalances() {
+        return balanceRepository.findAll();
+    }
+
     // ── Ledger ───────────────────────────────────────────────────────────────
 
     @Override

@@ -11,6 +11,7 @@ public interface StockService {
     // Balance
     BranchStockBalance getOrCreateBalance(Long branchId, Long stockItemId);
     List<BranchStockBalance> getBranchStockBalances(Long branchId);
+    List<BranchStockBalance> getAllStockBalances();
 
     // Ledger
     List<StockLedgerEntry> getLedger(Long branchId, Long stockItemId, Long actorId);

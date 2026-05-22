@@ -34,12 +34,36 @@ public class StockController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/balances")
+    public ResponseEntity<List<Map<String, Object>>> getAllBalances() {
+        List<BranchStockBalance> balances = stockService.getAllStockBalances();
+        List<Map<String, Object>> result = balances.stream().map(b -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("stockBalanceId", b.getBalanceId());
+            m.put("branchId", b.getBranch() != null ? b.getBranch().getBranchId() : null);
+            m.put("branchName", b.getBranch() != null ? b.getBranch().getBranchName() : null);
+            m.put("branchCode", b.getBranch() != null ? b.getBranch().getBranchCode() : null);
+            m.put("stockItemId", b.getStockItem().getStockItemId());
+            m.put("itemName", b.getStockItem().getItemName());
+            m.put("categoryName", b.getStockItem().getCategory().getCategoryName());
+            m.put("currentQuantity", b.getCurrentQuantity());
+            m.put("unit", b.getStockItem().getUnit());
+            m.put("lastUpdatedAt", b.getLastUpdatedAt());
+            m.put("departmentId", b.getStockItem().getCategory().getDepartment() != null ? b.getStockItem().getCategory().getDepartment().getDepartmentId() : null);
+            return m;
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/balances/{branchId}")
     public ResponseEntity<List<Map<String, Object>>> getBranchBalances(@PathVariable Long branchId) {
         List<BranchStockBalance> balances = stockService.getBranchStockBalances(branchId);
         List<Map<String, Object>> result = balances.stream().map(b -> {
             Map<String, Object> m = new HashMap<>();
-            m.put("branchStockBalanceId", b.getBalanceId());
+            m.put("stockBalanceId", b.getBalanceId());
+            m.put("branchId", b.getBranch() != null ? b.getBranch().getBranchId() : null);
+            m.put("branchName", b.getBranch() != null ? b.getBranch().getBranchName() : null);
+            m.put("branchCode", b.getBranch() != null ? b.getBranch().getBranchCode() : null);
             m.put("stockItemId", b.getStockItem().getStockItemId());
             m.put("itemName", b.getStockItem().getItemName());
             m.put("categoryName", b.getStockItem().getCategory().getCategoryName());
