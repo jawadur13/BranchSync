@@ -32,12 +32,6 @@ public class StockItem {
     private String itemName;
 
     /**
-     * Optional short code for the item (e.g. "FDR-FORM-01").
-     */
-    @Column(name = "item_code", unique = true, length = 50)
-    private String itemCode;
-
-    /**
      * Unit of measurement (e.g. "pcs", "ream", "box"). Defaults to "pcs".
      */
     @Column(name = "unit", nullable = false, length = 30)
@@ -60,8 +54,6 @@ public class StockItem {
     public void setCategory(ItemCategory category) { this.category = category; }
     public String getItemName() { return itemName; }
     public void setItemName(String itemName) { this.itemName = itemName; }
-    public String getItemCode() { return itemCode; }
-    public void setItemCode(String itemCode) { this.itemCode = itemCode; }
     public String getUnit() { return unit; }
     public void setUnit(String unit) { this.unit = unit; }
     public String getDescription() { return description; }
@@ -76,7 +68,6 @@ public class StockItem {
         public StockItemBuilder stockItemId(Long id) { s.stockItemId = id; return this; }
         public StockItemBuilder category(ItemCategory c) { s.category = c; return this; }
         public StockItemBuilder itemName(String n) { s.itemName = n; return this; }
-        public StockItemBuilder itemCode(String c) { s.itemCode = c; return this; }
         public StockItemBuilder unit(String u) { s.unit = u; return this; }
         public StockItemBuilder description(String d) { s.description = d; return this; }
         public StockItemBuilder isActive(boolean a) { s.isActive = a; return this; }

@@ -119,7 +119,6 @@ public class LookupController {
                     java.util.Map<String, Object> map = new java.util.HashMap<>();
                     map.put("stockItemId", item.getStockItemId());
                     map.put("itemName", item.getItemName());
-                    map.put("itemCode", item.getItemCode());
                     map.put("unit", item.getUnit());
                     map.put("description", item.getDescription());
                     return map;

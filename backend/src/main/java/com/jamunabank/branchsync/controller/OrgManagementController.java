@@ -221,7 +221,6 @@ public class OrgManagementController {
                     map.put("stockItemId", item.getStockItemId());
                     map.put("categoryId", item.getCategory().getCategoryId());
                     map.put("itemName", item.getItemName());
-                    map.put("itemCode", item.getItemCode());
                     map.put("unit", item.getUnit());
                     map.put("description", item.getDescription());
                     map.put("isActive", item.getIsActive());
@@ -239,7 +238,6 @@ public class OrgManagementController {
             com.jamunabank.branchsync.model.entity.StockItem item = managementService.createStockItem(
                 categoryId,
                 payload.get("itemName"),
-                payload.get("itemCode"),
                 payload.get("unit"),
                 payload.get("description")
             );
@@ -260,7 +258,6 @@ public class OrgManagementController {
             com.jamunabank.branchsync.model.entity.StockItem item = managementService.updateStockItem(
                 stockItemId,
                 payload.get("itemName"),
-                payload.get("itemCode"),
                 payload.get("unit"),
                 payload.get("description")
             );

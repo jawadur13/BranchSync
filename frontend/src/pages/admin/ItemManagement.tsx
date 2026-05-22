@@ -39,7 +39,7 @@ const ItemManagement = () => {
     const [showStockItemForm, setShowStockItemForm] = useState(false);
     const [editStockItemId, setEditStockItemId] = useState<number | null>(null);
     const [stockItemForm, setStockItemForm] = useState({
-        itemName: '', itemCode: '', unit: 'pcs', description: ''
+        itemName: '', unit: 'pcs', description: ''
     });
 
     useEffect(() => {
@@ -162,7 +162,7 @@ const ItemManagement = () => {
             } else {
                 await api.post(`/admin/org/items/${viewItem.categoryId}/stock-items`, stockItemForm);
             }
-            setStockItemForm({ itemName: '', itemCode: '', unit: 'pcs', description: '' });
+            setStockItemForm({ itemName: '', unit: 'pcs', description: '' });
             setShowStockItemForm(false);
             setEditStockItemId(null);
             fetchStockItems(viewItem.categoryId);
@@ -187,7 +187,6 @@ const ItemManagement = () => {
         setEditStockItemId(item.stockItemId);
         setStockItemForm({
             itemName: item.itemName,
-            itemCode: item.itemCode || '',
             unit: item.unit || 'pcs',
             description: item.description || ''
         });
@@ -347,7 +346,7 @@ const ItemManagement = () => {
                                             onClick={() => {
                                                 if (!showStockItemForm) {
                                                     setEditStockItemId(null);
-                                                    setStockItemForm({ itemName: '', itemCode: '', unit: 'pcs', description: '' });
+                                                    setStockItemForm({ itemName: '', unit: 'pcs', description: '' });
                                                 }
                                                 setShowStockItemForm(!showStockItemForm);
                                             }}
@@ -359,7 +358,7 @@ const ItemManagement = () => {
 
                                     {showStockItemForm && (
                                         <form onSubmit={handleStockItemSubmit} style={{ background: '#f7fafc', padding: '15px', borderRadius: '8px', border: '1px solid #edf2f7', marginBottom: '15px' }}>
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 80px', gap: '10px', marginBottom: '10px' }}>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: '10px', marginBottom: '10px' }}>
                                                 <div className="form-group" style={{ margin: 0 }}>
                                                     <label style={{ fontSize: '11px', fontWeight: 600, color: '#4a5568', display: 'block', marginBottom: '4px' }}>Item Name *</label>
                                                     <input 
@@ -367,15 +366,6 @@ const ItemManagement = () => {
                                                         onChange={e => setStockItemForm({ ...stockItemForm, itemName: e.target.value })} 
                                                         placeholder="e.g. Executive Chair" 
                                                         required 
-                                                        style={{ padding: '6px 8px', fontSize: '13px', width: '100%', borderRadius: '4px', border: '1px solid #cbd5e0' }}
-                                                    />
-                                                </div>
-                                                <div className="form-group" style={{ margin: 0 }}>
-                                                    <label style={{ fontSize: '11px', fontWeight: 600, color: '#4a5568', display: 'block', marginBottom: '4px' }}>Item Code</label>
-                                                    <input 
-                                                        value={stockItemForm.itemCode} 
-                                                        onChange={e => setStockItemForm({ ...stockItemForm, itemCode: e.target.value })} 
-                                                        placeholder="e.g. OFF-CHR-01" 
                                                         style={{ padding: '6px 8px', fontSize: '13px', width: '100%', borderRadius: '4px', border: '1px solid #cbd5e0' }}
                                                     />
                                                 </div>
@@ -411,7 +401,6 @@ const ItemManagement = () => {
                                             <thead>
                                                 <tr>
                                                     <th>Item Name</th>
-                                                    <th>Code</th>
                                                     <th>Unit</th>
                                                     <th>Status</th>
                                                     <th>Actions</th>
@@ -421,7 +410,6 @@ const ItemManagement = () => {
                                                 {stockItems.map(item => (
                                                     <tr key={item.stockItemId} className={!item.isActive ? 'row-inactive' : ''}>
                                                         <td className="fw-semibold">{item.itemName}</td>
-                                                        <td>{item.itemCode || '—'}</td>
                                                         <td>{item.unit || 'pcs'}</td>
                                                         <td>
                                                             <span className={`status-dot ${item.isActive ? 'dot-active' : 'dot-inactive'}`}></span>
@@ -429,14 +417,14 @@ const ItemManagement = () => {
                                                         </td>
                                                         <td>
                                                             <div style={{ display: 'flex', gap: '8px' }}>
-                                                                <button type="button" className="btn-icon" onClick={() => openEditStockItem(item)} title="Edit Item" style={{ padding: '2px', fontSize: '12px', border: 'none', background: 'transparent' }}>✏️</button>
-                                                                <button type="button" className="btn-icon" onClick={() => handleToggleStockItemActive(item.stockItemId)} title={item.isActive ? "Deactivate" : "Activate"} style={{ padding: '2px', fontSize: '12px', border: 'none', background: 'transparent' }}>🔄</button>
+                                                                 <button type="button" className="btn-icon" onClick={() => openEditStockItem(item)} title="Edit Item" style={{ padding: '2px', fontSize: '12px', border: 'none', background: 'transparent' }}>✏️</button>
+                                                                 <button type="button" className="btn-icon" onClick={() => handleToggleStockItemActive(item.stockItemId)} title={item.isActive ? "Deactivate" : "Activate"} style={{ padding: '2px', fontSize: '12px', border: 'none', background: 'transparent' }}>🔄</button>
                                                             </div>
                                                         </td>
                                                     </tr>
                                                 ))}
                                                 {stockItems.length === 0 && (
-                                                    <tr><td colSpan={5} className="empty-row" style={{ padding: '15px' }}>No stock items defined.</td></tr>
+                                                    <tr><td colSpan={4} className="empty-row" style={{ padding: '15px' }}>No stock items defined.</td></tr>
                                                 )}
                                             </tbody>
                                         </table>

@@ -7,7 +7,6 @@ import './StockLedger.css';
 interface StockItem {
     stockItemId: number;
     itemName: string;
-    itemCode: string;
     unit: string;
     description: string;
 }
@@ -36,7 +35,6 @@ interface StockBalance {
     branchCode: string;
     stockItemId: number;
     itemName: string;
-    itemCode: string;
     categoryName: string;
     currentQuantity: number;
     unit: string;

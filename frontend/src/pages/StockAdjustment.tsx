@@ -7,7 +7,6 @@ import './StockAdjustment.css';
 interface StockItem {
     stockItemId: number;
     itemName: string;
-    itemCode: string;
     unit: string;
 }
 
@@ -242,7 +241,7 @@ const StockAdjustment = () => {
                                 >
                                     <option value="">Select stock item...</option>
                                     {stockItems.map(item => (
-                                        <option key={item.stockItemId} value={item.stockItemId}>{item.itemName} ({item.itemCode})</option>
+                                        <option key={item.stockItemId} value={item.stockItemId}>{item.itemName}</option>
                                     ))}
                                 </select>
                             </div>

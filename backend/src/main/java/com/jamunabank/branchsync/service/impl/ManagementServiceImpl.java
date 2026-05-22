@@ -314,7 +314,7 @@ public class ManagementServiceImpl implements ManagementService {
     }
 
     @Override
-    public StockItem createStockItem(Long categoryId, String itemName, String itemCode, String unit, String description) {
+    public StockItem createStockItem(Long categoryId, String itemName, String unit, String description) {
         ItemCategory category = itemCategoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Item Category not found: " + categoryId));
         
@@ -330,16 +330,9 @@ public class ManagementServiceImpl implements ManagementService {
             throw new RuntimeException("A stock item with name '" + itemName.trim() + "' already exists under this category.");
         }
 
-        if (itemCode != null && !itemCode.trim().isEmpty()) {
-            if (stockItemRepository.findByItemCode(itemCode.trim()).isPresent()) {
-                throw new RuntimeException("Stock item code '" + itemCode.trim() + "' already exists globally.");
-            }
-        }
-
         StockItem item = StockItem.builder()
                 .category(category)
                 .itemName(itemName.trim())
-                .itemCode(itemCode != null ? itemCode.trim() : null)
                 .unit(unit != null && !unit.trim().isEmpty() ? unit.trim() : "pcs")
                 .description(description)
                 .isActive(true)
@@ -350,7 +343,7 @@ public class ManagementServiceImpl implements ManagementService {
     }
 
     @Override
-    public StockItem updateStockItem(Long stockItemId, String itemName, String itemCode, String unit, String description) {
+    public StockItem updateStockItem(Long stockItemId, String itemName, String unit, String description) {
         StockItem item = stockItemRepository.findById(stockItemId)
                 .orElseThrow(() -> new RuntimeException("Stock Item not found: " + stockItemId));
 
@@ -366,18 +359,7 @@ public class ManagementServiceImpl implements ManagementService {
                     }
                 });
 
-        // Check for duplicate code globally (excluding current item)
-        if (itemCode != null && !itemCode.trim().isEmpty()) {
-            stockItemRepository.findByItemCode(itemCode.trim())
-                    .ifPresent(existing -> {
-                        if (!existing.getStockItemId().equals(stockItemId)) {
-                            throw new RuntimeException("Stock item code '" + itemCode.trim() + "' already exists globally.");
-                        }
-                    });
-        }
-
         item.setItemName(itemName.trim());
-        item.setItemCode(itemCode != null ? itemCode.trim() : null);
         item.setUnit(unit != null && !unit.trim().isEmpty() ? unit.trim() : "pcs");
         item.setDescription(description);
 

@@ -18,7 +18,4 @@ public interface StockItemRepository extends JpaRepository<StockItem, Long> {
 
     /** Check for duplicate item names within the same category. */
     Optional<StockItem> findByCategory_CategoryIdAndItemName(Long categoryId, String itemName);
-
-    /** Check for duplicate item codes globally. */
-    Optional<StockItem> findByItemCode(String itemCode);
 }

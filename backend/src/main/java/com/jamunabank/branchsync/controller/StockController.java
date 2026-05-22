@@ -42,7 +42,6 @@ public class StockController {
             m.put("branchStockBalanceId", b.getBalanceId());
             m.put("stockItemId", b.getStockItem().getStockItemId());
             m.put("itemName", b.getStockItem().getItemName());
-            m.put("itemCode", b.getStockItem().getItemCode());
             m.put("categoryName", b.getStockItem().getCategory().getCategoryName());
             m.put("currentQuantity", b.getCurrentQuantity());
             m.put("unit", b.getStockItem().getUnit());

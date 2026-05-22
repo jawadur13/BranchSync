@@ -40,7 +40,7 @@ public interface ManagementService {
 
     // Stock Item Management
     List<StockItem> getStockItemsByCategory(Long categoryId);
-    StockItem createStockItem(Long categoryId, String itemName, String itemCode, String unit, String description);
-    StockItem updateStockItem(Long stockItemId, String itemName, String itemCode, String unit, String description);
+    StockItem createStockItem(Long categoryId, String itemName, String unit, String description);
+    StockItem updateStockItem(Long stockItemId, String itemName, String unit, String description);
     StockItem toggleStockItemStatus(Long stockItemId);
 }

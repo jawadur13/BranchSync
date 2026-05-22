@@ -279,7 +279,7 @@ const NewTransfer = () => {
                                 >
                                     <option value="">-- Choose Stock Item --</option>
                                     {stockItems.map(item => (
-                                        <option key={item.stockItemId} value={item.stockItemId}>{item.itemName} ({item.itemCode || 'No Code'})</option>
+                                        <option key={item.stockItemId} value={item.stockItemId}>{item.itemName}</option>
                                     ))}
                                 </select>
                             </div>
