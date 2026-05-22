@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 21, 2026 at 09:49 PM
+-- Generation Time: May 22, 2026 at 03:06 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -131,7 +131,7 @@ CREATE TABLE `branches` (
 --
 
 INSERT INTO `branches` (`branch_id`, `branch_code`, `branch_name`, `branch_type`, `district`, `division`, `address`, `phone`, `email`, `is_active`, `created_at`) VALUES
-(1, 'HQ-001', 'Head Office - Motijheel', 'HQ', 'Dhaka', 'Dhaka', 'Dilkusha C/A, Motijheel, Dhaka-1000', '02-9550123', 'hq@jamunabank.com', 1, '2026-05-04 16:32:09'),
+(1, 'HQ-001', 'Head Office - Motijheel', 'HQ', 'Dhaka', 'Dhaka', 'Dilkusha C/A, Motijheel, Dhaka-1000', '02-9550124', 'hq@jamunabank.com', 1, '2026-05-04 16:32:09'),
 (2, 'BR-DHK-001', 'Dhaka Main Branch', 'AD_BRANCH', 'Dhaka', 'Dhaka', 'Mirpur Road, Dhanmondi, Dhaka-1205', '02-8120456', 'dhaka.main@jamunabank.com', 1, '2026-05-04 16:32:09'),
 (3, 'BR-CTG-001', 'Chittagong Agrabad Branch', 'AD_BRANCH', 'Chattogram', 'Chattogram', 'Agrabad Commercial Area, Chattogram-4100', '031-714552', 'ctg.agrabad@jamunabank.com', 1, '2026-05-04 16:32:09'),
 (4, 'BR-SYL-001', 'Sylhet Zindabazar Branch', 'AD_BRANCH', 'Sylhet', 'Sylhet', 'Zindabazar, Sylhet-3100', '0821-718920', 'sylhet@jamunabank.com', 1, '2026-05-04 16:32:09'),
@@ -207,6 +207,34 @@ INSERT INTO `branch_departments` (`branch_id`, `department_id`) VALUES
 (7, 1),
 (7, 3),
 (7, 6);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `branch_stock_balance`
+--
+
+CREATE TABLE `branch_stock_balance` (
+  `balance_id` bigint(20) NOT NULL,
+  `current_quantity` int(11) NOT NULL,
+  `last_updated_at` datetime(6) DEFAULT NULL,
+  `branch_id` bigint(20) NOT NULL,
+  `stock_item_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `branch_stock_balances`
+--
+
+CREATE TABLE `branch_stock_balances` (
+  `branch_stock_balance_id` bigint(20) NOT NULL,
+  `branch_id` bigint(20) NOT NULL,
+  `stock_item_id` bigint(20) NOT NULL,
+  `current_quantity` int(11) NOT NULL DEFAULT 0,
+  `last_updated_at` datetime(6) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -355,27 +383,28 @@ CREATE TABLE `item_categories` (
   `department_id` bigint(20) DEFAULT NULL COMMENT 'NULL = open access for all roles',
   `sensitivity_level` varchar(50) NOT NULL DEFAULT 'LOW' COMMENT 'LOW | MEDIUM | HIGH | CRITICAL',
   `description` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `is_active` bit(1) NOT NULL,
+  `behavior_type` varchar(20) NOT NULL DEFAULT 'DOCUMENT_CASE'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `item_categories`
 --
 
-INSERT INTO `item_categories` (`category_id`, `category_name`, `department_id`, `sensitivity_level`, `description`, `created_at`) VALUES
-(1, 'Cash Bundle', 1, 'CRITICAL', 'Physical cash in sealed bags for branch settlement', '2026-05-04 16:32:09'),
-(2, 'Cheque Books', 1, 'HIGH', 'Blank cheque books for customer issuance', '2026-05-04 16:32:09'),
-(3, 'Demand Draft', 1, 'HIGH', 'Demand draft documents for inter-branch transfer', '2026-05-04 16:32:09'),
-(4, 'Laptop', 2, 'HIGH', 'Employee laptops and workstations', '2026-05-04 16:32:09'),
-(5, 'Network Equipment', 2, 'MEDIUM', 'Routers, switches, and network accessories', '2026-05-04 16:32:09'),
-(6, 'Office Printer', 2, 'MEDIUM', 'Laser and inkjet printers', '2026-05-04 16:32:09'),
-(7, 'Stationery Pack', 3, 'LOW', 'General office stationery bundle', '2026-05-04 16:32:09'),
-(8, 'Printed Forms', 3, 'LOW', 'Pre-printed official bank forms', '2026-05-04 16:32:09'),
-(9, 'Office Furniture', 3, 'LOW', 'Chairs, desks, and minor office items', '2026-05-04 16:32:09'),
-(10, 'Security Badge', 4, 'HIGH', 'Access control badges for staff', '2026-05-04 16:32:09'),
-(11, 'CCTV Equipment', 4, 'CRITICAL', 'Surveillance cameras and recording equipment', '2026-05-04 16:32:09'),
-(12, 'First Aid Kit', NULL, 'LOW', 'Medical first aid supplies, open access', '2026-05-04 16:32:09'),
-(13, 'Customer Documents', 6, 'MEDIUM', 'Documents like kyc, personal forms, etc..', '2026-05-19 04:43:09');
+INSERT INTO `item_categories` (`category_id`, `category_name`, `department_id`, `sensitivity_level`, `description`, `created_at`, `is_active`, `behavior_type`) VALUES
+(1, 'Cash Bundle', 1, 'CRITICAL', 'Physical cash in sealed bags for branch settlement', '2026-05-04 16:32:09', b'1', 'CASH'),
+(2, 'Cheque Books', 1, 'HIGH', 'Blank cheque books for customer issuance', '2026-05-04 16:32:09', b'1', 'DOCUMENT_CASE'),
+(3, 'Demand Draft', 1, 'HIGH', 'Demand draft documents for inter-branch transfer', '2026-05-04 16:32:09', b'1', 'DOCUMENT_CASE'),
+(4, 'Computers', 2, 'HIGH', 'Employee laptops and Desktops', '2026-05-04 16:32:09', b'1', 'STOCK'),
+(5, 'Network Equipment', 2, 'MEDIUM', 'Routers, switches, and network accessories', '2026-05-04 16:32:09', b'1', 'STOCK'),
+(6, 'Office Printer', 2, 'MEDIUM', 'Laser and inkjet printers', '2026-05-04 16:32:09', b'1', 'DOCUMENT_CASE'),
+(7, 'Stationery Pack', 3, 'LOW', 'General office stationery bundle', '2026-05-04 16:32:09', b'1', 'DOCUMENT_CASE'),
+(8, 'Printed Forms', 3, 'LOW', 'Pre-printed official bank forms', '2026-05-04 16:32:09', b'1', 'STOCK'),
+(9, 'Office Furniture', 3, 'LOW', 'Chairs, desks, and minor office items', '2026-05-04 16:32:09', b'1', 'STOCK'),
+(10, 'Security Badge', 4, 'HIGH', 'Access control badges for staff', '2026-05-04 16:32:09', b'1', 'DOCUMENT_CASE'),
+(11, 'CCTV Equipment', 4, 'CRITICAL', 'Surveillance cameras and recording equipment', '2026-05-04 16:32:09', b'1', 'STOCK'),
+(13, 'Customer Documents', 6, 'MEDIUM', 'Documents like kyc, personal forms, etc..', '2026-05-19 04:43:09', b'1', 'DOCUMENT_CASE');
 
 -- --------------------------------------------------------
 
@@ -400,6 +429,91 @@ INSERT INTO `roles` (`role_id`, `role_name`) VALUES
 (5, 'OFFICER'),
 (4, 'OPERATION_MANAGER'),
 (1, 'SYSTEM_ADMIN');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stock_items`
+--
+
+CREATE TABLE `stock_items` (
+  `stock_item_id` bigint(20) NOT NULL,
+  `category_id` bigint(20) NOT NULL,
+  `item_name` varchar(255) NOT NULL,
+  `unit` varchar(30) NOT NULL,
+  `description` text DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `stock_items`
+--
+
+INSERT INTO `stock_items` (`stock_item_id`, `category_id`, `item_name`, `unit`, `description`, `is_active`, `created_at`) VALUES
+(1, 4, 'Laptop', 'pcs', 'Laptop used by officers', 1, '2026-05-22 06:38:27');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stock_ledger`
+--
+
+CREATE TABLE `stock_ledger` (
+  `ledger_id` bigint(20) NOT NULL,
+  `balance_after` int(11) NOT NULL,
+  `balance_before` int(11) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `entry_type` varchar(40) NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `reason` text DEFAULT NULL,
+  `actor_id` bigint(20) DEFAULT NULL,
+  `approver_id` bigint(20) DEFAULT NULL,
+  `branch_id` bigint(20) NOT NULL,
+  `stock_item_id` bigint(20) NOT NULL,
+  `request_id` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stock_ledger_entries`
+--
+
+CREATE TABLE `stock_ledger_entries` (
+  `ledger_id` bigint(20) NOT NULL,
+  `branch_id` bigint(20) NOT NULL,
+  `stock_item_id` bigint(20) NOT NULL,
+  `entry_type` varchar(40) NOT NULL COMMENT 'TRANSFER_OUT | TRANSFER_IN | REVERSAL_IN | REVERSAL_OUT | MANUAL_ADJUSTMENT',
+  `request_id` bigint(20) DEFAULT NULL,
+  `quantity` int(11) NOT NULL,
+  `balance_before` int(11) NOT NULL,
+  `balance_after` int(11) NOT NULL,
+  `actor_id` bigint(20) DEFAULT NULL,
+  `approver_id` bigint(20) DEFAULT NULL,
+  `reason` text DEFAULT NULL,
+  `created_at` datetime(6) NOT NULL DEFAULT current_timestamp(6)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stock_manual_adjustments`
+--
+
+CREATE TABLE `stock_manual_adjustments` (
+  `adjustment_id` bigint(20) NOT NULL,
+  `branch_id` bigint(20) NOT NULL,
+  `stock_item_id` bigint(20) NOT NULL,
+  `quantity` int(11) NOT NULL COMMENT 'Positive = credit, negative = debit',
+  `reason` text NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT 'PENDING | APPROVED | REJECTED',
+  `submitted_by_id` bigint(20) DEFAULT NULL,
+  `submitted_at` datetime(6) DEFAULT NULL,
+  `approved_by_id` bigint(20) DEFAULT NULL,
+  `decided_at` datetime(6) DEFAULT NULL,
+  `decision_note` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -433,24 +547,26 @@ CREATE TABLE `transfer_requests` (
   `hq_approved_at` datetime(6) DEFAULT NULL,
   `hq_rejection_note` longtext DEFAULT NULL,
   `requested_amount` decimal(18,2) DEFAULT NULL COMMENT 'Cash Bundle: amount requested by origin branch',
-  `denominations_submitted` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Cash Bundle: whether dest branch submitted denomination breakdown'
+  `denominations_submitted` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Cash Bundle: whether dest branch submitted denomination breakdown',
+  `stock_item_id` bigint(20) DEFAULT NULL,
+  `quantity` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `transfer_requests`
 --
 
-INSERT INTO `transfer_requests` (`request_id`, `request_code`, `title`, `description`, `category_id`, `priority`, `status`, `origin_branch_id`, `origin_department_id`, `initiated_by_id`, `internal_approver_id`, `destination_branch_id`, `destination_department_id`, `dept_acceptor_id`, `final_releaser_id`, `delivery_person_id`, `picked_up_at`, `delivered_at`, `final_note`, `closed_at`, `requested_at`, `hq_approver_id`, `hq_approved_at`, `hq_rejection_note`, `requested_amount`, `denominations_submitted`) VALUES
-(1, 'REQ-2026-0001', 'Cash require due to shortage', 'Cash required due to shortage of cash balance at our branch. Kindly arrange cash support as soon as possible.\n', 1, 'URGENT', 'COMPLETED', 2, 1, 19, 5, 3, 1, 24, 12, 33, '2026-05-06 11:34:58', '2026-05-06 11:35:23', '', '2026-05-06 11:37:51', '2026-05-06 10:56:17', NULL, NULL, NULL, NULL, 0),
-(2, 'REQ-2026-0002', 'Requestion for copy of account opening form ', 'Need a copy of the account opening form of Customer name: Tasnim Jahan (AC#1101008003478)', 8, 'NORMAL', 'COMPLETED', 4, 3, 28, 7, 5, 3, 30, 8, 33, '2026-05-10 12:02:21', '2026-05-10 12:03:18', '', '2026-05-10 12:05:30', '2026-05-10 11:48:11', NULL, NULL, NULL, NULL, 0),
-(3, 'REQ-2026-0003', 'Requisation for account opening form', 'as the customer x moved his account from your branch to our one.. send all of his physical document here', 8, 'NORMAL', 'COMPLETED', 6, 3, 32, 9, 7, 3, 40, 40, 34, '2026-05-17 11:46:21', '2026-05-17 11:46:25', '', '2026-05-17 12:09:17', '2026-05-15 14:15:22', 38, '2026-05-15 20:17:45.000000', NULL, NULL, 0),
-(4, 'REQ-2026-0004', 'need demand draft', '', 3, 'HIGH', 'REJECTED_BY_HQ', 1, 1, 14, 2, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-19 05:23:14', '2026-05-17 14:44:04', 38, '2026-05-19 11:23:14.000000', 'invalid request', NULL, 0),
-(5, 'REQ-2026-0005', 'test', 'test', 2, 'URGENT', 'PENDING_ASSIGNMENT', 3, 1, 24, 6, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-17 23:48:06', 38, '2026-05-18 05:50:13.000000', NULL, NULL, 0),
-(10, 'REQ-2026-0006', 'kyc', 'kyc for 110100', 13, 'URGENT', 'PENDING_ASSIGNMENT', 3, 6, 41, 12, 2, 6, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-19 05:21:04', 38, '2026-05-19 11:27:55.000000', NULL, NULL, 0),
-(11, 'REQ-2026-0007', 'FDR opening form', 'need supply of 100-200 blank FDR opening form ', 8, 'NORMAL', 'PENDING_HQ_APPROVAL', 7, 3, 39, 42, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not available', NULL, '2026-05-19 06:42:37', NULL, NULL, NULL, NULL, 0),
-(12, 'REQ-2026-0008', 'Cash Require', 'need cash due to shortage', 1, 'URGENT', 'COMPLETED', 2, 1, 19, 3, 1, 1, 17, 2, 33, '2026-05-19 17:14:13', '2026-05-19 17:14:17', '', '2026-05-20 13:15:45', '2026-05-19 17:09:52', 38, '2026-05-19 23:11:12.000000', NULL, 1000000.00, 1),
-(13, 'REQ-2026-0009', 'Cash requirement', 'Cash requirement due to shortage', 1, 'URGENT', 'COMPLETED', 2, 1, 22, 11, 3, 1, 24, 6, 36, '2026-05-19 23:13:49', '2026-05-19 23:13:51', '', '2026-05-19 23:14:58', '2026-05-19 23:04:28', 38, '2026-05-20 05:10:26.000000', NULL, 1000000.00, 1),
-(14, 'REQ-2026-0010', 'cash shortage', 'test', 1, 'URGENT', 'COMPLETED', 2, NULL, 5, 5, 3, 1, 24, 6, 33, '2026-05-20 01:11:41', '2026-05-20 01:11:46', '', '2026-05-20 01:16:09', '2026-05-20 01:06:43', 38, '2026-05-20 07:08:44.000000', NULL, 1000000.00, 1);
+INSERT INTO `transfer_requests` (`request_id`, `request_code`, `title`, `description`, `category_id`, `priority`, `status`, `origin_branch_id`, `origin_department_id`, `initiated_by_id`, `internal_approver_id`, `destination_branch_id`, `destination_department_id`, `dept_acceptor_id`, `final_releaser_id`, `delivery_person_id`, `picked_up_at`, `delivered_at`, `final_note`, `closed_at`, `requested_at`, `hq_approver_id`, `hq_approved_at`, `hq_rejection_note`, `requested_amount`, `denominations_submitted`, `stock_item_id`, `quantity`) VALUES
+(1, 'REQ-2026-0001', 'Cash require due to shortage', 'Cash required due to shortage of cash balance at our branch. Kindly arrange cash support as soon as possible.\n', 1, 'URGENT', 'COMPLETED', 2, 1, 19, 5, 3, 1, 24, 12, 33, '2026-05-06 11:34:58', '2026-05-06 11:35:23', '', '2026-05-06 11:37:51', '2026-05-06 10:56:17', NULL, NULL, NULL, NULL, 0, NULL, NULL),
+(2, 'REQ-2026-0002', 'Requestion for copy of account opening form ', 'Need a copy of the account opening form of Customer name: Tasnim Jahan (AC#1101008003478)', 8, 'NORMAL', 'COMPLETED', 4, 3, 28, 7, 5, 3, 30, 8, 33, '2026-05-10 12:02:21', '2026-05-10 12:03:18', '', '2026-05-10 12:05:30', '2026-05-10 11:48:11', NULL, NULL, NULL, NULL, 0, NULL, NULL),
+(3, 'REQ-2026-0003', 'Requisation for account opening form', 'as the customer x moved his account from your branch to our one.. send all of his physical document here', 8, 'NORMAL', 'COMPLETED', 6, 3, 32, 9, 7, 3, 40, 40, 34, '2026-05-17 11:46:21', '2026-05-17 11:46:25', '', '2026-05-17 12:09:17', '2026-05-15 14:15:22', 38, '2026-05-15 20:17:45.000000', NULL, NULL, 0, NULL, NULL),
+(4, 'REQ-2026-0004', 'need demand draft', '', 3, 'HIGH', 'REJECTED_BY_HQ', 1, 1, 14, 2, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-19 05:23:14', '2026-05-17 14:44:04', 38, '2026-05-19 11:23:14.000000', 'invalid request', NULL, 0, NULL, NULL),
+(5, 'REQ-2026-0005', 'test', 'test', 2, 'URGENT', 'PENDING_ASSIGNMENT', 3, 1, 24, 6, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-17 23:48:06', 38, '2026-05-18 05:50:13.000000', NULL, NULL, 0, NULL, NULL),
+(10, 'REQ-2026-0006', 'kyc', 'kyc for 110100', 13, 'URGENT', 'PENDING_ASSIGNMENT', 3, 6, 41, 12, 2, 6, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-19 05:21:04', 38, '2026-05-19 11:27:55.000000', NULL, NULL, 0, NULL, NULL),
+(11, 'REQ-2026-0007', 'FDR opening form', 'need supply of 100-200 blank FDR opening form ', 8, 'NORMAL', 'PENDING_HQ_APPROVAL', 7, 3, 39, 42, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not available', NULL, '2026-05-19 06:42:37', NULL, NULL, NULL, NULL, 0, NULL, NULL),
+(12, 'REQ-2026-0008', 'Cash Require', 'need cash due to shortage', 1, 'URGENT', 'COMPLETED', 2, 1, 19, 3, 1, 1, 17, 2, 33, '2026-05-19 17:14:13', '2026-05-19 17:14:17', '', '2026-05-20 13:15:45', '2026-05-19 17:09:52', 38, '2026-05-19 23:11:12.000000', NULL, 1000000.00, 1, NULL, NULL),
+(13, 'REQ-2026-0009', 'Cash requirement', 'Cash requirement due to shortage', 1, 'URGENT', 'COMPLETED', 2, 1, 22, 11, 3, 1, 24, 6, 36, '2026-05-19 23:13:49', '2026-05-19 23:13:51', '', '2026-05-19 23:14:58', '2026-05-19 23:04:28', 38, '2026-05-20 05:10:26.000000', NULL, 1000000.00, 1, NULL, NULL),
+(14, 'REQ-2026-0010', 'cash shortage', 'test', 1, 'URGENT', 'COMPLETED', 2, NULL, 5, 5, 3, 1, 24, 6, 33, '2026-05-20 01:11:41', '2026-05-20 01:11:46', '', '2026-05-20 01:16:09', '2026-05-20 01:06:43', 38, '2026-05-20 07:08:44.000000', NULL, 1000000.00, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -557,6 +673,22 @@ ALTER TABLE `branch_departments`
   ADD KEY `department_id` (`department_id`);
 
 --
+-- Indexes for table `branch_stock_balance`
+--
+ALTER TABLE `branch_stock_balance`
+  ADD PRIMARY KEY (`balance_id`),
+  ADD UNIQUE KEY `UKivh013blyh301634e8kyfg5vp` (`branch_id`,`stock_item_id`),
+  ADD KEY `FKmigyh452itw52lp7kwotr84fu` (`stock_item_id`);
+
+--
+-- Indexes for table `branch_stock_balances`
+--
+ALTER TABLE `branch_stock_balances`
+  ADD PRIMARY KEY (`branch_stock_balance_id`),
+  ADD UNIQUE KEY `uq_branch_stock_item` (`branch_id`,`stock_item_id`),
+  ADD KEY `fk_bsb_stock_item` (`stock_item_id`);
+
+--
 -- Indexes for table `cash_ledger`
 --
 ALTER TABLE `cash_ledger`
@@ -608,6 +740,45 @@ ALTER TABLE `roles`
   ADD UNIQUE KEY `role_name` (`role_name`);
 
 --
+-- Indexes for table `stock_items`
+--
+ALTER TABLE `stock_items`
+  ADD PRIMARY KEY (`stock_item_id`),
+  ADD KEY `fk_si_category` (`category_id`);
+
+--
+-- Indexes for table `stock_ledger`
+--
+ALTER TABLE `stock_ledger`
+  ADD PRIMARY KEY (`ledger_id`),
+  ADD KEY `FKmswfq01ompv36yjf6nqr2gwq1` (`actor_id`),
+  ADD KEY `FKsowxm97irx3nqgignonad8j5h` (`approver_id`),
+  ADD KEY `FKecny9kvgl34nbnpjichdgvynx` (`branch_id`),
+  ADD KEY `FK33jd2m8tvy2qc5xpdwtj7v12j` (`stock_item_id`),
+  ADD KEY `FKa23sqbl0e1x50s6kmxnurfqhr` (`request_id`);
+
+--
+-- Indexes for table `stock_ledger_entries`
+--
+ALTER TABLE `stock_ledger_entries`
+  ADD PRIMARY KEY (`ledger_id`),
+  ADD KEY `fk_sle_branch` (`branch_id`),
+  ADD KEY `fk_sle_stock_item` (`stock_item_id`),
+  ADD KEY `fk_sle_request` (`request_id`),
+  ADD KEY `fk_sle_actor` (`actor_id`),
+  ADD KEY `fk_sle_approver` (`approver_id`);
+
+--
+-- Indexes for table `stock_manual_adjustments`
+--
+ALTER TABLE `stock_manual_adjustments`
+  ADD PRIMARY KEY (`adjustment_id`),
+  ADD KEY `fk_sma_branch` (`branch_id`),
+  ADD KEY `fk_sma_stock_item` (`stock_item_id`),
+  ADD KEY `fk_sma_submitter` (`submitted_by_id`),
+  ADD KEY `fk_sma_approver` (`approved_by_id`);
+
+--
 -- Indexes for table `transfer_requests`
 --
 ALTER TABLE `transfer_requests`
@@ -623,7 +794,8 @@ ALTER TABLE `transfer_requests`
   ADD KEY `dept_acceptor_id` (`dept_acceptor_id`),
   ADD KEY `final_releaser_id` (`final_releaser_id`),
   ADD KEY `delivery_person_id` (`delivery_person_id`),
-  ADD KEY `fk_tr_hq_approver` (`hq_approver_id`);
+  ADD KEY `fk_tr_hq_approver` (`hq_approver_id`),
+  ADD KEY `fk_tr_stock_item` (`stock_item_id`);
 
 --
 -- Indexes for table `users`
@@ -651,6 +823,18 @@ ALTER TABLE `audit_logs`
 --
 ALTER TABLE `branches`
   MODIFY `branch_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `branch_stock_balance`
+--
+ALTER TABLE `branch_stock_balance`
+  MODIFY `balance_id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `branch_stock_balances`
+--
+ALTER TABLE `branch_stock_balances`
+  MODIFY `branch_stock_balance_id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `cash_ledger`
@@ -689,6 +873,30 @@ ALTER TABLE `roles`
   MODIFY `role_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
+-- AUTO_INCREMENT for table `stock_items`
+--
+ALTER TABLE `stock_items`
+  MODIFY `stock_item_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `stock_ledger`
+--
+ALTER TABLE `stock_ledger`
+  MODIFY `ledger_id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `stock_ledger_entries`
+--
+ALTER TABLE `stock_ledger_entries`
+  MODIFY `ledger_id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `stock_manual_adjustments`
+--
+ALTER TABLE `stock_manual_adjustments`
+  MODIFY `adjustment_id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `transfer_requests`
 --
 ALTER TABLE `transfer_requests`
@@ -725,6 +933,20 @@ ALTER TABLE `branch_departments`
   ADD CONSTRAINT `branch_departments_ibfk_2` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`);
 
 --
+-- Constraints for table `branch_stock_balance`
+--
+ALTER TABLE `branch_stock_balance`
+  ADD CONSTRAINT `FKjj3kuofjfk4rkhgdh7r5mhqsj` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`),
+  ADD CONSTRAINT `FKmigyh452itw52lp7kwotr84fu` FOREIGN KEY (`stock_item_id`) REFERENCES `stock_items` (`stock_item_id`);
+
+--
+-- Constraints for table `branch_stock_balances`
+--
+ALTER TABLE `branch_stock_balances`
+  ADD CONSTRAINT `fk_bsb_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`),
+  ADD CONSTRAINT `fk_bsb_stock_item` FOREIGN KEY (`stock_item_id`) REFERENCES `stock_items` (`stock_item_id`);
+
+--
 -- Constraints for table `cash_ledger`
 --
 ALTER TABLE `cash_ledger`
@@ -755,10 +977,46 @@ ALTER TABLE `item_categories`
   ADD CONSTRAINT `item_categories_ibfk_1` FOREIGN KEY (`department_id`) REFERENCES `departments` (`department_id`);
 
 --
+-- Constraints for table `stock_items`
+--
+ALTER TABLE `stock_items`
+  ADD CONSTRAINT `fk_si_category` FOREIGN KEY (`category_id`) REFERENCES `item_categories` (`category_id`);
+
+--
+-- Constraints for table `stock_ledger`
+--
+ALTER TABLE `stock_ledger`
+  ADD CONSTRAINT `FK33jd2m8tvy2qc5xpdwtj7v12j` FOREIGN KEY (`stock_item_id`) REFERENCES `stock_items` (`stock_item_id`),
+  ADD CONSTRAINT `FKa23sqbl0e1x50s6kmxnurfqhr` FOREIGN KEY (`request_id`) REFERENCES `transfer_requests` (`request_id`),
+  ADD CONSTRAINT `FKecny9kvgl34nbnpjichdgvynx` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`),
+  ADD CONSTRAINT `FKmswfq01ompv36yjf6nqr2gwq1` FOREIGN KEY (`actor_id`) REFERENCES `users` (`user_id`),
+  ADD CONSTRAINT `FKsowxm97irx3nqgignonad8j5h` FOREIGN KEY (`approver_id`) REFERENCES `users` (`user_id`);
+
+--
+-- Constraints for table `stock_ledger_entries`
+--
+ALTER TABLE `stock_ledger_entries`
+  ADD CONSTRAINT `fk_sle_actor` FOREIGN KEY (`actor_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_sle_approver` FOREIGN KEY (`approver_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_sle_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`),
+  ADD CONSTRAINT `fk_sle_request` FOREIGN KEY (`request_id`) REFERENCES `transfer_requests` (`request_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_sle_stock_item` FOREIGN KEY (`stock_item_id`) REFERENCES `stock_items` (`stock_item_id`);
+
+--
+-- Constraints for table `stock_manual_adjustments`
+--
+ALTER TABLE `stock_manual_adjustments`
+  ADD CONSTRAINT `fk_sma_approver` FOREIGN KEY (`approved_by_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_sma_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`),
+  ADD CONSTRAINT `fk_sma_stock_item` FOREIGN KEY (`stock_item_id`) REFERENCES `stock_items` (`stock_item_id`),
+  ADD CONSTRAINT `fk_sma_submitter` FOREIGN KEY (`submitted_by_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
+
+--
 -- Constraints for table `transfer_requests`
 --
 ALTER TABLE `transfer_requests`
   ADD CONSTRAINT `fk_tr_hq_approver` FOREIGN KEY (`hq_approver_id`) REFERENCES `users` (`user_id`),
+  ADD CONSTRAINT `fk_tr_stock_item` FOREIGN KEY (`stock_item_id`) REFERENCES `stock_items` (`stock_item_id`),
   ADD CONSTRAINT `transfer_requests_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `item_categories` (`category_id`),
   ADD CONSTRAINT `transfer_requests_ibfk_10` FOREIGN KEY (`delivery_person_id`) REFERENCES `users` (`user_id`),
   ADD CONSTRAINT `transfer_requests_ibfk_2` FOREIGN KEY (`origin_branch_id`) REFERENCES `branches` (`branch_id`),
