@@ -480,25 +480,6 @@ const ItemManagement = () => {
                 </div>
             )}
 
-            {/* Behavior Warning Modal */}
-            {behaviorWarning && (
-                <div className="modal-overlay">
-                    <div className="modal-content" style={{ maxWidth: '450px', padding: '24px' }}>
-                        <h2 style={{ marginTop: 0, color: '#dd6b20' }}>⚠️ Confirm Behavior Change</h2>
-                        <p>Changing the behavior of an existing category with transfer history may cause unexpected behavior across the system.</p>
-                        <p style={{ color: '#718096', fontSize: '14px' }}>Are you sure you want to proceed and save changes?</p>
-                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
-                            <button className="btn-admin-secondary" onClick={() => setBehaviorWarning(false)}>
-                                Cancel
-                            </button>
-                            <button className="btn-admin-primary" style={{ background: '#dd6b20' }} onClick={() => executeItemSubmit()} disabled={submitting}>
-                                {submitting ? 'Saving...' : 'Yes, Confirm Change'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Item Form Modal */}
             {showItemForm && (
                 <div className="modal-overlay" onClick={() => setShowItemForm(false)}>
@@ -576,6 +557,25 @@ const ItemManagement = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Behavior Warning Modal */}
+            {behaviorWarning && (
+                <div className="modal-overlay" style={{ zIndex: 1100 }}>
+                    <div className="modal-content" style={{ maxWidth: '450px', padding: '24px' }}>
+                        <h2 style={{ marginTop: 0, color: '#dd6b20' }}>⚠️ Confirm Behavior Change</h2>
+                        <p>Changing the behavior of an existing category with transfer history may cause unexpected behavior across the system.</p>
+                        <p style={{ color: '#718096', fontSize: '14px' }}>Are you sure you want to proceed and save changes?</p>
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
+                            <button className="btn-admin-secondary" onClick={() => setBehaviorWarning(false)}>
+                                Cancel
+                            </button>
+                            <button className="btn-admin-primary" style={{ background: '#dd6b20' }} onClick={() => executeItemSubmit()} disabled={submitting}>
+                                {submitting ? 'Saving...' : 'Yes, Confirm Change'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
