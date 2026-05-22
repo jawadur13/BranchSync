@@ -39,7 +39,7 @@ public class StockController {
         List<BranchStockBalance> balances = stockService.getBranchStockBalances(branchId);
         List<Map<String, Object>> result = balances.stream().map(b -> {
             Map<String, Object> m = new HashMap<>();
-            m.put("branchStockBalanceId", b.getBranchStockBalanceId());
+            m.put("branchStockBalanceId", b.getBalanceId());
             m.put("stockItemId", b.getStockItem().getStockItemId());
             m.put("itemName", b.getStockItem().getItemName());
             m.put("itemCode", b.getStockItem().getItemCode());
