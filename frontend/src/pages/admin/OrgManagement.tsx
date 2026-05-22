@@ -44,6 +44,8 @@ const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 
     const [editBranchId, setEditBranchId] = useState<number | null>(null);
     const [editDeptId, setEditDeptId] = useState<number | null>(null);
     const [editItemId, setEditItemId] = useState<number | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState<{ categoryId: number, categoryName: string } | null>(null);
+    const [behaviorWarning, setBehaviorWarning] = useState(false);
 
     const [branchForm, setBranchForm] = useState({
         branchCode: '', branchName: '', branchType: 'BRANCH',
@@ -211,16 +213,8 @@ const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 
         }
     };
 
-    const handleDeleteItem = async (categoryId: number, categoryName: string) => {
-        if (!window.confirm(`Are you sure you want to delete the item category "${categoryName}"?`)) return;
-        setError(''); setSuccess('');
-        try {
-            const res = await api.delete(`/admin/org/items/${categoryId}`);
-            setSuccess(res.data.message || 'Item category deleted successfully.');
-            fetchAll();
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to delete item category.');
-        }
+    const handleDeleteItem = (categoryId: number, categoryName: string) => {
+        setConfirmDelete({ categoryId, categoryName });
     };
 
     // ── Stock Items Operations ──────────────────────────────────────────────
@@ -262,7 +256,7 @@ const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 
             setEditStockItemId(null);
             fetchStockItems(viewItem.categoryId);
         } catch (err: any) {
-            alert(err.response?.data?.message || "Failed to save stock item");
+            setError(err.response?.data?.message || "Failed to save stock item");
         } finally {
             setSubmitting(false);
         }
@@ -274,7 +268,7 @@ const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 
             await api.put(`/admin/org/stock-items/${itemId}/toggle-active`);
             fetchStockItems(viewItem.categoryId);
         } catch (err: any) {
-            alert(err.response?.data?.message || "Failed to toggle status");
+            setError(err.response?.data?.message || "Failed to toggle status");
         }
     };
 
@@ -564,7 +558,7 @@ const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 
                                             if (editItemId) {
                                                 const orig = categories.find(cat => cat.categoryId === editItemId);
                                                 if (orig && orig.behaviorType !== val) {
-                                                    alert("Warning: Changing the behavior of an existing category with transfer history may cause unexpected behavior.");
+                                                    setBehaviorWarning(true);
                                                 }
                                             }
                                             setItemForm({ ...itemForm, behaviorType: val });
@@ -948,6 +942,49 @@ const OrgManagement = ({ defaultTab = 'branches' }: { defaultTab?: 'branches' | 
                         <div className="modal-actions" style={{ marginTop: '30px', paddingTop: '15px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                             <button className="btn-admin-primary" onClick={() => { setViewDept(null); openEditDept(viewDept); }}>Edit Department</button>
                             <button className="btn-ghost" onClick={() => setViewDept(null)}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {confirmDelete && (
+                <div className="overlay-backdrop">
+                    <div className="overlay-panel" style={{ maxWidth: '400px', height: 'auto', padding: '24px' }}>
+                        <h2 style={{ marginTop: 0, color: '#e53e3e' }}>⚠️ Confirm Deletion</h2>
+                        <p>Are you sure you want to delete the item category <strong>"{confirmDelete.categoryName}"</strong>?</p>
+                        <p style={{ color: '#718096', fontSize: '14px' }}>This action cannot be undone.</p>
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
+                            <button className="btn-admin-secondary" onClick={() => setConfirmDelete(null)}>Cancel</button>
+                            <button className="btn-admin-primary" style={{ background: '#e53e3e' }} onClick={async () => {
+                                setError(''); setSuccess('');
+                                try {
+                                    const res = await api.delete(`/admin/org/items/${confirmDelete.categoryId}`);
+                                    setSuccess(res.data.message || 'Item category deleted successfully.');
+                                    setConfirmDelete(null);
+                                    fetchAll();
+                                } catch (err: any) {
+                                    setError(err.response?.data?.message || 'Failed to delete item category.');
+                                    setConfirmDelete(null);
+                                }
+                            }}>
+                                Delete Category
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Behavior Warning Modal */}
+            {behaviorWarning && (
+                <div className="overlay-backdrop">
+                    <div className="overlay-panel" style={{ maxWidth: '400px', height: 'auto', padding: '24px' }}>
+                        <h2 style={{ marginTop: 0, color: '#dd6b20' }}>⚠️ Behavior Change Warning</h2>
+                        <p>Changing the behavior of an existing category with transfer history may cause unexpected behavior.</p>
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '24px' }}>
+                            <button className="btn-admin-primary" style={{ background: '#dd6b20' }} onClick={() => setBehaviorWarning(false)}>
+                                I Understand
+                            </button>
                         </div>
                     </div>
                 </div>
