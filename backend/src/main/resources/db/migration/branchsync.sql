@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 22, 2026 at 03:06 PM
+-- Generation Time: May 22, 2026 at 03:12 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -220,20 +220,6 @@ CREATE TABLE `branch_stock_balance` (
   `last_updated_at` datetime(6) DEFAULT NULL,
   `branch_id` bigint(20) NOT NULL,
   `stock_item_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `branch_stock_balances`
---
-
-CREATE TABLE `branch_stock_balances` (
-  `branch_stock_balance_id` bigint(20) NOT NULL,
-  `branch_id` bigint(20) NOT NULL,
-  `stock_item_id` bigint(20) NOT NULL,
-  `current_quantity` int(11) NOT NULL DEFAULT 0,
-  `last_updated_at` datetime(6) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -477,27 +463,6 @@ CREATE TABLE `stock_ledger` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `stock_ledger_entries`
---
-
-CREATE TABLE `stock_ledger_entries` (
-  `ledger_id` bigint(20) NOT NULL,
-  `branch_id` bigint(20) NOT NULL,
-  `stock_item_id` bigint(20) NOT NULL,
-  `entry_type` varchar(40) NOT NULL COMMENT 'TRANSFER_OUT | TRANSFER_IN | REVERSAL_IN | REVERSAL_OUT | MANUAL_ADJUSTMENT',
-  `request_id` bigint(20) DEFAULT NULL,
-  `quantity` int(11) NOT NULL,
-  `balance_before` int(11) NOT NULL,
-  `balance_after` int(11) NOT NULL,
-  `actor_id` bigint(20) DEFAULT NULL,
-  `approver_id` bigint(20) DEFAULT NULL,
-  `reason` text DEFAULT NULL,
-  `created_at` datetime(6) NOT NULL DEFAULT current_timestamp(6)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `stock_manual_adjustments`
 --
 
@@ -681,14 +646,6 @@ ALTER TABLE `branch_stock_balance`
   ADD KEY `FKmigyh452itw52lp7kwotr84fu` (`stock_item_id`);
 
 --
--- Indexes for table `branch_stock_balances`
---
-ALTER TABLE `branch_stock_balances`
-  ADD PRIMARY KEY (`branch_stock_balance_id`),
-  ADD UNIQUE KEY `uq_branch_stock_item` (`branch_id`,`stock_item_id`),
-  ADD KEY `fk_bsb_stock_item` (`stock_item_id`);
-
---
 -- Indexes for table `cash_ledger`
 --
 ALTER TABLE `cash_ledger`
@@ -758,17 +715,6 @@ ALTER TABLE `stock_ledger`
   ADD KEY `FKa23sqbl0e1x50s6kmxnurfqhr` (`request_id`);
 
 --
--- Indexes for table `stock_ledger_entries`
---
-ALTER TABLE `stock_ledger_entries`
-  ADD PRIMARY KEY (`ledger_id`),
-  ADD KEY `fk_sle_branch` (`branch_id`),
-  ADD KEY `fk_sle_stock_item` (`stock_item_id`),
-  ADD KEY `fk_sle_request` (`request_id`),
-  ADD KEY `fk_sle_actor` (`actor_id`),
-  ADD KEY `fk_sle_approver` (`approver_id`);
-
---
 -- Indexes for table `stock_manual_adjustments`
 --
 ALTER TABLE `stock_manual_adjustments`
@@ -831,12 +777,6 @@ ALTER TABLE `branch_stock_balance`
   MODIFY `balance_id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `branch_stock_balances`
---
-ALTER TABLE `branch_stock_balances`
-  MODIFY `branch_stock_balance_id` bigint(20) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `cash_ledger`
 --
 ALTER TABLE `cash_ledger`
@@ -882,12 +822,6 @@ ALTER TABLE `stock_items`
 -- AUTO_INCREMENT for table `stock_ledger`
 --
 ALTER TABLE `stock_ledger`
-  MODIFY `ledger_id` bigint(20) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `stock_ledger_entries`
---
-ALTER TABLE `stock_ledger_entries`
   MODIFY `ledger_id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
@@ -940,13 +874,6 @@ ALTER TABLE `branch_stock_balance`
   ADD CONSTRAINT `FKmigyh452itw52lp7kwotr84fu` FOREIGN KEY (`stock_item_id`) REFERENCES `stock_items` (`stock_item_id`);
 
 --
--- Constraints for table `branch_stock_balances`
---
-ALTER TABLE `branch_stock_balances`
-  ADD CONSTRAINT `fk_bsb_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`),
-  ADD CONSTRAINT `fk_bsb_stock_item` FOREIGN KEY (`stock_item_id`) REFERENCES `stock_items` (`stock_item_id`);
-
---
 -- Constraints for table `cash_ledger`
 --
 ALTER TABLE `cash_ledger`
@@ -991,16 +918,6 @@ ALTER TABLE `stock_ledger`
   ADD CONSTRAINT `FKecny9kvgl34nbnpjichdgvynx` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`),
   ADD CONSTRAINT `FKmswfq01ompv36yjf6nqr2gwq1` FOREIGN KEY (`actor_id`) REFERENCES `users` (`user_id`),
   ADD CONSTRAINT `FKsowxm97irx3nqgignonad8j5h` FOREIGN KEY (`approver_id`) REFERENCES `users` (`user_id`);
-
---
--- Constraints for table `stock_ledger_entries`
---
-ALTER TABLE `stock_ledger_entries`
-  ADD CONSTRAINT `fk_sle_actor` FOREIGN KEY (`actor_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_sle_approver` FOREIGN KEY (`approver_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_sle_branch` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`branch_id`),
-  ADD CONSTRAINT `fk_sle_request` FOREIGN KEY (`request_id`) REFERENCES `transfer_requests` (`request_id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_sle_stock_item` FOREIGN KEY (`stock_item_id`) REFERENCES `stock_items` (`stock_item_id`);
 
 --
 -- Constraints for table `stock_manual_adjustments`
