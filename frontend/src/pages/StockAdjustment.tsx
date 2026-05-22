@@ -11,9 +11,10 @@ interface StockItem {
 }
 
 interface CategoryOption {
-    categoryId: number;
-    categoryName: string;
+    id: number;
+    name: string;
     behaviorType: string;
+    departmentId: number | null;
 }
 
 interface StockManualAdjustment {
@@ -69,11 +70,17 @@ const StockAdjustment = () => {
         }
     }, []);
 
-    const fetchCategories = async () => {
+const fetchCategories = async () => {
         try {
             const res = await api.get('/lookup/categories');
-            // Filter to only display STOCK behavior categories
-            const stockCats = res.data.filter((c: any) => c.behaviorType === 'STOCK');
+            // Filter to only display STOCK behavior categories that belong to the user's department
+            const stockCats = res.data.filter((c: any) => {
+                if (c.behaviorType !== 'STOCK') return false;
+                if (isOfficer) {
+                    return c.departmentId === user?.departmentId;
+                }
+                return true;
+            });
             setCategories(stockCats);
         } catch (err) {
             console.error('Failed to load stock categories', err);
@@ -225,7 +232,7 @@ const StockAdjustment = () => {
                                 >
                                     <option value="">Select category...</option>
                                     {categories.map(c => (
-                                        <option key={c.categoryId} value={c.categoryId}>{c.categoryName}</option>
+                                        <option key={c.id} value={c.id}>{c.name}</option>
                                     ))}
                                 </select>
                             </div>

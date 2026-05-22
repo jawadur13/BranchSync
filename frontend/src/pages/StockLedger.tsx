@@ -39,6 +39,7 @@ interface StockBalance {
     currentQuantity: number;
     unit: string;
     lastUpdatedAt: string | null;
+    departmentId?: number | null;
 }
 
 interface BranchStockSummary {
@@ -103,12 +104,21 @@ const StockLedger = () => {
         setLoading(true); setError('');
         try {
             const balRes = await api.get(`/stock/balances/${branchId}`);
-            setBalances(balRes.data);
+            
+            // Filter balances by department if user is an OFFICER
+            const filteredBalances = balRes.data.filter((b: any) => {
+                if (user?.role === 'OFFICER') {
+                    return b.departmentId === user?.departmentId;
+                }
+                return true;
+            });
+            
+            setBalances(filteredBalances);
             setSelectedBranchId(branchId);
-            if (balRes.data.length > 0) {
-                setSelectedBranchName(balRes.data[0].branchName || user?.branchName || `Branch #${branchId}`);
+            if (filteredBalances.length > 0) {
+                setSelectedBranchName(filteredBalances[0].branchName || user?.branchName || `Branch #${branchId}`);
                 // Select the first stock item by default
-                const firstItem = balRes.data[0];
+                const firstItem = filteredBalances[0];
                 loadLedgerForItem(branchId, firstItem.stockItemId);
             } else {
                 setSelectedBranchName(isAdmin ? `Branch #${branchId}` : user?.branchName || '');

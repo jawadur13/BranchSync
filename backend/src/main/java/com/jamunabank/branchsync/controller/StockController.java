@@ -46,6 +46,7 @@ public class StockController {
             m.put("currentQuantity", b.getCurrentQuantity());
             m.put("unit", b.getStockItem().getUnit());
             m.put("lastUpdatedAt", b.getLastUpdatedAt());
+            m.put("departmentId", b.getStockItem().getCategory().getDepartment() != null ? b.getStockItem().getCategory().getDepartment().getDepartmentId() : null);
             return m;
         }).collect(Collectors.toList());
         return ResponseEntity.ok(result);
