@@ -116,12 +116,11 @@ const StockLedger = () => {
             setBalances(filteredBalances);
             setSelectedBranchId(branchId);
             if (filteredBalances.length > 0) {
-                setSelectedBranchName(filteredBalances[0].branchName || user?.branchName || `Branch #${branchId}`);
-                // Select the first stock item by default
-                const firstItem = filteredBalances[0];
-                loadLedgerForItem(branchId, firstItem.stockItemId);
+                setSelectedBranchName(filteredBalances[0].branchName || `Branch #${branchId}`);
+                // Select All Items (0) by default
+                loadLedgerForItem(branchId, 0);
             } else {
-                setSelectedBranchName(isAdmin ? `Branch #${branchId}` : user?.branchName || '');
+                setSelectedBranchName(isAdmin ? `Branch #${branchId}` : 'Your Branch');
                 setEntries([]);
                 setSelectedStockItemId(null);
                 setLoading(false);
@@ -161,7 +160,7 @@ const StockLedger = () => {
         }
     };
 
-    const activeItemName = balances.find(b => b.stockItemId === selectedStockItemId)?.itemName || '';
+    const activeItemName = selectedStockItemId === 0 ? 'All Items' : balances.find(b => b.stockItemId === selectedStockItemId)?.itemName || '';
 
     const handlePrint = () => {
         const printWindow = window.open('', '_blank');
@@ -170,6 +169,7 @@ const StockLedger = () => {
         const tableRows = entries.map((e, idx) => `
             <tr>
                 <td style="text-align: center;">${idx + 1}</td>
+                ${selectedStockItemId === 0 ? `<td>${e.stockItem?.itemName || (e as any).itemName || '—'} (${e.stockItem?.unit || (e as any).unit || 'pcs'})</td>` : ''}
                 <td>${formatDate(e.createdAt)}</td>
                 <td>${getEntryLabel(e.entryType)}</td>
                 <td style="color: ${e.balanceAfter < e.balanceBefore ? '#dc2626' : '#16a34a'}; font-weight: 700;">
@@ -215,12 +215,15 @@ const StockLedger = () => {
                     <div class="branch-details">
                         <strong>Branch:</strong> ${selectedBranchName}<br/>
                         <strong>Asset Item:</strong> ${activeItemName}<br/>
-                        <strong>Current Balance:</strong> ${balances.find(b => b.stockItemId === selectedStockItemId)?.currentQuantity || 0}
+                        <strong>Current Balance:</strong> ${selectedStockItemId === 0 
+                            ? `${balances.reduce((sum, b) => sum + (b.currentQuantity || 0), 0)} items` 
+                            : `${balances.find(b => b.stockItemId === selectedStockItemId)?.currentQuantity || 0} ${balances.find(b => b.stockItemId === selectedStockItemId)?.unit || 'pcs'}`}
                     </div>
                     <table>
                         <thead>
                             <tr>
                                 <th style="width: 30px; text-align: center;">#</th>
+                                ${selectedStockItemId === 0 ? '<th>Item</th>' : ''}
                                 <th>Timestamp</th>
                                 <th>Transaction Type</th>
                                 <th>Qty Change</th>
@@ -253,7 +256,7 @@ const StockLedger = () => {
                     <p className="ledger-subtitle">
                         {isAdmin
                             ? 'Monitor countable branch inventory, assets, and audit trials across the entire network.'
-                            : `Audit trial and current asset balances for ${user?.branchName || 'your branch'}.`}
+                            : `Audit trial and current asset balances for your branch.`}
                     </p>
                 </div>
                 {selectedBranchId && (
@@ -312,9 +315,21 @@ const StockLedger = () => {
                     <div className="current-balances-section">
                         <h3>📦 Current Asset Quantity Balances ({selectedBranchName})</h3>
                         <div className="stock-balances-flex">
+                            {balances.length > 0 && (
+                                <div 
+                                    className={`stock-balance-pill clickable-pill ${selectedStockItemId === 0 ? 'active' : ''}`}
+                                    onClick={() => selectedBranchId && loadLedgerForItem(selectedBranchId, 0)}
+                                    style={{ cursor: 'pointer', padding: '8px 16px', borderRadius: '24px', transition: 'all 0.2s', border: selectedStockItemId === 0 ? '2px solid var(--color-primary-blue)' : '1px solid #cbd5e1', backgroundColor: selectedStockItemId === 0 ? '#ebf8ff' : '#ffffff' }}
+                                >
+                                    <span className="pill-name" style={{ color: selectedStockItemId === 0 ? 'var(--color-primary-blue)' : '#4a5568', fontWeight: 'bold' }}>All Items</span>
+                                    <span className="pill-qty" style={{ marginLeft: '8px', background: 'var(--color-primary-blue)', color: '#ffffff', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: '800' }}>
+                                        {balances.reduce((sum, b) => sum + (b.currentQuantity || 0), 0)} items
+                                    </span>
+                                </div>
+                            )}
                             {balances.map(b => (
                                 <div 
-                                    key={b.branchStockBalanceId} 
+                                    key={b.stockBalanceId} 
                                     className={`stock-balance-pill clickable-pill ${selectedStockItemId === b.stockItemId ? 'active' : ''}`}
                                     onClick={() => selectedBranchId && loadLedgerForItem(selectedBranchId, b.stockItemId)}
                                     style={{ cursor: 'pointer', padding: '8px 16px', borderRadius: '24px', transition: 'all 0.2s', border: selectedStockItemId === b.stockItemId ? '2px solid var(--color-primary-blue)' : '1px solid #cbd5e1', backgroundColor: selectedStockItemId === b.stockItemId ? '#ebf8ff' : '#ffffff' }}
@@ -333,14 +348,15 @@ const StockLedger = () => {
 
                     <div className="table-card">
                         <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h3>📜 Asset Transaction & Audit Logs — {activeItemName || 'Select Item'}</h3>
+                            <h3>📜 Asset Transaction & Audit Logs — {selectedStockItemId === 0 ? 'All Items' : activeItemName || 'Select Item'}</h3>
                             {balances.length > 0 && selectedBranchId && (
                                 <select 
                                     className="action-select" 
                                     style={{ width: '220px', padding: '6px 12px', borderRadius: '6px', fontSize: '13px' }}
-                                    value={selectedStockItemId || ''} 
+                                    value={selectedStockItemId !== null ? selectedStockItemId : ''} 
                                     onChange={e => loadLedgerForItem(selectedBranchId, Number(e.target.value))}
                                 >
+                                    <option value={0}>All Items</option>
                                     {balances.map(b => (
                                         <option key={b.stockItemId} value={b.stockItemId}>{b.itemName}</option>
                                     ))}
@@ -359,6 +375,7 @@ const StockLedger = () => {
                             <table className="data-table">
                                 <thead>
                                     <tr>
+                                        {selectedStockItemId === 0 && <th>Item</th>}
                                         <th>Timestamp</th>
                                         <th>Type</th>
                                         <th>Qty Change</th>
@@ -373,6 +390,14 @@ const StockLedger = () => {
                                 <tbody>
                                     {entries.map((e) => (
                                         <tr key={e.ledgerId}>
+                                            {selectedStockItemId === 0 && (
+                                                <td style={{ fontWeight: '600', color: '#1a202c' }}>
+                                                    {e.stockItem?.itemName || (e as any).itemName || '—'} 
+                                                    <span style={{ fontSize: '11px', color: '#718096', fontWeight: 'normal', marginLeft: '4px' }}>
+                                                        ({e.stockItem?.unit || (e as any).unit || 'pcs'})
+                                                    </span>
+                                                </td>
+                                            )}
                                             <td className="whitespace-nowrap">{formatDate(e.createdAt)}</td>
                                             <td>
                                                 <span className={`entry-badge ${e.balanceAfter < e.balanceBefore ? 'badge-out' : 'badge-in'}`}>

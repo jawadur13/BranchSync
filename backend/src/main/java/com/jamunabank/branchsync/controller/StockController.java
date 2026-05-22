@@ -77,6 +77,9 @@ public class StockController {
             m.put("actorEmployeeId", e.getActor() != null ? e.getActor().getEmployeeId() : null);
             m.put("approverFullName", e.getApprover() != null ? e.getApprover().getFullName() : null);
             m.put("approverEmployeeId", e.getApprover() != null ? e.getApprover().getEmployeeId() : null);
+            m.put("stockItemId", e.getStockItem() != null ? e.getStockItem().getStockItemId() : null);
+            m.put("itemName", e.getStockItem() != null ? e.getStockItem().getItemName() : null);
+            m.put("unit", e.getStockItem() != null ? e.getStockItem().getUnit() : null);
             return m;
         }).collect(Collectors.toList());
         return ResponseEntity.ok(result);

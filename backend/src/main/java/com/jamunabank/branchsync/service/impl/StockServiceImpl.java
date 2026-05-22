@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +66,9 @@ public class StockServiceImpl implements StockService {
 
         String role = actor.getRole().getRoleName();
         if ("SYSTEM_ADMIN".equals(role)) {
+            if (stockItemId == 0) {
+                return ledgerRepository.findByBranch_BranchIdOrderByCreatedAtDesc(branchId);
+            }
             return ledgerRepository.findByBranch_BranchIdAndStockItem_StockItemIdOrderByCreatedAtDesc(branchId, stockItemId);
         }
 
@@ -73,15 +77,28 @@ public class StockServiceImpl implements StockService {
         }
 
         if (MANAGER_ROLES.contains(role)) {
+            if (stockItemId == 0) {
+                return ledgerRepository.findByBranch_BranchIdOrderByCreatedAtDesc(branchId);
+            }
             return ledgerRepository.findByBranch_BranchIdAndStockItem_StockItemIdOrderByCreatedAtDesc(branchId, stockItemId);
         }
 
         if ("OFFICER".equals(role)) {
-            StockItem item = stockItemRepository.findById(stockItemId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Stock item not found: " + stockItemId));
-            Department itemDept = item.getCategory().getDepartment();
-            if (itemDept == null || (actor.getDepartment() != null && actor.getDepartment().getDepartmentId().equals(itemDept.getDepartmentId()))) {
-                return ledgerRepository.findByBranch_BranchIdAndStockItem_StockItemIdOrderByCreatedAtDesc(branchId, stockItemId);
+            if (stockItemId == 0) {
+                Long deptId = actor.getDepartment() != null ? actor.getDepartment().getDepartmentId() : null;
+                return ledgerRepository.findByBranch_BranchIdOrderByCreatedAtDesc(branchId).stream()
+                        .filter(e -> {
+                            Department itemDept = e.getStockItem().getCategory().getDepartment();
+                            return itemDept == null || (deptId != null && deptId.equals(itemDept.getDepartmentId()));
+                        })
+                        .collect(Collectors.toList());
+            } else {
+                StockItem item = stockItemRepository.findById(stockItemId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Stock item not found: " + stockItemId));
+                Department itemDept = item.getCategory().getDepartment();
+                if (itemDept == null || (actor.getDepartment() != null && actor.getDepartment().getDepartmentId().equals(itemDept.getDepartmentId()))) {
+                    return ledgerRepository.findByBranch_BranchIdAndStockItem_StockItemIdOrderByCreatedAtDesc(branchId, stockItemId);
+                }
             }
         }
 
