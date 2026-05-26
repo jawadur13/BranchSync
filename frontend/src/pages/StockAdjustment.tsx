@@ -319,7 +319,6 @@ const fetchCategories = async () => {
 
                     {pending.length === 0 ? (
                         <div className="adj-empty-state">
-                            <span className="empty-icon">🎉</span>
                             <h4>No Pending Adjustments</h4>
                             <p>No stock adjustments are awaiting manager review at this time.</p>
                         </div>

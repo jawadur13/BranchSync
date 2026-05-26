@@ -54,7 +54,7 @@ const Login: React.FC = () => {
                             id="employeeId"
                             value={employeeId}
                             onChange={(e) => setEmployeeId(e.target.value)}
-                            placeholder="e.g. EMP001"
+                            placeholder="e.g. EMP-001"
                             required
                         />
                     </div>
