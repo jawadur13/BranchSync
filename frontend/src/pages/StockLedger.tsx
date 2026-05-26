@@ -40,6 +40,7 @@ interface StockBalance {
     unit: string;
     lastUpdatedAt: string | null;
     departmentId?: number | null;
+    departmentName?: string | null;
 }
 
 interface BranchStockSummary {
@@ -65,8 +66,15 @@ const StockLedger = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [balanceSearchTerm, setBalanceSearchTerm] = useState('');
+    const [selectedDeptId, setSelectedDeptId] = useState<number | string>('ALL');
+    const [departmentsLookup, setDepartmentsLookup] = useState<{ departmentId: number; departmentName: string }[]>([]);
 
     useEffect(() => {
+        // Fetch all departments lookup list
+        api.get('/lookup/departments')
+            .then(res => setDepartmentsLookup(res.data))
+            .catch(() => {});
+
         if (isNetworkViewer) {
             loadBranchSummaries();
         } else if (user?.branchId) {
@@ -116,6 +124,7 @@ const StockLedger = () => {
             
             setBalances(filteredBalances);
             setSelectedBranchId(branchId);
+            setSelectedDeptId('ALL');
             if (filteredBalances.length > 0) {
                 setSelectedBranchName(filteredBalances[0].branchName || `Branch #${branchId}`);
                 // Select All Items (0) by default
@@ -163,23 +172,44 @@ const StockLedger = () => {
 
     const activeItemName = selectedStockItemId === 0 ? 'All Items' : balances.find(b => b.stockItemId === selectedStockItemId)?.itemName || '';
 
+    // Extract unique departments from the loaded balances for the branch
+    const availableDepts = balances.reduce((acc: { id: number; name: string }[], current) => {
+        if (current.departmentId && !acc.some(d => d.id === current.departmentId)) {
+            const resolvedName = departmentsLookup.find(d => d.departmentId === current.departmentId)?.departmentName 
+                || current.departmentName 
+                || 'General';
+            acc.push({ id: current.departmentId, name: resolvedName });
+        }
+        return acc;
+    }, []);
+
     const handlePrintBalances = () => {
         const printWindow = window.open('', '_blank');
         if (!printWindow) return;
 
-        // Ensure we print the currently filtered list
-        const listToPrint = balanceSearchTerm.trim() !== '' ? filteredBalancesList : balances;
+        // Ensure we print the currently filtered list (respecting search AND department filter)
+        const listToPrint = filteredBalancesList;
 
-        const tableRows = listToPrint.map((b, idx) => `
-            <tr>
-                <td style="text-align: center;">${idx + 1}</td>
-                <td>${b.itemName}</td>
-                <td>${b.categoryName || '—'}</td>
-                <td style="font-weight: 700; text-align: right;">${b.currentQuantity} ${b.unit || 'pcs'}</td>
-            </tr>
-        `).join('');
+        const tableRows = listToPrint.map((b, idx) => {
+            const resolvedDeptName = b.departmentId 
+                ? (departmentsLookup.find(d => d.departmentId === b.departmentId)?.departmentName || b.departmentName || 'General')
+                : 'General';
+            return `
+                <tr>
+                    <td style="text-align: center;">${idx + 1}</td>
+                    <td>${b.itemName}</td>
+                    <td>${b.categoryName || '—'}</td>
+                    <td>${resolvedDeptName}</td>
+                    <td style="font-weight: 700; text-align: right;">${b.currentQuantity} ${b.unit || 'pcs'}</td>
+                </tr>
+            `;
+        }).join('');
 
         const totalItems = listToPrint.reduce((sum, b) => sum + (b.currentQuantity || 0), 0);
+        
+        const activeDeptName = selectedDeptId === 'ALL' 
+            ? 'All Departments' 
+            : availableDepts.find(d => d.id.toString() === selectedDeptId.toString())?.name || 'Departmental';
 
         printWindow.document.write(`
             <html>
@@ -211,7 +241,8 @@ const StockLedger = () => {
                     <div class="branch-details">
                         <div>
                             <strong>Branch:</strong> ${selectedBranchName}<br/>
-                            <strong>Filter:</strong> ${balanceSearchTerm.trim() !== '' ? `"${balanceSearchTerm}"` : 'All Items'}
+                            <strong>Department:</strong> ${activeDeptName}<br/>
+                            <strong>Search Filter:</strong> ${balanceSearchTerm.trim() !== '' ? `"${balanceSearchTerm}"` : 'None'}
                         </div>
                         <div style="text-align: right;">
                             <strong>Total Assets Counted:</strong> ${totalItems}
@@ -223,11 +254,12 @@ const StockLedger = () => {
                                 <th style="width: 50px; text-align: center;">#</th>
                                 <th>Item Name</th>
                                 <th>Category</th>
+                                <th>Department</th>
                                 <th style="text-align: right;">Current Quantity</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${tableRows || '<tr><td colspan="4" style="text-align: center;">No items found.</td></tr>'}
+                            ${tableRows || '<tr><td colspan="5" style="text-align: center;">No items found.</td></tr>'}
                         </tbody>
                     </table>
                     <script>
@@ -325,7 +357,11 @@ const StockLedger = () => {
         printWindow.document.close();
     };
 
-    const filteredBalancesList = balances.filter(b => b.itemName.toLowerCase().includes(balanceSearchTerm.toLowerCase()));
+    const filteredBalancesList = balances.filter(b => {
+        const matchesSearch = b.itemName.toLowerCase().includes(balanceSearchTerm.toLowerCase());
+        const matchesDept = selectedDeptId === 'ALL' ? true : b.departmentId?.toString() === selectedDeptId.toString();
+        return matchesSearch && matchesDept;
+    });
 
     return (
         <div className="stock-ledger-container">
@@ -396,13 +432,27 @@ const StockLedger = () => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
                             <h3 style={{ margin: 0 }}>📦 Current Asset Quantity Balances ({selectedBranchName})</h3>
                             {balances.length > 0 && (
-                                <input
-                                    type="text"
-                                    placeholder="🔍 Search items..."
-                                    value={balanceSearchTerm}
-                                    onChange={e => setBalanceSearchTerm(e.target.value)}
-                                    style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid #cbd5e1', fontSize: '13px', width: '250px', outline: 'none', transition: 'border-color 0.2s' }}
-                                />
+                                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                    {(user?.role === 'BRANCH_MANAGER' || user?.role === 'FIRST_EXECUTIVE_OFFICER' || user?.role === 'OPERATION_MANAGER' || user?.role === 'HQ_LOGISTICS_OFFICER' || user?.role === 'SYSTEM_ADMIN') && (
+                                        <select
+                                            value={selectedDeptId}
+                                            onChange={e => setSelectedDeptId(e.target.value)}
+                                            style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#ffffff', outline: 'none', cursor: 'pointer', fontWeight: '600', color: '#1e293b' }}
+                                        >
+                                            <option value="ALL">All Departments</option>
+                                            {availableDepts.map(d => (
+                                                <option key={d.id} value={d.id}>{d.name}</option>
+                                            ))}
+                                        </select>
+                                    )}
+                                    <input
+                                        type="text"
+                                        placeholder="🔍 Search items..."
+                                        value={balanceSearchTerm}
+                                        onChange={e => setBalanceSearchTerm(e.target.value)}
+                                        style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid #cbd5e1', fontSize: '13px', width: '200px', outline: 'none', transition: 'border-color 0.2s' }}
+                                    />
+                                </div>
                             )}
                         </div>
                         <div className="stock-balances-flex" style={{ maxHeight: '250px', overflowY: 'auto', paddingRight: '10px', paddingBottom: '10px' }}>

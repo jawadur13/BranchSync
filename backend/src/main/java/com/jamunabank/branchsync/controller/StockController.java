@@ -50,6 +50,7 @@ public class StockController {
             m.put("unit", b.getStockItem().getUnit());
             m.put("lastUpdatedAt", b.getLastUpdatedAt());
             m.put("departmentId", b.getStockItem().getCategory().getDepartment() != null ? b.getStockItem().getCategory().getDepartment().getDepartmentId() : null);
+            m.put("departmentName", b.getStockItem().getCategory().getDepartment() != null ? b.getStockItem().getCategory().getDepartment().getDepartmentName() : "General");
             return m;
         }).collect(Collectors.toList());
         return ResponseEntity.ok(result);
@@ -71,6 +72,7 @@ public class StockController {
             m.put("unit", b.getStockItem().getUnit());
             m.put("lastUpdatedAt", b.getLastUpdatedAt());
             m.put("departmentId", b.getStockItem().getCategory().getDepartment() != null ? b.getStockItem().getCategory().getDepartment().getDepartmentId() : null);
+            m.put("departmentName", b.getStockItem().getCategory().getDepartment() != null ? b.getStockItem().getCategory().getDepartment().getDepartmentName() : "General");
             return m;
         }).collect(Collectors.toList());
         return ResponseEntity.ok(result);
