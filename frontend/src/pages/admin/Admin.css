@@ -275,20 +275,20 @@
     border-bottom: 1px solid var(--color-neutral-200);
 }
 
-/* Modal */
+/* Modal overlay with blur and sleek backdrop */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
+    background: rgba(15, 23, 42, 0.45) !important;
+    backdrop-filter: blur(8px) !important;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    animation: modalOverlayIn 0.2s ease-out;
+    animation: modalOverlayIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 @keyframes modalOverlayIn {
@@ -296,107 +296,200 @@
     to { opacity: 1; }
 }
 
+/* Rounded, shadowed premium modal container */
 .modal-content {
-    background: white;
-    border-radius: var(--radius-xl);
+    background: #ffffff !important;
+    border-radius: 24px !important;
     width: 600px;
     max-width: 92vw;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    animation: modalSlideIn 0.3s ease-out;
+    border: 1px solid rgba(226, 232, 240, 0.8) !important;
+    box-shadow: 0 25px 70px -10px rgba(15, 23, 42, 0.18) !important;
+    animation: modalSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    padding: 32px !important;
+    position: relative;
 }
 
 @keyframes modalSlideIn {
-    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    from { opacity: 0; transform: translateY(30px) scale(0.96); }
     to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+/* Beautiful top visual accent bar */
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--color-primary-blue), #3b82f6);
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+}
+
+/* Header layout */
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-5) var(--spacing-5) 0;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    border-bottom: 1.5px solid #f1f5f9 !important;
+    padding-bottom: 16px !important;
+    margin-bottom: 24px !important;
+    padding-top: 0 !important;
 }
 
 .modal-header h2 {
-    font-size: var(--font-size-lg);
-    font-weight: 700;
-    color: var(--color-neutral-900);
-    margin: 0;
+    font-size: 1.35rem !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    letter-spacing: -0.02em !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
 }
 
+/* Custom rounded exit button */
 .modal-close {
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: var(--color-neutral-100);
-    border-radius: var(--radius-full);
-    cursor: pointer;
-    font-size: var(--font-size-base);
-    color: var(--color-neutral-600);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
+    width: 32px !important;
+    height: 32px !important;
+    border: none !important;
+    background: #f1f5f9 !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    font-size: 0.95rem !important;
+    color: #64748b !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
 }
 
-.modal-close:hover { background: var(--color-neutral-200); }
+.modal-close:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+    transform: rotate(90deg) !important;
+}
 
 .modal-form {
-    padding: var(--spacing-5);
+    padding: 0 !important;
 }
 
 .modal-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-3);
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
 }
 
-.modal-grid .full-width { grid-column: 1 / -1; }
+.modal-grid .full-width {
+    grid-column: 1 / -1 !important;
+}
 
-.modal-grid .form-group label {
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    color: var(--color-neutral-700);
-    margin-bottom: 4px;
-    display: block;
+/* Premium input controls with subtle scale effects */
+.modal-grid .form-group label,
+.form-group label {
+    font-size: 12.5px !important;
+    font-weight: 700 !important;
+    color: #475569 !important;
+    margin-bottom: 6px !important;
+    display: block !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
 }
 
 .modal-grid .form-group input,
 .modal-grid .form-group select,
 .inline-form .form-group input,
-.inline-form .form-group select {
-    width: 100%;
-    padding: 9px 12px;
-    border: 1px solid var(--color-neutral-300);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    font-family: var(--font-family-sans);
-    color: var(--color-neutral-800);
-    transition: border-color 0.2s, box-shadow 0.2s;
-    box-sizing: border-box;
+.inline-form .form-group select,
+.modal-content input,
+.modal-content select {
+    width: 100% !important;
+    padding: 12px 16px !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 12px !important;
+    font-size: 14px !important;
+    font-family: var(--font-family-sans) !important;
+    color: #1e293b !important;
+    background-color: #f8fafc !important;
+    transition: all 0.2s ease-in-out !important;
+    box-sizing: border-box !important;
 }
 
 .modal-grid .form-group input:focus,
 .modal-grid .form-group select:focus,
 .inline-form .form-group input:focus,
-.inline-form .form-group select:focus {
-    outline: none;
-    border-color: var(--color-primary-blue);
-    box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1);
+.inline-form .form-group select:focus,
+.modal-content input:focus,
+.modal-content select:focus {
+    outline: none !important;
+    background-color: #ffffff !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
+    transform: translateY(-1px) !important;
 }
 
+/* Modal Action Container Layout */
 .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--spacing-3);
-    margin-top: var(--spacing-4);
-    padding-top: var(--spacing-4);
-    border-top: 1px solid var(--color-neutral-100);
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    margin-top: 30px !important;
+    padding-top: 20px !important;
+    border-top: 1px solid #f1f5f9 !important;
 }
 
-.required { color: var(--color-danger); }
+/* Interactive Action Buttons inside Modals and General Admin Space */
+.modal-actions button,
+.modal-content button,
+.btn-admin-primary,
+.btn-admin-secondary,
+.btn-ghost {
+    border-radius: 12px !important;
+    padding: 10px 20px !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease-in-out !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    line-height: 1.2 !important;
+    text-decoration: none !important;
+    box-sizing: border-box !important;
+}
+
+.btn-admin-primary {
+    background: var(--color-primary-blue) !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.btn-admin-primary:hover:not(:disabled) {
+    background: var(--color-primary-blue-light) !important;
+    transform: translateY(-1.5px) !important;
+    box-shadow: 0 4px 12px rgba(0, 51, 102, 0.15) !important;
+}
+
+.btn-admin-secondary, .btn-ghost {
+    background: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #475569 !important;
+}
+
+.btn-admin-secondary:hover, .btn-ghost:hover {
+    background: #f8fafc !important;
+    border-color: #94a3b8 !important;
+    color: #0f172a !important;
+    transform: translateY(-1px) !important;
+}
+
+.required {
+    color: #ef4444 !important;
+    font-weight: bold;
+}
 
 /* Sidebar Admin Section */
 .sidebar-divider {
