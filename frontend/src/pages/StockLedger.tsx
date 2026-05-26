@@ -338,15 +338,10 @@ const StockLedger = () => {
                             : `Audit trial and current asset balances for your branch.`}
                     </p>
                 </div>
-                {selectedBranchId && (
+                {selectedBranchId && isNetworkViewer && (
                     <div style={{ display: 'flex', gap: '10px' }}>
-                        {isNetworkViewer && (
-                            <button className="btn-ghost" onClick={() => { setSelectedBranchId(null); setEntries([]); setBalances([]); setSelectedStockItemId(null); }}>
-                                🔙 Back to Branches
-                            </button>
-                        )}
-                        <button className="btn-admin-primary" onClick={handlePrint} title="Print report or save as PDF">
-                            🖨️ Print / Save PDF
+                        <button className="btn-ghost" onClick={() => { setSelectedBranchId(null); setEntries([]); setBalances([]); setSelectedStockItemId(null); }}>
+                            🔙 Back to Branches
                         </button>
                     </div>
                 )}
@@ -389,29 +384,25 @@ const StockLedger = () => {
                     )}
                 </div>
             ) : (
-                /* Branch Detailed View */
                 <div className="ledger-details-view">
+                    {balances.length > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+                            <button className="btn-admin-primary" onClick={handlePrintBalances} title="Print asset inventory list">
+                                🖨️ Print List
+                            </button>
+                        </div>
+                    )}
                     <div className="current-balances-section">
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
                             <h3 style={{ margin: 0 }}>📦 Current Asset Quantity Balances ({selectedBranchName})</h3>
                             {balances.length > 0 && (
-                                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                    <input
-                                        type="text"
-                                        placeholder="🔍 Search items..."
-                                        value={balanceSearchTerm}
-                                        onChange={e => setBalanceSearchTerm(e.target.value)}
-                                        style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid #cbd5e1', fontSize: '13px', width: '200px', outline: 'none', transition: 'border-color 0.2s' }}
-                                    />
-                                    <button 
-                                        onClick={handlePrintBalances}
-                                        style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid #cbd5e1', backgroundColor: '#ffffff', cursor: 'pointer', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'bold', color: '#0f172a', transition: 'all 0.2s' }}
-                                        onMouseOver={e => e.currentTarget.style.backgroundColor = '#f1f5f9'}
-                                        onMouseOut={e => e.currentTarget.style.backgroundColor = '#ffffff'}
-                                    >
-                                        🖨️ Print List
-                                    </button>
-                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="🔍 Search items..."
+                                    value={balanceSearchTerm}
+                                    onChange={e => setBalanceSearchTerm(e.target.value)}
+                                    style={{ padding: '8px 16px', borderRadius: '20px', border: '1px solid #cbd5e1', fontSize: '13px', width: '250px', outline: 'none', transition: 'border-color 0.2s' }}
+                                />
                             )}
                         </div>
                         <div className="stock-balances-flex" style={{ maxHeight: '250px', overflowY: 'auto', paddingRight: '10px', paddingBottom: '10px' }}>
@@ -450,6 +441,14 @@ const StockLedger = () => {
                             )}
                         </div>
                     </div>
+
+                    {balances.length > 0 && selectedBranchId && (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+                            <button className="btn-admin-primary" onClick={handlePrint} title="Print report or save as PDF">
+                                🖨️ Print / Save PDF
+                            </button>
+                        </div>
+                    )}
 
                     <div className="table-card">
                         <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
