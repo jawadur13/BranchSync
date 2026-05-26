@@ -1057,7 +1057,8 @@ const TransferDetails = () => {
                                                 className="action-select"
                                                 value={selectedDeptId}
                                                 onChange={(e) => setSelectedDeptId(e.target.value)}
-                                                style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                                                style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', backgroundColor: '#f1f5f9', cursor: 'not-allowed' }}
+                                                disabled={true}
                                             >
                                                 <option value="">Select Target Department...</option>
                                                 {departments.map(d => (
