@@ -126,6 +126,8 @@ const TransferDetails = () => {
     const [departments, setDepartments] = useState<any[]>([]);
     const [selectedBranchId, setSelectedBranchId] = useState('');
     const [selectedDeptId, setSelectedDeptId] = useState('');
+    const [hqStockBalances, setHqStockBalances] = useState<any[]>([]);
+    const [categoriesLookup, setCategoriesLookup] = useState<any[]>([]);
 
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -156,12 +158,14 @@ const TransferDetails = () => {
 
     useEffect(() => {
         if (selectedBranchId) {
-            fetchDepartmentsForBranch(selectedBranchId);
+            const matchedCat = categoriesLookup.find(c => c.name?.toLowerCase() === transfer?.categoryName?.toLowerCase());
+            const autoDeptId = matchedCat?.departmentId || '';
+            fetchDepartmentsForBranch(selectedBranchId, autoDeptId);
         } else {
             setDepartments([]);
             setSelectedDeptId('');
         }
-    }, [selectedBranchId]);
+    }, [selectedBranchId, categoriesLookup, transfer]);
 
     const fetchHqLookupData = async () => {
         try {
@@ -174,16 +178,30 @@ const TransferDetails = () => {
                 balRes.data.forEach((b: any) => { balMap[b.branchId] = b.currentBalance; });
                 setBranchBalances(balMap);
             } catch { /* ignore */ }
+            // Fetch all stock balances for HQ routing (when behavior is STOCK)
+            try {
+                const stockRes = await api.get('/stock/balances');
+                setHqStockBalances(stockRes.data);
+            } catch { /* ignore */ }
+            // Fetch categories lookup to resolve target departments
+            try {
+                const catRes = await api.get('/lookup/categories');
+                setCategoriesLookup(catRes.data);
+            } catch { /* ignore */ }
         } catch (err) {
             console.error('Failed to load HQ lookup data', err);
         }
     };
 
-    const fetchDepartmentsForBranch = async (branchId: string) => {
+    const fetchDepartmentsForBranch = async (branchId: string, autoSelectDeptId?: string | number) => {
         try {
             const res = await api.get(`/lookup/branches/${branchId}/departments`);
             setDepartments(res.data);
-            setSelectedDeptId(''); // Reset selected department on branch change
+            if (autoSelectDeptId && res.data.some((d: any) => d.departmentId.toString() === autoSelectDeptId.toString())) {
+                setSelectedDeptId(autoSelectDeptId.toString());
+            } else {
+                setSelectedDeptId('');
+            }
         } catch (err) {
             console.error('Failed to load departments for branch', err);
         }
@@ -474,6 +492,25 @@ const TransferDetails = () => {
                 setActionLoading(false);
             }
         });
+    };
+
+    const getBranchDropdownText = (b: any) => {
+        const isCashBundleReq = transfer?.categoryName?.toLowerCase().includes('cash bundle');
+        const isStockReq = transfer?.behaviorType === 'STOCK';
+        const bal = branchBalances[b.id];
+        const hasEnough = !isCashBundleReq || bal === undefined || bal >= (transfer?.requestedAmount || 0);
+
+        let suffix = '';
+        if (isCashBundleReq && bal !== undefined) {
+            suffix = ` — ৳${bal.toLocaleString('en-BD')}${!hasEnough ? ' ⚠️ LOW' : ''}`;
+        } else if (isStockReq && transfer?.stockItemId) {
+            const match = hqStockBalances.find((sb: any) => sb.branchId === b.id && sb.stockItemId === transfer.stockItemId);
+            const qty = match ? match.currentQuantity : 0;
+            const unit = match ? match.unit : 'pcs';
+            const isLow = qty < (transfer.quantity || 0);
+            suffix = ` — ${qty} ${unit}${isLow ? ' ⚠️ LOW' : ''}`;
+        }
+        return `${b.name} (${b.code})${suffix}`;
     };
 
     const formatDate = (dateStr: string | null) => {
@@ -1001,20 +1038,15 @@ const TransferDetails = () => {
                                                 style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
                                             >
                                                 <option value="">Select Destination Branch...</option>
-                                                 {branches
+                                                {branches
                                                     .filter(b => b.id !== transfer.originBranchId)
-                                                    .map(b => {
-                                                        const isCashBundleReq = transfer.categoryName?.toLowerCase().includes('cash bundle');
-                                                        const bal = branchBalances[b.id];
-                                                        const hasEnough = !isCashBundleReq || bal === undefined || bal >= (transfer.requestedAmount || 0);
-                                                        return (
-                                                            <option key={b.id} value={b.id}>
-                                                                {b.name} ({b.code}){isCashBundleReq && bal !== undefined ? ` — ৳${bal.toLocaleString('en-BD')}${!hasEnough ? ' ⚠️ LOW' : ''}` : ''}
-                                                            </option>
-                                                        );
-                                                    })
+                                                    .map(b => (
+                                                        <option key={b.id} value={b.id}>
+                                                            {getBranchDropdownText(b)}
+                                                        </option>
+                                                    ))
                                                 }
-                                            </select>
+                                             </select>
                                         </div>
 
                                         <div>
