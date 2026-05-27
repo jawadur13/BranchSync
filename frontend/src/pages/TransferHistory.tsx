@@ -323,7 +323,7 @@ const TransferHistory = () => {
                     )}
                     {(startDate || endDate || filterBranch || onlyMyActions) && (
                         <button className="clear-filters-btn" onClick={() => { setStartDate(''); setEndDate(''); setFilterBranch(''); setOnlyMyActions(false); }}>
-                            Clear Extra
+                            🧹 Clear Filters
                         </button>
                     )}
                 </div>
