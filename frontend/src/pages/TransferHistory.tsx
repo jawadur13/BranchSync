@@ -36,6 +36,7 @@ const TransferHistory = () => {
     const [startDate,       setStartDate]       = useState('');
     const [endDate,         setEndDate]         = useState('');
     const [sortOrder,       setSortOrder]       = useState<'desc' | 'asc'>('desc');
+    const [onlyMyActions,   setOnlyMyActions]   = useState(false);
 
     useEffect(() => { fetchHistory(); }, []);
 
@@ -76,7 +77,22 @@ const TransferHistory = () => {
             const matchStart = !startDate || reqDate >= new Date(startDate);
             const matchEnd = !endDate || reqDate <= new Date(endDate + 'T23:59:59');
 
-            return matchSearch && matchStatus && matchPriority && matchBranch && matchStart && matchEnd;
+            const matchMyAction = !onlyMyActions || (
+                t.initiatedById === user?.id ||
+                t.initiatedById === user?.userId ||
+                t.internalApproverId === user?.id ||
+                t.internalApproverId === user?.userId ||
+                t.hqApproverId === user?.id ||
+                t.hqApproverId === user?.userId ||
+                t.deptAcceptorId === user?.id ||
+                t.deptAcceptorId === user?.userId ||
+                t.finalReleaserId === user?.id ||
+                t.finalReleaserId === user?.userId ||
+                t.deliveryPersonId === user?.id ||
+                t.deliveryPersonId === user?.userId
+            );
+
+            return matchSearch && matchStatus && matchPriority && matchBranch && matchStart && matchEnd && matchMyAction;
         })
         .sort((a, b) => {
             const da = new Date(a.requestedAt).getTime();
@@ -294,8 +310,19 @@ const TransferHistory = () => {
                         <label>To:</label>
                         <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
                     </div>
-                    {(startDate || endDate || filterBranch) && (
-                        <button className="clear-filters-btn" onClick={() => { setStartDate(''); setEndDate(''); setFilterBranch(''); }}>
+                    {user?.role !== 'SYSTEM_ADMIN' && (
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: '#475569', cursor: 'pointer', userSelect: 'none', background: '#f8fafc', padding: '6px 12px', borderRadius: '6px', border: '1px solid #e2e8f0', fontWeight: '500', marginLeft: '12px' }}>
+                            <input 
+                                type="checkbox" 
+                                checked={onlyMyActions} 
+                                onChange={(e) => setOnlyMyActions(e.target.checked)} 
+                                style={{ width: '15px', height: '15px', cursor: 'pointer', margin: 0 }}
+                            />
+                            👤 Only My Actions
+                        </label>
+                    )}
+                    {(startDate || endDate || filterBranch || onlyMyActions) && (
+                        <button className="clear-filters-btn" onClick={() => { setStartDate(''); setEndDate(''); setFilterBranch(''); setOnlyMyActions(false); }}>
                             Clear Extra
                         </button>
                     )}

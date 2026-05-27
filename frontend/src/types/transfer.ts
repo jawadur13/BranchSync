@@ -9,6 +9,12 @@ export interface TransferResponseDto {
     priority: string;
     requestType: string;
     initiatedByFullName: string;
+    initiatedById?: number;
+    internalApproverId?: number;
+    hqApproverId?: number;
+    deptAcceptorId?: number;
+    finalReleaserId?: number;
+    deliveryPersonId?: number;
     requestedAt: string;
     behaviorType?: string;
     stockItemName?: string;

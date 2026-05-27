@@ -18,6 +18,11 @@ public class TransferResponseDto {
     private String categoryName;
     private String initiatedByFullName;
     private OffsetDateTime requestedAt;
+    private Long initiatedById;
+    private Long internalApproverId;
+    private Long hqApproverId;
+    private Long deptAcceptorId;
+    private Long finalReleaserId;
     private Long deliveryPersonId;
     private String deliveryPersonFullName;
     private String behaviorType;
