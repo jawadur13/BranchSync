@@ -38,11 +38,12 @@ const UserManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterBranch, setFilterBranch] = useState('');
     const [filterRole, setFilterRole] = useState('');
+    const [modalError, setModalError] = useState('');
 
     // Form fields
     const [form, setForm] = useState({
         employeeId: '', fullName: '', email: '', phoneNumber: '',
-        password: '', roleId: '', branchId: '', departmentId: ''
+        password: '', currentPassword: '', roleId: '', branchId: '', departmentId: ''
     });
 
     useEffect(() => { fetchAll(); }, []);
@@ -70,19 +71,22 @@ const UserManagement = () => {
     const openCreateModal = () => {
         setEditMode(false);
         setSelectedUserId(null);
-        setForm({ employeeId: '', fullName: '', email: '', phoneNumber: '', password: '', roleId: '', branchId: '', departmentId: '' });
+        setModalError('');
+        setForm({ employeeId: '', fullName: '', email: '', phoneNumber: '', password: '', currentPassword: '', roleId: '', branchId: '', departmentId: '' });
         setShowModal(true);
     };
 
     const openEditModal = (u: UserRow) => {
         setEditMode(true);
         setSelectedUserId(u.userId);
+        setModalError('');
         setForm({
             employeeId: u.employeeId,
             fullName: u.fullName,
             email: u.email,
             phoneNumber: u.phoneNumber || '',
             password: '', // Leave blank to keep current
+            currentPassword: '',
             roleId: u.roleId.toString(),
             branchId: u.branchId.toString(),
             departmentId: u.departmentId ? u.departmentId.toString() : ''
@@ -97,6 +101,7 @@ const UserManagement = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
+        setModalError('');
         setError('');
         setSuccess('');
         try {
@@ -120,7 +125,13 @@ const UserManagement = () => {
             setShowModal(false);
             fetchAll();
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Action failed.');
+            let msg = err.response?.data?.message || err.message || 'Action failed.';
+            if (msg.includes('Incorrect current password of the employee') || msg.includes('current password')) {
+                msg = 'Incorrect current password. Please verify the employee\'s current password and try again.';
+            } else if (msg.includes('unexpected error occurred') && msg.toLowerCase().includes('password')) {
+                msg = 'Incorrect current password. Please verify the employee\'s current password and try again.';
+            }
+            setModalError(msg);
         } finally {
             setSubmitting(false);
         }
@@ -321,6 +332,12 @@ const UserManagement = () => {
                                     <label>Password {editMode ? '(Leave blank to keep current)' : <span className="required">*</span>}</label>
                                     <input name="password" type="password" value={form.password} onChange={handleChange} placeholder={editMode ? '********' : 'Minimum 6 characters'} required={!editMode} />
                                 </div>
+                                {editMode && form.password.trim() !== '' && (
+                                    <div className="form-group full-width">
+                                        <label>Current Password of Employee <span className="required">*</span></label>
+                                        <input name="currentPassword" type="password" value={form.currentPassword} onChange={handleChange} placeholder="Enter the employee's current password to authorize change" required />
+                                    </div>
+                                )}
                                 <div className="form-group">
                                     <label>Role <span className="required">*</span></label>
                                     <select name="roleId" value={form.roleId} onChange={handleChange} required>
@@ -379,6 +396,26 @@ const UserManagement = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {/* Error Alert Popup Overlay */}
+            {modalError && (
+                <div className="modal-overlay" style={{ zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)' }} onClick={() => setModalError('')}>
+                    <div className="modal-content" style={{ maxWidth: '400px', width: '95%', padding: '24px', textAlign: 'center', borderRadius: '12px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', border: '1px solid #fee2e2', background: 'white' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+                        <h3 style={{ fontSize: '1.2rem', color: '#991b1b', fontWeight: 'bold', marginBottom: '12px' }}>Verification Failed</h3>
+                        <p style={{ fontSize: '0.95rem', color: '#475569', lineHeight: '1.5', marginBottom: '24px' }}>
+                            {modalError}
+                        </p>
+                        <button 
+                            type="button" 
+                            className="btn-admin-primary" 
+                            onClick={() => setModalError('')}
+                            style={{ width: '100%', backgroundColor: '#dc2626', borderColor: '#dc2626', color: 'white', padding: '10px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+                        >
+                            Got It
+                        </button>
                     </div>
                 </div>
             )}

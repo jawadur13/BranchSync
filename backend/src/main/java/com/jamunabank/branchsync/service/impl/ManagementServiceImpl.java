@@ -84,6 +84,12 @@ public class ManagementServiceImpl implements ManagementService {
         user.setPhoneNumber(dto.getPhoneNumber());
         
         if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            if (dto.getCurrentPassword() == null || dto.getCurrentPassword().isBlank()) {
+                throw new RuntimeException("Current password of the employee is required to set a new password");
+            }
+            if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPasswordHash())) {
+                throw new RuntimeException("Incorrect current password of the employee");
+            }
             user.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
         }
 

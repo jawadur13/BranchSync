@@ -29,6 +29,8 @@ public class CreateUserDto {
     @NotBlank(message = "Password is required")
     private String password;
 
+    private String currentPassword;
+
     @NotNull(message = "Role ID is required")
     private Long roleId;
 
