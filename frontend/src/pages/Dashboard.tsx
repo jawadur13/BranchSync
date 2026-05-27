@@ -153,14 +153,18 @@ const Dashboard = () => {
                 <div>
                     <h1 className="dashboard-title">Overview</h1>
                     <p className="dashboard-subtitle">
-                        {user?.role === 'FIRST_EXECUTIVE_OFFICER' 
+                        {user?.role === 'SYSTEM_ADMIN'
+                            ? 'Monitoring all active transfers across the bank network'
+                            : user?.role === 'FIRST_EXECUTIVE_OFFICER' 
                             ? 'Pending High-Priority Approvals' 
                             : 'Active transfers for your branch'}
                     </p>
                 </div>
-                <Link to="/transfers/new" className="btn-primary">
-                    + New Request
-                </Link>
+                {user?.role !== 'SYSTEM_ADMIN' && user?.role !== 'HQ_LOGISTICS_OFFICER' && (
+                    <Link to="/transfers/new" className="btn-primary">
+                        + New Request
+                    </Link>
+                )}
             </div>
 
             {error && <div className="dashboard-error">{error}</div>}
@@ -170,7 +174,11 @@ const Dashboard = () => {
                     <div className="empty-state">
                         <span className="empty-icon">📭</span>
                         <h3>No Active Transfers</h3>
-                        <p>There are currently no transfers requiring your attention.</p>
+                        <p>
+                            {user?.role === 'SYSTEM_ADMIN'
+                                ? 'There are currently no active transfers in transit across the bank network.'
+                                : 'There are currently no transfers requiring your attention.'}
+                        </p>
                     </div>
                 ) : (
                     <table className="data-table">

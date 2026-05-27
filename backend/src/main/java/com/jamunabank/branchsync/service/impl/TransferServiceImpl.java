@@ -516,20 +516,15 @@ public class TransferServiceImpl implements TransferService {
     public List<TransferRequest> getTransferHistory(Long actorId) {
         User actor = getUser(actorId);
         String role = actor.getRole().getRoleName();
-        List<String> terminalStatuses = List.of("COMPLETED", "REJECTED_ON_RECEIPT", "CANCELLED", "REJECTED_BY_HQ", "REJECTED_BY_MANAGER");
 
         if ("SYSTEM_ADMIN".equals(role)) {
             return transferRequestRepository.findAllByOrderByRequestedAtDesc();
         }
         if ("HQ_LOGISTICS_OFFICER".equals(role)) {
-            return transferRequestRepository.findAllByOrderByRequestedAtDesc().stream()
-                    .filter(t -> terminalStatuses.contains(t.getStatus()))
-                    .toList();
+            return transferRequestRepository.findAllByOrderByRequestedAtDesc();
         }
         if ("DELIVERY_PERSON".equals(role)) {
-            return transferRequestRepository.findByDeliveryPerson_UserIdOrderByRequestedAtDesc(actorId).stream()
-                    .filter(t -> terminalStatuses.contains(t.getStatus()))
-                    .toList();
+            return transferRequestRepository.findByDeliveryPerson_UserIdOrderByRequestedAtDesc(actorId);
         }
         if ("OFFICER".equals(role)) {
             Long userBranchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
@@ -538,7 +533,6 @@ public class TransferServiceImpl implements TransferService {
                 return transferRequestRepository
                         .findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(userBranchId, userBranchId)
                         .stream()
-                        .filter(t -> terminalStatuses.contains(t.getStatus()))
                         .filter(t -> {
                             boolean isOriginDept = t.getOriginBranch() != null && t.getOriginBranch().getBranchId().equals(userBranchId)
                                     && t.getOriginDepartment() != null && t.getOriginDepartment().getDepartmentId().equals(departmentId);
@@ -554,10 +548,7 @@ public class TransferServiceImpl implements TransferService {
         Long userBranchId = actor.getBranch() != null ? actor.getBranch().getBranchId() : null;
         if (userBranchId != null) {
             return transferRequestRepository
-                    .findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(userBranchId, userBranchId)
-                    .stream()
-                    .filter(t -> terminalStatuses.contains(t.getStatus()))
-                    .toList();
+                    .findByOriginBranch_BranchIdOrDestinationBranch_BranchIdOrderByRequestedAtDesc(userBranchId, userBranchId);
         }
         return List.of();
     }
