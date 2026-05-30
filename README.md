@@ -1,202 +1,227 @@
-# BranchSync - Jamuna Bank PLC
+# BranchSync — Jamuna Bank PLC
 
-BranchSync is an internal inter-branch transfer and requisition tracking system for Jamuna Bank PLC. It manages the movement of sensitive operational assets between branches, including cash bundles, cheque books, demand drafts, IT equipment, stationery, security items, and other branch resources. It features a fully-fledged **💰 Cash Stock Tracking and Vault Ledger System** with notes denomination tracking, balance validations, and manual adjustments auditing.
+BranchSync is an internal **inter-branch transfer and requisition** system for Jamuna Bank PLC. It manages the movement of physical assets between branches—cash bundles, cheque books, IT equipment, stationery, security items, customer documents, and more—with a strict approval workflow, HQ central routing, courier tracking, and immutable audit trails.
 
-The project is a monorepo with a Spring Boot backend, a React/Vite frontend, MariaDB schema and seed data, JWT authentication, role-aware transfer workflow screens, user profile support, transfer history, and admin tools for users, branches, departments, and item categories.
+The platform includes two specialized inventory engines:
 
-## Current Project Status
+- **Cash (CASH behavior)** — vault balances in ৳, note denomination breakdowns, cash ledger, manual adjustments  
+- **Stock (STOCK behavior)** — per-SKU quantity tracking by branch, stock ledger, manual adjustments  
+- **Documents (DOCUMENT_CASE behavior)** — workflow-only transfers with no ledger
 
-The project currently has a working end-to-end transfer workflow across backend and frontend, plus a real-time vault balance audit trail.
+**Monorepo:** Spring Boot backend · React/Vite frontend · MariaDB · JWT authentication
 
-Implemented areas:
+For the full system reference (every role, workflow step, API, and table), see **[PROJECT_OVERVIEW.md](./PROJECT_OVERVIEW.md)**.
 
-- Employee ID/password login with JWT authentication (propagating `departmentName`).
-- Protected frontend routes with persisted auth state.
-- User profile page backed by `/api/users/profile`.
-- Dashboard for role/branch-scoped active transfers and pending action alerts.
-- New transfer request form (with duplicate prefill).
-- Transfer details page with role-aware workflow actions.
-- Transfer history page for completed, rejected, and cancelled transfers with date, category, branch, and status filtering.
-- **💰 Cash Stock Tracking & Ledger System**:
-  - Automatically debits sending branch balance upon physical courier pickup (`recordTransferOut`) and credits receiving branch balance upon physical delivery (`recordTransferIn`). On final receipt rejection, the ledger automatically reverses the movement (`recordReversal`).
-  - Strict scope: applied only to the **Cash Bundle** category; all other item categories remain simple physical trackings.
-  - **Denomination breakdown**: Dest branch staff must input denomination counts (৳1000, ৳500, ৳200, ৳100, ৳50, etc.) on acceptance. The system calculates and validates that the total matches the request amount, displaying this breakdown on the printed slip.
-  - **Low Cash Warnings**: HQ Approval page flags sending branches with a `⚠️ LOW` warning if their vault balance is less than the requested amount. Cash officers are blocked from accepting if their branch balance is too low.
-  - **Manual Adjustments Panel**: Scoped screen for Officers to submit vault corrections with a mandatory reason, and Managers to approve/reject them.
-  - **Double Balance Guard**: Validates both on the frontend (instant form alerts with live balance indicators) and backend (exception throws in service layer) that no user can submit or approve a manual debit adjustment that exceeds the branch's current cash balance.
-  - **Ledger Reason Audit**: Every ledger record saves a descriptive reason column, displaying the officer's typed manual reasoning or clear automated transfer status logs.
-  - **Premium Button styling**: Header controls styled as solid, modern white buttons with borders, depth shadows, bold typography, and hover translations.
-  - **Audit Printing & PDF Exports**:
-    - **Single Branch Landscape Report**: Formatted Landscape printout for branch users showing full balance movements, credit/debit totals, and timestamps.
-    - **Consolidated Portrait Report**: Formatted portrait printout for `SYSTEM_ADMIN` users showing all branches cash balances and total system cash reserves.
-    - **Toggleable Deselection**: Admins can deselect selected branches by clicking again on cards.
-- Admin user management with create, edit, profile view, filtering, and activation toggling.
-- Admin branch management with branch create/update and department assignment.
-- Admin department management with global department create/update.
-- Admin item category management with create/update, sensitivity level, description, and responsible department mapping.
-- MariaDB / MySQL schema and seed/test data scripts.
-- Transactional audit logging for transfer status changes.
-- Backend service and repository tests.
-- Custom BranchSync logo/favicon assets in the frontend.
+---
 
-## Core Purpose
+## Features
 
-BranchSync is a controlled banking workflow system. It is meant to:
+### Transfer workflow
+- Employee ID + password login with JWT (`departmentName` in session)
+- Protected routes with persisted auth state
+- **HQ deferred routing** — requesters do not pick destination; HQ assigns branch + department after internal approval
+- Eight logical steps: initiation → internal approval → HQ verify → destination accept → final release → pickup → delivery → requester sign-off
+- Rejection and **return-to-HQ re-routing** when destination cannot fulfill
+- Role/branch/department-scoped dashboard, history, and audit visibility
+- **Attention Required** widget for pending actions
+- Duplicate request, printable transfer slip (cash denominations + stock lines)
+- Transfer history with search, filters, and print/PDF export
 
-- Request assets from one branch to another.
-- Enforce source branch approval before destination processing.
-- Let destination staff accept requests, supply note breakdowns (for cash), and assign available delivery personnel.
-- Require destination manager-level release before pickup.
-- Track pickup, transit, delivery, and final requester verification, dynamically updating branch cash balances for cash transfers.
-- Keep a detailed audit trail of workflow actions and vault movements.
-- Restrict visibility and actions by role, branch, department, and item ownership.
+### Cash vault (`behavior_type = CASH`)
+- Auto debit/credit/reversal on pickup, delivery, and receipt rejection
+- Denomination breakdown (৳1000 … ৳1) validated at destination acceptance
+- Low-cash warnings for HQ routing
+- Manual adjustments (Cash Operations officers submit; managers approve)
+- Landscape branch ledger print; admin consolidated portrait report
 
-## Workflow
+### Stock inventory (`behavior_type = STOCK`)
+- Per-branch quantities per **stock item** (admin-managed SKUs under STOCK categories)
+- Auto quantity debit/credit/reversal on transfer lifecycle (same trigger points as cash)
+- Manual stock adjustments (officers submit; managers approve; department-scoped)
+- Stock ledger with branch/SKU views and print export
+- Low-stock warnings on transfer detail
 
-The transfer lifecycle is implemented as a six-step process.
+### Administration
+- User CRUD and activate/deactivate
+- Separate admin pages: **Users**, **Branches**, **Departments**, **Items**
+- Item categories with **behavior type** (CASH / STOCK / DOCUMENT_CASE), sensitivity, department mapping, activate/deactivate
+- Stock item CRUD under STOCK categories
 
-1. Request initiation
-   - A branch user creates a transfer request.
-   - Regular officers start at `PENDING_INTERNAL`.
-   - Manager-level users bypass internal approval and start at `PENDING_ASSIGNMENT`.
+### Other
+- Branch directory (managers)
+- User profile and password change
+- MariaDB schema + seed data in `backend/src/main/resources/db/migration/branchsync.sql`
+- Transactional audit logging on every transfer action
 
-2. Source branch internal approval
-   - A manager-level user from the origin branch approves the request.
-   - Status changes from `PENDING_INTERNAL` to `PENDING_ASSIGNMENT`.
+---
 
-3. Destination acceptance and delivery assignment
-   - Destination branch staff accepts the request (inputs note denomination counts for Cash Bundle transfers).
-   - An available delivery person is assigned.
-   - Status changes to `PENDING_FINAL_RELEASE`.
+## Technology stack
 
-4. Final destination release
-   - A manager-level user from the destination branch gives final approval.
-   - Status changes to `READY_FOR_PICKUP`.
+| Layer | Stack |
+|-------|--------|
+| Frontend | React 18, TypeScript, Vite, React Router, Axios |
+| Backend | Java 21, Spring Boot 3, Spring Security, JPA |
+| Database | MariaDB / MySQL |
+| Auth | JWT (SHA-256 password hashing) |
 
-5. Pickup and delivery
-   - The assigned delivery person marks pickup.
-   - Status changes to `IN_TRANSIT`, the delivery person becomes unavailable, and cash balances are debited for Cash Bundle transfers.
-   - The same delivery person marks delivery.
-   - Status changes to `DELIVERED`, the delivery person becomes available again, and cash balances are credited for Cash Bundle transfers.
+---
 
-6. Final requester verification
-   - The original requester accepts or rejects the delivered item.
-   - Accepted requests become `COMPLETED`.
-   - Rejected requests become `REJECTED_ON_RECEIPT` (automatically reversing cash balances if it is a Cash Bundle transfer).
+## Workflow (summary)
 
-## Status Values
+| Step | Actor | Status transition |
+|------|--------|-------------------|
+| 0 | Officer / Manager | Create → `PENDING_INTERNAL` or `PENDING_HQ_APPROVAL` (manager bypass) |
+| 1 | Origin manager | Approve → `PENDING_HQ_APPROVAL` · Reject → `REJECTED_BY_MANAGER` |
+| 2 | HQ logistics | Route → `PENDING_ASSIGNMENT` · Reject → `REJECTED_BY_HQ` |
+| 3 | Destination staff | Accept + driver → `PENDING_FINAL_RELEASE` · Decline → back to HQ |
+| 4 | Destination manager | Release → `READY_FOR_PICKUP` · Decline → back to HQ |
+| 5 | Delivery person | Pickup → `IN_TRANSIT` (cash/stock debited at destination) |
+| 6 | Delivery person | Deliver → `DELIVERED` (cash/stock credited at origin) |
+| 7 | Original requester | Close → `COMPLETED` or `REJECTED_ON_RECEIPT` (+ reversals) |
 
-Transfer requests use string status values:
+**Origin** = branch that needs the asset (receives delivery). **Destination** = HQ-assigned branch that sends the asset (courier picks up there).
 
-- `PENDING_INTERNAL`
-- `PENDING_ASSIGNMENT`
-- `PENDING_FINAL_RELEASE`
-- `READY_FOR_PICKUP`
-- `IN_TRANSIT`
-- `DELIVERED`
-- `COMPLETED`
-- `REJECTED_ON_RECEIPT`
-- `CANCELLED`
+---
 
 ## Roles
 
-The seed data and backend logic use these roles:
+| Role | Code |
+|------|------|
+| System Admin | `SYSTEM_ADMIN` |
+| HQ Logistics Officer | `HQ_LOGISTICS_OFFICER` |
+| Branch Manager | `BRANCH_MANAGER` |
+| Operation Manager | `OPERATION_MANAGER` |
+| First Executive Officer | `FIRST_EXECUTIVE_OFFICER` |
+| Officer | `OFFICER` |
+| Delivery Person | `DELIVERY_PERSON` |
 
-- `SYSTEM_ADMIN`
-- `FIRST_EXECUTIVE_OFFICER`
-- `BRANCH_MANAGER`
-- `OPERATION_MANAGER`
-- `OFFICER`
-- `DELIVERY_PERSON`
+---
 
-## Main API Areas
+## Status values
 
-Authentication:
+`PENDING_INTERNAL` · `PENDING_HQ_APPROVAL` · `PENDING_ASSIGNMENT` · `PENDING_FINAL_RELEASE` · `READY_FOR_PICKUP` · `IN_TRANSIT` · `DELIVERED` · `COMPLETED` · `REJECTED_ON_RECEIPT` · `REJECTED_BY_MANAGER` · `REJECTED_BY_HQ` · `CANCELLED`
+
+---
+
+## API overview
+
+Base URL: `http://localhost:8080/api` · Header: `Authorization: Bearer <token>`
+
+### Auth
 - `POST /api/auth/login`
 
-Lookups:
-- `GET /api/lookup/branches`
-- `GET /api/lookup/departments`
-- `GET /api/lookup/roles`
-- `GET /api/lookup/categories`
+### Transfers
+- `GET /api/transfers` · `GET /api/transfers/history` · `GET /api/transfers/{id}`
+- `POST /api/transfers`
+- `POST /api/transfers/{id}/approve-internal` · `reject-internal`
+- `POST /api/transfers/{id}/hq-verify`
+- `POST /api/transfers/{id}/accept` · `reject-destination`
+- `POST /api/transfers/{id}/release` · `reject-release`
+- `POST /api/transfers/{id}/pickup` · `deliver` · `close`
+
+### Cash
+- `GET /api/cash/balances` · `/balance/{branchId}` · `/ledger/{branchId}`
+- `POST /api/cash/denominations/{requestId}` · `GET` same
+- `POST /api/cash/adjust` · `POST /api/cash/adjust/{id}/decide`
+- `GET /api/cash/adjust/pending` · `/adjust/all`
+
+### Stock
+- `GET /api/stock/balances` · `/balances/{branchId}` · `/balance/{branchId}/{stockItemId}`
+- `GET /api/stock/ledger/{branchId}/{stockItemId}`
+- `POST /api/stock/adjust` · `POST /api/stock/adjust/{id}/decide`
+- `GET /api/stock/adjust/pending` · `/adjust/all`
+
+### Users
+- `GET /api/users/profile` · `/branch-directory`
+
+### Admin
+- `/api/admin/users` — CRUD + toggle-active
+- `/api/admin/org/branches` · `departments` · `items` — CRUD, map, toggle-active, stock-items
+
+### Lookups
+- `GET /api/lookup/branches` · `departments` · `roles` · `categories`
+- `GET /api/lookup/branches/{branchId}/departments`
+- `GET /api/lookup/stock-items/{categoryId}`
 - `GET /api/lookup/users/delivery-persons/available`
 
-Transfers:
-- `GET /api/transfers`
-- `GET /api/transfers/history`
-- `GET /api/transfers/{requestId}`
-- `POST /api/transfers`
-- `POST /api/transfers/{requestId}/approve-internal`
-- `POST /api/transfers/{requestId}/accept`
-- `POST /api/transfers/{requestId}/release`
-- `POST /api/transfers/{requestId}/pickup`
-- `POST /api/transfers/{requestId}/deliver`
-- `POST /api/transfers/{requestId}/close`
+---
 
-Cash Vault & Ledger:
-- `GET /api/cash/balances` (Admin only)
-- `GET /api/cash/balance/{branchId}`
-- `GET /api/cash/ledger/{branchId}`
-- `POST /api/cash/adjust`
-- `POST /api/cash/adjust/{id}/decide`
-- `GET /api/cash/adjust/all`
-- `GET /api/cash/adjust/pending`
+## Frontend routes
 
-Admin organization:
-- `GET /api/admin/org/branches`
-- `POST /api/admin/org/branches`
-- `GET /api/admin/org/departments`
-- `GET /api/admin/org/items`
+| Route | Page |
+|-------|------|
+| `/login` | Login |
+| `/` | Dashboard |
+| `/transfers/new` | New request |
+| `/transfers/:id` | Transfer details |
+| `/transfers/history` | History |
+| `/branch-directory` | Branch directory (managers) |
+| `/profile` | Profile |
+| `/cash/ledger` | Cash ledger |
+| `/cash/adjust` | Cash adjustments |
+| `/stock/ledger` | Stock ledger |
+| `/stock/adjust` | Stock adjustments |
+| `/admin/users` | User management |
+| `/admin/branches` | Branch management |
+| `/admin/departments` | Department management |
+| `/admin/items` | Item & stock item management |
 
-Admin users:
-- `GET /api/admin/users`
-- `POST /api/admin/users`
-- `PUT /api/admin/users/{userId}`
-- `PUT /api/admin/users/{userId}/toggle-active`
+---
 
-## Frontend Routes
-
-Public:
-- `/login`
-
-Protected:
-- `/`
-- `/profile`
-- `/transfers/new`
-- `/transfers/history`
-- `/transfers/:id`
-- `/cash/ledger`
-- `/cash/adjust`
-- `/admin/users`
-- `/admin/branches`
-- `/admin/departments`
-- `/admin/items`
-
-## Local Development
+## Local development
 
 ### Prerequisites
 
-- Java 21
-- Maven 3.9+
-- Node.js 22+
-- MariaDB / MySQL (XAMPP / Local server)
+- Java 21  
+- Maven 3.9+  
+- Node.js 22+  
+- MariaDB / MySQL (e.g. XAMPP)
 
-### Backend Setup
+### Database
 
-1. Create a local MariaDB/MySQL database named `branchsync`.
-2. Apply schema and seed data scripts:
-   - `backend/src/main/resources/db/migration/schema_mysql.sql`
-   - `backend/src/main/resources/db/test data/test_data_mysql.sql`
-3. Run the Spring Boot application:
-   - `cd backend`
-   - `mvn spring-boot:run` (Server runs on `http://localhost:8080`)
+1. Create database `branchsync`.
+2. Run schema and seed:
+   - `backend/src/main/resources/db/migration/branchsync.sql`
+3. Optional test scripts: `backend/src/main/resources/db/test data/`
 
-### Frontend Setup
+### Backend
 
-1. Install dependencies and run Vite:
-   - `cd frontend`
-   - `npm install`
-   - `npm run dev` (Client runs on `http://localhost:5173`)
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+API: `http://localhost:8080`
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+App: `http://localhost:5173` (API base in `frontend/src/api/axiosConfig.ts`)
+
+### Docker (optional)
+
+```bash
+docker-compose up -d
+```
+
+---
+
+## Project layout
+
+```
+BranchSync/
+├── backend/                 Spring Boot API
+├── frontend/                React SPA
+├── PROJECT_OVERVIEW.md      Full system documentation
+├── SYSTEM_OVERVIEW.md       Module-oriented demo reference
+├── BUSINESS_OVERVIEW.md       Plain-language guide for bank staff
+└── README.md                This file
+```
 
 ---
 

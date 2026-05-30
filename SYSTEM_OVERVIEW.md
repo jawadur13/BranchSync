@@ -1,305 +1,369 @@
-# BranchSync – Inter-Branch Transfer Management System
+# BranchSync — Inter-Branch Transfer Management System
 ### Jamuna Bank PLC | University Practicum Demo Reference
 
 ---
 
-## 🏦 Project Overview
+## Project overview
 
-**BranchSync** is a full-stack, enterprise-grade **Inter-Branch Transfer & Logistics Management System** built for **Jamuna Bank PLC**. It digitizes and tracks the complete lifecycle of physical asset and document transfers between bank branches — from the moment a request is created by an officer to its final delivery confirmation, covering every approval stage in between. Additionally, it integrates a real-time **💰 Cash Vault Tracking & Ledger System** with denomination breakdowns, low cash thresholds, and safe manual corrections.
+**BranchSync** is a full-stack **Inter-Branch Transfer & Logistics Management System** for **Jamuna Bank PLC**. It digitizes the lifecycle of physical asset transfers between branches—from officer initiation through HQ routing, branch approvals, courier handoffs, and final receipt verification.
 
-### Technology Stack
+Integrated subsystems:
+
+| Subsystem | Driven by | Purpose |
+|-----------|-----------|---------|
+| **Cash vault** | `behavior_type = CASH` | ৳ balances, denominations, cash ledger, vault adjustments |
+| **Stock inventory** | `behavior_type = STOCK` | Per-SKU quantities, stock ledger, stock adjustments |
+| **Document / simple** | `behavior_type = DOCUMENT_CASE` | Workflow only—no ledger |
+
+For exhaustive documentation, see **[PROJECT_OVERVIEW.md](./PROJECT_OVERVIEW.md)**.
+
+### Technology stack
 
 | Layer | Technology |
-|---|---|
+|-------|------------|
 | **Frontend** | React 18 + TypeScript (Vite) |
 | **Backend** | Spring Boot 3 (Java 21) |
 | **Database** | MariaDB / MySQL |
-| **Security** | Spring Security + JWT (JSON Web Tokens) |
+| **Security** | Spring Security + JWT |
 | **ORM** | Hibernate / Spring Data JPA |
-| **Build Tool** | Maven |
-| **Styling** | Vanilla CSS (Custom Premium Design System) |
+| **Build** | Maven |
+| **Styling** | Vanilla CSS (custom design system) |
 
 ---
 
-## 🗂️ System Modules
+## System modules
 
-### Module 1 — Authentication & Security
-The entire system is protected behind a JWT-based authentication layer. No page is accessible without a valid login session.
+### Module 1 — Authentication & security
+
+JWT-based authentication. No protected page without a valid session.
 
 **Features:**
-- Employee login using **Employee ID** and **Password**
-- JWT token issued on login, carrying standard user claims plus `departmentName`
-- All API calls carry the JWT in the `Authorization: Bearer` header
-- Token expiry and auto-logout
-- Role-based access enforced on **both** the backend (Spring Security `@PreAuthorize`) and frontend (route guards)
-- Password hashing using **BCrypt / SHA-256**
+- Login with **Employee ID** + **Password**
+- JWT carries `userId`, `role`, `branchId`, `departmentId`, `departmentName`
+- Axios interceptor attaches `Authorization: Bearer` on every request
+- 401 → redirect to login
+- RBAC enforced in **backend services** and **frontend** (sidebar, action buttons)
+- Password hashing: **SHA-256** (`Sha256PasswordEncoder`)
 
-**Frontend Files:**
 | File | Path |
-|---|---|
+|------|------|
 | `Login.tsx` | `frontend/src/pages/Login.tsx` |
-| `Login.css` | `frontend/src/pages/Login.css` |
 | `ProtectedRoute.tsx` | `frontend/src/components/ProtectedRoute.tsx` |
 | `AuthContext.tsx` | `frontend/src/context/AuthContext.tsx` |
 | `axiosConfig.ts` | `frontend/src/api/axiosConfig.ts` |
-
-**Backend Files:**
-| File | Path |
-|---|---|
 | `AuthController.java` | `backend/.../controller/AuthController.java` |
-| `CustomUserDetails.java` | `backend/.../security/CustomUserDetails.java` |
+| `SecurityConfig.java` | `backend/.../security/SecurityConfig.java` |
+| `JwtAuthenticationFilter.java` | `backend/.../security/JwtAuthenticationFilter.java` |
 
 ---
 
-### Module 2 — Role-Based Access Control (RBAC)
-The system defines **7 distinct user roles**, each with a unique set of permissions and a dedicated dashboard view.
+### Module 2 — Role-based access control (RBAC)
 
-| Role | Key Permissions |
-|---|---|
-| `SYSTEM_ADMIN` | Full access: manage users, branches, departments, categories, view all balances, view consolidated print reports |
-| `BRANCH_MANAGER` | Approve/reject transfers, view branch directory, view cash ledger, approve/reject manual adjustments |
-| `OPERATION_MANAGER` | Same scope as Branch Manager, operational oversight |
-| `FIRST_EXECUTIVE_OFFICER` | Senior approval authority, branch directory access, cash vault oversight |
-| `HQ_LOGISTICS_OFFICER` | HQ-level approval of cross-branch transfers, low-cash balance warning warnings |
-| `OFFICER` | Initiate transfer requests, view own transfer history, request manual adjustments |
-| `DELIVERY_PERSON` | Pick up and deliver assigned transfers, mark as delivered |
+**7 roles** with distinct permissions and dashboard scope.
 
-**The sidebar navigation dynamically changes per role.** Admins see the full administration panel. Managers and Cash Department Officers see the **💰 Cash Ledger** sidebar. Delivery persons only see active deliveries.
+| Role | Key permissions |
+|------|-----------------|
+| `SYSTEM_ADMIN` | Full org CRUD, all transfers/ledgers, consolidated reports; **cannot** create transfer requests (UI) |
+| `HQ_LOGISTICS_OFFICER` | `PENDING_HQ_APPROVAL` queue; assign destination; balance warnings; **cannot** create requests |
+| `BRANCH_MANAGER` | Internal approve/reject; final release; cash/stock adjustment approval; branch directory |
+| `OPERATION_MANAGER` | Same as Branch Manager |
+| `FIRST_EXECUTIVE_OFFICER` | Same as manager; **bypasses** `PENDING_INTERNAL` on create |
+| `OFFICER` | Create requests; destination accept; cash adjust (Cash Ops only); stock adjust; receipt verify |
+| `DELIVERY_PERSON` | Pickup and deliver assigned transfers only |
 
-**Frontend Files:**
+**Sidebar** adapts per role: Cash Management, Stock Management, Administration sections appear based on role and department.
+
 | File | Path |
-|---|---|
+|------|------|
 | `Sidebar.tsx` | `frontend/src/components/Layout/Sidebar.tsx` |
 | `Layout.tsx` | `frontend/src/components/Layout/Layout.tsx` |
-| `Layout.css` | `frontend/src/components/Layout/Layout.css` |
+| `Topbar.tsx` | `frontend/src/components/Layout/Topbar.tsx` |
 
 ---
 
-### Module 3 — Transfer Request Lifecycle (Core Module)
-This is the heart of the system. Every transfer request passes through a **state machine** with well-defined status transitions.
+### Module 3 — Category behavior engine
 
-#### Complete Transfer Status Flow:
+Each `item_category` has `behavior_type`: **CASH**, **STOCK**, or **DOCUMENT_CASE**.
+
+| Behavior | Transfer extras | Ledger |
+|----------|-----------------|--------|
+| CASH | `requestedAmount`, denominations | `branch_cash_balance`, `cash_ledger` |
+| STOCK | `stockItemId`, `quantity` | `branch_stock_balance`, `stock_ledger` |
+| DOCUMENT_CASE | None | None |
+
+| File | Path |
+|------|------|
+| `CategoryBehavior.java` | `backend/.../model/enums/CategoryBehavior.java` |
+| `ItemCategory.java` | `backend/.../model/entity/ItemCategory.java` |
+| `ItemManagement.tsx` | `frontend/src/pages/admin/ItemManagement.tsx` |
+
+---
+
+### Module 4 — Transfer request lifecycle (core)
+
+State machine with strict transitions. **Origin** = requester (receives package). **Destination** = HQ-assigned sender (courier picks up there).
+
+#### Status flow
 
 ```
 PENDING_INTERNAL
-    ↓ (Branch Manager approves)
-PENDING_HQ_APPROVAL          ← (if cross-branch, requires HQ Officer)
-    ↓ (HQ Officer approves)
+    ↓ (Origin Manager approves)
+PENDING_HQ_APPROVAL
+    ↓ (HQ Officer routes)
 PENDING_ASSIGNMENT
-    ↓ (Manager assigns a delivery person)
+    ↓ (Dest. staff accepts + assigns driver)
+PENDING_FINAL_RELEASE
+    ↓ (Dest. Manager releases)
 READY_FOR_PICKUP
-    ↓ (Delivery Person picks up)
+    ↓ (Driver picks up)          ← CASH/STOCK debited at destination
 IN_TRANSIT
-    ↓ (Delivery Person marks delivered)
+    ↓ (Driver delivers)          ← CASH/STOCK credited at origin
 DELIVERED
-    ↓ (Receiving Officer confirms)
+    ↓ (Requester confirms)
 COMPLETED
 ```
 
-**Rejection paths at any stage → `REJECTED_BY_HQ` / `REJECTED_ON_RECEIPT` / `CANCELLED`**
+**Rejection / re-route:** `REJECTED_BY_MANAGER`, `REJECTED_BY_HQ`, `REJECTED_ON_RECEIPT`, `CANCELLED`; destination decline → `PENDING_HQ_APPROVAL` for re-allocation.
 
-**Transfer Fields:**
-- Request Code (auto-generated, e.g. `REQ-00042`)
-- Title, Description, category (linked to department)
-- Priority: `NORMAL`, `HIGH`, `URGENT`, `CRITICAL`
-- Origin & Destination Branch & Department
-- Sensitivity Level, Assigned Delivery Person, Timestamps, HQ details
-- **Denominations Submitted** (for Cash category transfers)
+**Transfer fields:** `requestCode`, title, description, category, priority, origin/destination branches & departments, sensitivity, delivery person, HQ fields, `requestedAmount`, `stockItemId`, `quantity`, `denominationsSubmitted`, timestamps.
 
-**Frontend Files:**
-| File | Path |
-|---|---|
-| `Dashboard.tsx` | `frontend/src/pages/Dashboard.tsx` |
-| `Dashboard.css` | `frontend/src/pages/Dashboard.css` |
-| `NewTransfer.tsx` | `frontend/src/pages/NewTransfer.tsx` |
-| `NewTransfer.css` | `frontend/src/pages/NewTransfer.css` |
-| `TransferDetails.tsx` | `frontend/src/pages/TransferDetails.tsx` |
-| `TransferDetails.css` | `frontend/src/pages/TransferDetails.css` |
+| Frontend | Backend |
+|----------|---------|
+| `Dashboard.tsx`, `NewTransfer.tsx`, `TransferDetails.tsx`, `TransferHistory.tsx` | `TransferController.java`, `TransferServiceImpl.java`, `TransferRequest.java`, `TransferMapper.java` |
 
-**Backend Files:**
-| File | Path |
-|---|---|
-| `TransferController.java` | `backend/.../controller/TransferController.java` |
-| `TransferService.java` | `backend/.../service/TransferService.java` |
-| `TransferServiceImpl.java` | `backend/.../service/impl/TransferServiceImpl.java` |
-| `TransferRequest.java` | `backend/.../model/entity/TransferRequest.java` |
+**API highlights:** `approve-internal`, `reject-internal`, `hq-verify`, `accept`, `reject-destination`, `release`, `reject-release`, `pickup`, `deliver`, `close`.
 
 ---
 
-### Module 4 — Audit Log & Lifecycle Tracking
-Every action performed on a transfer is permanently recorded in the `audit_logs` table.
+### Module 5 — Audit log & lifecycle tracking
 
-**Each Audit Log Entry Contains:**
-- Actor (full name + role), Action performed, Human-readable description, Remarks/comments, IP address, and Timestamp.
+Every transfer action writes to `audit_logs` (actor, action, from/to status, remarks, IP, timestamp). Visibility is **role-scoped** on transfer detail (full log vs. delivery subset).
 
-**Frontend Files:**
 | File | Path |
-|---|---|
-| `TransferDetails.tsx` | `frontend/src/pages/TransferDetails.tsx` |
-
-**Backend Files:**
-| File | Path |
-|---|---|
+|------|------|
 | `AuditLog.java` | `backend/.../model/entity/AuditLog.java` |
-| `AuditService.java` | `backend/.../service/AuditService.java` |
+| `AuditServiceImpl.java` | `backend/.../service/impl/AuditServiceImpl.java` |
+| `TransferDetails.tsx` | `frontend/src/pages/TransferDetails.tsx` |
 
 ---
 
-### Module 5 — Transfer History & Advanced Filtering
-All completed and active transfers are accessible through a searchable, filterable **History** page.
+### Module 6 — Transfer history & filtering
 
-**Filter & Export Capabilities:**
-- Free-text search, Date range filter, Branch & Status dropdown filters
-- 🖨️ **Print / Save PDF** — generates landscape bank history reports of the filtered results.
+Searchable history with status, date, branch, category filters and **print/PDF** export of filtered results. Behavior badges (CASH / STOCK / DOCUMENT_CASE) on rows.
 
-**Frontend Files:**
 | File | Path |
-|---|---|
+|------|------|
 | `TransferHistory.tsx` | `frontend/src/pages/TransferHistory.tsx` |
-| `TransferHistory.css` | `frontend/src/pages/TransferHistory.css` |
 
 ---
 
-### Module 6 — Individual Transfer View & Actions
-Detailed view page with role-specific action panels for approving, assigning, picking up, delivering, and closing requests.
+### Module 7 — Transfer detail view & actions
 
-**Official Print Slip:**
-- Opens a branded **"Official Inter-Branch Transfer Request Slip"** showing all metadata, note breakdowns (for cash transfers), and full transaction timelines. Auto-triggers print.
+Role-specific action panels per status. **Print slip** includes route, priority, sensitivity, cash denominations, stock item/qty. **Duplicate request** copies fields to New Request (not for HQ or delivery roles).
 
----
-
-### Module 7 — Dashboard & Smart Alert Widget
-Main dashboard with real-time active transfers table scoped per role.
-
-**"Attention Required" Widget:**
-- Flags pending manager approvals (`PENDING_INTERNAL` / `PENDING_FINAL_RELEASE`), HQ approvals (`PENDING_HQ_APPROVAL`), active transits (`IN_TRANSIT`), or pending manual cash adjustments awaiting manager decision.
+| File | Path |
+|------|------|
+| `TransferDetails.tsx` | `frontend/src/pages/TransferDetails.tsx` |
 
 ---
 
-### Module 8 — System Administration Panel
-Accessible exclusively to `SYSTEM_ADMIN` roles. Enables full user, branch, department, and category CRUD.
+### Module 8 — Dashboard & attention widget
+
+Role-scoped active transfers table. **Attention Required** highlights actionable items:
+
+- HQ → `PENDING_HQ_APPROVAL`
+- Manager → `PENDING_INTERNAL`, `PENDING_FINAL_RELEASE`
+- Officer → `PENDING_ASSIGNMENT`
+- Delivery → `READY_FOR_PICKUP`, `IN_TRANSIT`
+- Requester → `DELIVERED` (own requests)
+- Manager → pending **cash** adjustments (dashboard widget)
+
+| File | Path |
+|------|------|
+| `Dashboard.tsx` | `frontend/src/pages/Dashboard.tsx` |
 
 ---
 
-### Module 9 — Branch Directory
-A private staff contact book filtered by the logged-in user's branch for Manager roles.
+### Module 9 — System administration
+
+`SYSTEM_ADMIN` only. Four dedicated pages (replacing legacy single `OrgManagement`):
+
+| Page | Route | Capabilities |
+|------|-------|--------------|
+| User Management | `/admin/users` | Create, edit, activate/deactivate |
+| Branch Management | `/admin/branches` | Create, edit, assign departments |
+| Department Management | `/admin/departments` | Global department CRUD |
+| Item Management | `/admin/items` | Categories + behavior type; STOCK → stock item CRUD; toggle active |
+
+| File | Path |
+|------|------|
+| `UserManagement.tsx` | `frontend/src/pages/admin/UserManagement.tsx` |
+| `BranchManagement.tsx` | `frontend/src/pages/admin/BranchManagement.tsx` |
+| `DepartmentManagement.tsx` | `frontend/src/pages/admin/DepartmentManagement.tsx` |
+| `ItemManagement.tsx` | `frontend/src/pages/admin/ItemManagement.tsx` |
+| `OrgManagementController.java` | `backend/.../controller/OrgManagementController.java` |
+| `ManagementServiceImpl.java` | `backend/.../service/impl/ManagementServiceImpl.java` |
 
 ---
 
-### Module 10 — Cash Stock Tracking & Vault System (Specialized Module)
-This module tracks physical cash holdings and transaction logs inside branch vaults, strictly applied to the **Cash Bundle** category.
+### Module 10 — Branch directory
+
+Managers search same-branch colleagues (name, employee ID, email, phone, role, department).
+
+| File | Path |
+|------|------|
+| `BranchDirectory.tsx` | `frontend/src/pages/BranchDirectory.tsx` |
+| `UserController.java` | `backend/.../controller/UserController.java` |
+
+---
+
+### Module 11 — Cash vault & ledger
+
+Applies to **CASH** categories (e.g. Cash Bundle).
 
 **Features:**
-- **Vault Automation**: When a courier picks up a cash bundle, the sending branch's vault balance is debited. When delivered, the receiving branch's balance is credited. If rejected, it reverses back.
-- **Denomination breakdown validation**: The destination branch staff must fill in note denominations (৳1000 x N, ৳500 x M, etc.) when accepting. The system checks that the calculated total matches the requested amount.
-- **Low Cash Warnings**: Flags destination branches with a `⚠️ LOW` status in the HQ Approval page if their current cash balance is strictly less than the requested transfer amount.
-- **Manual Balance Adjustments**: Scoped adjustments form where Officers can request vault corrections (Credit/Debit) with a mandatory reason, and Managers can decide on them.
-- **Double Balance Guard**: Validates that no Officer can submit, and no Manager can approve, a manual debit adjustment that exceeds the branch's current cash balance.
-- **Audit Trails**: Ledger displays the ledger reason field, populated with the custom reasons for adjustments or clear automated messages for transfer events.
-- **Premium Printing**:
-  - **Export PDF / Print**: Generates landscape bank ledger reports for single branches.
-  - **Print All Branch Balances**: For System Admin users, generates portrait consolidated summaries of all branches and total vault reserves in the bank system.
-  - **Toggleable Selection**: Admins can toggle branch selection on/off in the ledger.
+- Vault debit at destination pickup; credit at origin delivery; reversal on receipt reject
+- Denomination breakdown validated at `PENDING_ASSIGNMENT`
+- Low-cash warnings on HQ routing
+- Manual adjustments: **Cash Operations officers** submit; managers approve; debit balance guard
+- Landscape branch print; admin consolidated portrait print
 
-**Frontend Files:**
-| File | Path |
-|---|---|
-| `CashLedger.tsx` | `frontend/src/pages/CashLedger.tsx` |
-| `CashLedger.css` | `frontend/src/pages/CashLedger.css` |
-| `ManualAdjustment.tsx` | `frontend/src/pages/ManualAdjustment.tsx` |
-| `ManualAdjustment.css` | `frontend/src/pages/ManualAdjustment.css` |
-
-**Backend Files:**
-| File | Path |
-|---|---|
-| `CashController.java` | `backend/.../controller/CashController.java` |
-| `CashService.java` | `backend/.../service/CashService.java` |
-| `CashServiceImpl.java` | `backend/.../service/impl/CashServiceImpl.java` |
-| `BranchCashBalance.java` | `backend/.../model/entity/BranchCashBalance.java` |
-| `CashLedgerEntry.java` | `backend/.../model/entity/CashLedgerEntry.java` |
-| `CashManualAdjustment.java` | `backend/.../model/entity/CashManualAdjustment.java` |
+| Frontend | Backend |
+|----------|---------|
+| `CashLedger.tsx`, `ManualAdjustment.tsx` | `CashController.java`, `CashServiceImpl.java` |
+| | `BranchCashBalance.java`, `CashLedgerEntry.java`, `CashManualAdjustment.java`, `CashTransferDenomination.java` |
 
 ---
 
-## 🗄️ Database Schema (Core Tables)
+### Module 12 — Stock inventory & ledger
+
+Applies to **STOCK** categories (e.g. Computers, Stationery Pack, Office Furniture).
+
+**Features:**
+- Admin-defined **stock items** (SKUs) per STOCK category
+- Quantity debit at destination pickup; credit at origin delivery; reversal on reject
+- New transfer requires **stock item** + **quantity**
+- Low-stock warnings on transfer detail
+- Manual adjustments: officers submit (dept-scoped); managers approve
+- Stock ledger: branch → SKU pills → movement history; print export
+- 39 seeded stock items in `branchsync.sql`
+
+| Frontend | Backend |
+|----------|---------|
+| `StockLedger.tsx`, `StockAdjustment.tsx` | `StockController.java`, `StockServiceImpl.java` |
+| | `StockItem.java`, `BranchStockBalance.java`, `StockLedgerEntry.java`, `StockManualAdjustment.java` |
+
+**Hooks in** `TransferServiceImpl.markPickedUp`, `markDelivered`, `closeRequest` alongside existing cash hooks.
+
+---
+
+## Database schema (core tables)
 
 | Table | Description |
-|---|---|
-| `users` | System users linked to roles, branches, and departments |
-| `roles` | 7 system role definitions |
-| `branches` | All bank branches with type (`HQ`, `AD_BRANCH`, `SUB_BRANCH`) |
-| `departments` | Global department list |
-| `item_categories` | Item types (sensitivity level, responsible department) |
-| `transfer_requests` | Transfer requests lifecycle status records |
-| `branch_cash_balances` | Vault cash holdings per branch |
-| `cash_ledger` | Immutable audit trail of every vault balance movement |
-| `cash_manual_adjustments` | Scoped manual adjustment requests (Credit/Debit) |
-| `audit_logs` | Immutable audit history of all request actions |
+|-------|-------------|
+| `users`, `roles` | Accounts and RBAC |
+| `branches`, `departments`, `branch_departments` | Org structure |
+| `item_categories` | Categories + `behavior_type`, `is_active` |
+| `stock_items` | SKUs under STOCK categories |
+| `transfer_requests` | Workflow + cash/stock fields |
+| `audit_logs` | Immutable action history |
+| `branch_cash_balance`, `cash_ledger`, `cash_transfer_denominations`, `cash_manual_adjustments` | Cash vault |
+| `branch_stock_balance`, `stock_ledger`, `stock_manual_adjustments` | Stock inventory |
+
+**Schema file:** `backend/src/main/resources/db/migration/branchsync.sql`
 
 ---
 
-## 🔐 API Security & Endpoint Architecture
+## API security & endpoints
 
-All backend APIs are secured under `/api/` using JWT authentication.
+All `/api/*` routes (except login and lookups) require JWT.
 
-**Key Cash Endpoints:**
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `GET` | `/api/cash/balances` | `SYSTEM_ADMIN` | List all branch cash vault balances |
-| `GET` | `/api/cash/balance/{branchId}` | Scoped | Get current vault balance of a branch |
-| `GET` | `/api/cash/ledger/{branchId}` | Scoped | Get cash ledger history for a branch |
-| `POST` | `/api/cash/adjust` | `OFFICER` | Submit a manual vault adjustment |
-| `POST` | `/api/cash/adjust/{id}/decide` | Managers | Approve or reject a pending adjustment |
-| `GET` | `/api/cash/adjust/all` | Scoped | View all branch manual adjustments history |
-| `GET` | `/api/cash/adjust/pending` | Managers | Get pending manual adjustments |
+### Cash
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/cash/balances` | All branch vault balances |
+| GET | `/api/cash/balance/{branchId}` | Single branch balance |
+| GET | `/api/cash/ledger/{branchId}` | Cash ledger |
+| POST | `/api/cash/denominations/{requestId}` | Submit note breakdown |
+| POST | `/api/cash/adjust` | Submit adjustment |
+| POST | `/api/cash/adjust/{id}/decide` | Approve/reject |
+| GET | `/api/cash/adjust/pending` | Pending (managers) |
+
+### Stock
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/stock/balances` | All branch×SKU balances |
+| GET | `/api/stock/balances/{branchId}` | Branch stock list |
+| GET | `/api/stock/ledger/{branchId}/{stockItemId}` | Stock ledger (`stockItemId=0` = all) |
+| POST | `/api/stock/adjust` | Submit adjustment |
+| POST | `/api/stock/adjust/{id}/decide` | Approve/reject |
+| GET | `/api/stock/adjust/pending` | Pending (managers) |
+
+### Admin stock items
+
+| GET/POST | `/api/admin/org/items/{categoryId}/stock-items` |
+| PUT | `/api/admin/org/stock-items/{stockItemId}`, `.../toggle-active` |
 
 ---
 
-## 🧩 Frontend Application Structure
+## Frontend application structure
 
 ```
 frontend/src/
-├── api/
-│   └── axiosConfig.ts          ← Global Axios instance with JWT interceptor
+├── api/axiosConfig.ts
 ├── components/
-│   ├── Layout/
-│   │   ├── Layout.tsx          ← Main layout wrapper (Sidebar + Topbar + Outlet)
-│   │   ├── Layout.css          ← Layout styling
-│   │   ├── Sidebar.tsx         ← Role-aware navigation sidebar
-│   │   └── Topbar.tsx          ← Top header bar with user menu
-│   └── ProtectedRoute.tsx      ← Route guard (redirects to login if no auth)
-├── context/
-│   └── AuthContext.tsx         ← Global auth state (with user departmentName)
+│   ├── Layout/          Layout, Sidebar, Topbar
+│   └── ProtectedRoute.tsx
+├── context/AuthContext.tsx
+├── types/transfer.ts
 ├── pages/
-│   ├── Login.tsx               ← Login page
-│   ├── Dashboard.tsx           ← Home dashboard with Attention Widget & Adjustments
-│   ├── NewTransfer.tsx         ← Create transfer form (denomination breakdown supported)
-│   ├── TransferDetails.tsx     ← Full transfer view + note breakdown details + print slip
-│   ├── TransferHistory.tsx     ← Filterable history table + PDF export
-│   ├── BranchDirectory.tsx     ← Branch staff directory (Managers only)
-│   ├── Profile.tsx             ← User profile view
-│   ├── CashLedger.tsx          ← Cash vault balances and movement list + print / export PDF
-│   ├── ManualAdjustment.tsx    ← Manual adjustments submissions & decisions + balance badge
+│   ├── Login.tsx
+│   ├── Dashboard.tsx
+│   ├── NewTransfer.tsx
+│   ├── TransferDetails.tsx
+│   ├── TransferHistory.tsx
+│   ├── BranchDirectory.tsx
+│   ├── Profile.tsx
+│   ├── CashLedger.tsx
+│   ├── ManualAdjustment.tsx
+│   ├── StockLedger.tsx
+│   ├── StockAdjustment.tsx
 │   └── admin/
-│       ├── UserManagement.tsx  ← Admin: CRUD for users
-│       └── OrgManagement.tsx   ← Admin: Branches, Departments, Categories
-├── types/
-│   └── transfer.ts             ← TypeScript interfaces for transfer DTOs
-└── App.tsx                     ← Main router with all route definitions
+│       ├── UserManagement.tsx
+│       ├── BranchManagement.tsx
+│       ├── DepartmentManagement.tsx
+│       └── ItemManagement.tsx
+└── App.tsx
 ```
 
 ---
 
-## 💡 Key Talking Points for Demo
+## Key talking points for demo
 
-- **"BranchSync replaces manual paperwork and phone calls between branches"**
-- **"Every single cash movement is permanently tracked and audited in the Cash Ledger"**
-- **"Automated balance debits and credits trigger on physical logistics transitions"**
-- **"The note denomination breakdown ensures cash accuracy and is visible on print slips"**
-- **"The double balance guard prevents branches from accidentally going negative"**
-- **"Integrated Attention widgets alerts managers to pending manual vault adjustments"**
-- **"Comprehensive single branch landscape reports and admin Portrait Consolidated reports"**
+- **"BranchSync replaces manual paperwork and phone calls between branches."**
+- **"HQ centrally routes every request—the branch never guesses the destination."**
+- **"Three category behaviors: cash vault, stock quantities, or simple document tracking."**
+- **"Every cash movement and stock movement is permanently audited in separate ledgers."**
+- **"Debits and credits trigger only when the courier physically picks up and delivers."**
+- **"Cash denomination breakdown ensures vault accuracy on the printed slip."**
+- **"Stock tracks real SKUs—laptops, forms, chairs—not just category names."**
+- **"Destination can send a request back to HQ for re-routing instead of killing it."**
+- **"Attention Required tells each role exactly what needs their action today."**
+- **"Managers approve vault and inventory corrections with balance guards."**
 
 ---
 
-*Document generated: May 2026 | BranchSync v1.1 | Jamuna Bank PLC Practicum Project*
+## Related documentation
+
+| Document | Audience |
+|----------|----------|
+| [README.md](./README.md) | Quick start and API/route reference |
+| [PROJECT_OVERVIEW.md](./PROJECT_OVERVIEW.md) | Complete system specification |
+| [BUSINESS_OVERVIEW.md](./BUSINESS_OVERVIEW.md) | Non-technical bank staff guide |
+| [stock_behavior_plan.md](./stock_behavior_plan.md) | STOCK feature design notes |
+
+---
+
+*BranchSync v2.0 · May 2026 · Jamuna Bank PLC Practicum Project*
