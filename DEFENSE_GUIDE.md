@@ -4,44 +4,6 @@ This document is compiled specifically for project defense and viva preparation.
 
 ---
 
-# Table of Contents
-1. [Core Architecture & System Stack](#core-architecture--system-stack)
-2. [Module-by-Module Defense Profiles](#module-by-module-defense-profiles)
-   * [1. Authentication & Authorization](#1-authentication--authorization)
-   * [2. Dashboard](#2-dashboard)
-   * [3. Transfer Request Creation](#3-transfer-request-creation)
-   * [4. Transfer Workflow Lifecycle](#4-transfer-workflow-lifecycle)
-   * [5. HQ Routing & Assignment](#5-hq-routing--assignment)
-   * [6. Destination Acceptance & Driver Assignment](#6-destination-acceptance--driver-assignment)
-   * [7. Final Release Workflow](#7-final-release-workflow)
-   * [8. Courier Pickup & Delivery](#8-courier-pickup--delivery)
-   * [9. Request Completion & Rejection](#9-request-completion--rejection)
-   * [10. Cash Vault Module](#10-cash-vault-module)
-   * [11. Cash Denomination Handling](#11-cash-denomination-handling)
-   * [12. Cash Adjustments](#12-cash-adjustments)
-   * [13. Cash Ledger](#13-cash-ledger)
-   * [14. Stock Inventory Module](#14-stock-inventory-module)
-   * [15. Stock Item Management](#15-stock-item-management)
-   * [16. Stock Adjustments](#16-stock-adjustments)
-   * [17. Stock Ledger](#17-stock-ledger)
-   * [18. Audit Logging](#18-audit-logging)
-   * [19. Branch Management](#19-branch-management)
-   * [20. Department Management](#20-department-management)
-   * [21. User Management](#21-user-management)
-   * [22. Item Category Management](#22-item-category-management)
-   * [23. Stock Category Behavior System](#23-stock-category-behavior-system-cash--stock--document_case)
-   * [24. Branch Directory](#24-branch-directory)
-   * [25. Reports / Print Features](#25-reports--print-features)
-   * [26. Role-Based Access Control](#26-role-based-access-control)
-   * [27. Notification / Attention Required Widgets](#27-notification--attention-required-widgets)
-   * [28. Lookup APIs](#28-lookup-apis)
-   * [29. Database Architecture](#29-database-architecture)
-   * [30. Security Configuration](#30-security-configuration)
-3. [Complete Project File Map](#complete-project-file-map)
-4. [Defense Quick Navigation Guide](#defense-quick-navigation-guide)
-
----
-
 ## Core Architecture & System Stack
 
 To start any viva explanation, present a crisp summary of the system architecture:
@@ -52,11 +14,33 @@ To start any viva explanation, present a crisp summary of the system architectur
 
 ---
 
+## Workflow Implementation Status (Important!)
+
+During your defense, you must confidently represent which features are ready and which are extension points:
+
+### 1. [Fully Implemented] Core Mechanics
+* **JWT Security & Custom Encoding**: Stateless tokens with SHA-256 custom hashing in the `Sha256PasswordEncoder` component.
+* **HQ Routing**: Dynamic Supplier Branch and Department assignment by central operations, deferred at request initiation.
+* **Dual-Custody Approvals**: Source manager internal approval, supplying branch acceptance/release gates, and double-authorizer manual balance adjustments.
+* **Double-Entry Append-Only Ledger**: Vault cash ledger (`cash_ledger`) and SKU quantity ledger (`stock_ledger`) are strictly append-only. Error corrections write reversal transactions.
+* **Stock Category Behavior**: Category behavior maps (`CategoryBehavior.STOCK` / `CategoryBehavior.CASH` / `CategoryBehavior.DOCUMENT_CASE`) dynamically toggle denomination entry tables, stock item listings, live balances, and workflow rules.
+
+### 2. [Partially Implemented] Extension Capabilities
+* **Backend-Driven Server-Side Pagination**: Standard JPA Page interfaces are implemented in the `UserRepository` interface (e.g., `Page<User> findByRole_RoleName(...)`). However, the controller layer returns unpaginated lists to the React frontend client, which processes full array sorting, filtering, and searches instantly in the browser memory for a highly responsive user experience.
+* **Audit Scoping**: Security constraints in `TransferController.java` (`getTransferById()` method) scope what audit trails are loaded in the browser. For instance, drivers can only see pickup/delivery logs.
+
+### 3. [Planned / Not Yet Implemented] Future Features
+* **Cancel Request Capability**: The React frontend (`Dashboard.tsx`, `TransferHistory.tsx`) declares badge styles for a `CANCELLED` status. However, there is no backend route, endpoint, or service method to perform request cancellations. This is a planned security enhancement.
+
+---
+
 ## Module-by-Module Defense Profiles
 
 ---
 
 # 1. Authentication & Authorization
+
+*Status: **[Fully Implemented]***
 
 ## Business Purpose
 Secures access to banking operations. Ensures only verified employees can log in using their unique Employee ID, and restricts actions in accordance with their designated role.
@@ -64,48 +48,45 @@ Secures access to banking operations. Ensures only verified employees can log in
 ## User Flow
 User submits credentials (Employee ID and password) on the login screen. On success, the API returns a stateless JWT token alongside the employee's profile metadata. This JWT is stored in `localStorage` and attached to all subsequent request headers.
 
-## Frontend Files
-* `Login.tsx` → Renders the Login page, manages input state, toggles password visibility, and triggers authentication requests.
-* `AuthContext.tsx` → Maintains the global React authentication state, handles `login(token)` and `logout()` operations, and persists the payload in storage.
-* `ProtectedRoute.tsx` → An authentication route guard that redirects unauthenticated attempts to the `/login` route.
-* `axiosConfig.ts` → Pre-configured Axios client that intercepts outgoing calls to attach the `Authorization: Bearer <token>` header and redirects on `401 Unauthorized` responses.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/Login.tsx` (Login UI form & input management)
+  * `frontend/src/context/AuthContext.tsx` (Authentication provider & global state store)
+  * `frontend/src/components/ProtectedRoute.tsx` (Route-level auth guard)
+  * `frontend/src/api/axiosConfig.ts` (API Client with JWT interceptor)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/AuthController.java` (Exposes authentication endpoint)
+  * `backend/src/main/java/com/jamunabank/branchsync/security/JwtUtils.java` (JWT parsing & validation utilities)
+  * `backend/src/main/java/com/jamunabank/branchsync/security/JwtAuthenticationFilter.java` (Pre-controller filter intercepting headers)
+  * `backend/src/main/java/com/jamunabank/branchsync/security/CustomUserDetailsService.java` (Loads user record by Employee ID)
+  * `backend/src/main/java/com/jamunabank/branchsync/security/CustomUserDetails.java` (User detail principal object)
+  * `backend/src/main/java/com/jamunabank/branchsync/security/Sha256PasswordEncoder.java` (Hashed password encoder)
+  * `backend/src/main/java/com/jamunabank/branchsync/security/SecurityConfig.java` (Spring Security filter chain builder)
+* **Database**:
+  * `users` (Hashed password, active flag, branch, department)
+  * `roles` (User security role tags)
 
-## Backend Files
-* `AuthController.java` → Exposes the `/api/auth/login` endpoint, processes credentials, and returns JWT tokens.
-* `CustomUserDetailsService.java` → Loads the user entity from the database using their unique Employee ID.
-* `CustomUserDetails.java` → Standard Principal object that contains details (employeeId, branchId, departmentId, authorities) used throughout security context.
-* `JwtUtils.java` → Component handling JWT generation, parsing, and expiration validation.
-* `JwtAuthenticationFilter.java` → Filter intercepting every request to extract, validate, and set the JWT in the Spring Security context.
-* `Sha256PasswordEncoder.java` → Custom password encoder executing SHA-256 hashing to match seeded database records.
-* `SecurityConfig.java` → Declares security policies, public paths, CORS rules, and binds the JWT authentication filter.
-
-## Database Tables
-* `users` → Stores employee accounts, hashed passwords, roles, branch mapping, department mapping, and active flags.
-* `roles` → Defines administrative and operational roles (`SYSTEM_ADMIN`, `BRANCH_MANAGER`, `OFFICER`, etc.).
+### Visual Source Mapping
+* **Login Screen**:
+  * **Page Component**: `frontend/src/pages/Login.tsx`
+  * **Child Components**: Password visibility toggle (SVG inline button)
+  * **Styling Sheet**: `frontend/src/pages/Login.css`
+  * **Data Source API**: `POST /api/auth/login`
 
 ## APIs Used
 * `POST /api/auth/login` → Handles authentication. Returns the JWT token, employee profile details, and role specifications.
 
-## Visual Components
-* Card-styled Login Box with dual-tone shadows.
-* Password Show/Hide Toggle button (SVG icon inside password input).
-* Error Banner Overlay showing details of authentication failures.
-
-## Sorting / Filtering
-None.
-
-## Viva Demonstration Flow
-`Login Page (UI)` ➔ `Submit Credentials` ➔ `POST /api/auth/login` ➔ `AuthController` ➔ `AuthenticationManager` ➔ `CustomUserDetailsService` ➔ `Sha256PasswordEncoder` ➔ `JwtUtils (Generates Token)` ➔ `JSON Response back to UI` ➔ `Save to localStorage & AuthContext` ➔ `Redirect to Dashboard`.
-
 ## Common Viva Questions
 * **Q: Why did you choose SHA-256 instead of BCrypt?**
-  * **A:** SHA-256 was chosen to preserve perfect compatibility with existing seeded database hashes and legacy bank employee data. In a typical production migration, a custom encoder is implemented to validate these standard hashes until a rolling update migrates users to BCrypt.
+  * **A:** SHA-256 was implemented to align with the seeded database records and existing corporate directories. In production, a rolling update is usually configured to migrate SHA-256 legacy records to BCrypt.
 * **Q: Where is the JWT verified on the backend?**
-  * **A:** Inside `JwtAuthenticationFilter.java` which intercepts all requests before they hit the controller. It validates the signature, extracts the user details, and registers them into Spring Security’s `SecurityContextHolder`.
+  * **A:** Inside the `doFilterInternal()` method in `JwtAuthenticationFilter.java`. It intercepts all requests before they hit controllers, parses the `Authorization: Bearer <token>` header, verifies the signature, and sets the auth context.
 
 ---
 
 # 2. Dashboard
+
+*Status: **[Fully Implemented]***
 
 ## Business Purpose
 Provides employees with a personalized landing zone containing immediate notifications, metric cards, and a real-time table of active inter-branch transfers relevant to their specific role.
@@ -113,43 +94,37 @@ Provides employees with a personalized landing zone containing immediate notific
 ## User Flow
 Upon logging in, the user lands on the dashboard. They see a personalized greeting, a high-priority "Attention Required" action box, and a list of active transfers. Clicking any row navigates directly to the Transfer Details screen.
 
-## Frontend Files
-* `Dashboard.tsx` → Pulls active transfers from the API, organizes active queues, and displays conditional warnings.
-* `Dashboard.css` → Handles layout styling, badge colors, and layout configurations.
-* `Sidebar.tsx` → Sidebar navigation component displaying links based on roles.
-* `Topbar.tsx` → Topbar showing profile cards, branch details, and the logout trigger.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/Dashboard.tsx` (Dashboard UI & action tables)
+  * `frontend/src/components/Layout/Sidebar.tsx` (Menu links scoped by roles)
+  * `frontend/src/components/Layout/Topbar.tsx` (Header cards & branch details)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/TransferController.java` (Exposes dashboard requests mapping)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java` (Executes scoping logic)
+* **Database**:
+  * `transfer_requests` (Fetches active workflow records)
+  * `item_categories` (Resolves behavior type for list badges)
 
-## Backend Files
-* `TransferController.java` → Handles the REST endpoint fetching active transfers.
-* `TransferServiceImpl.java` → Contains the `getDashboardTransfers()` logic, applying branch-level and department-level scopes based on the actor's role.
-
-## Database Tables
-* `transfer_requests` → Fetches the transfer records.
-* `item_categories` → Resolves category names and behavior types for visual badges.
+### Visual Source Mapping
+* **Dashboard Screen**:
+  * **Page Component**: `frontend/src/pages/Dashboard.tsx`
+  * **Child Components**: Sidebar (`frontend/src/components/Layout/Sidebar.tsx`), Topbar (`frontend/src/components/Layout/Topbar.tsx`)
+  * **Styling Sheets**: `frontend/src/pages/Dashboard.css`, `frontend/src/components/Layout/Layout.css`
+  * **Data Source API**: `GET /api/transfers` (Dashboard Transfers), `GET /api/cash/adjust/pending` (Managers' adjustment alerts)
 
 ## APIs Used
 * `GET /api/transfers` → Fetches active transfers filtered by the user's role and branch/department context.
 
-## Visual Components
-* Role-specific welcome card.
-* "Attention Required" alert list (e.g. transfers needing approval, preparations, or courier actions).
-* Active transfers table with behavior badges (CASH in green, STOCK in blue, DOCUMENT_CASE in grey) and priority tags (NORMAL/HIGH/URGENT/CRITICAL).
-
-## Sorting / Filtering
-* Frontend filters search active transfers by code, title, or status.
-* Pagination controls.
-* Backend applies a custom filter: orders rows chronologically by `requested_at` in descending order.
-
-## Viva Demonstration Flow
-`Dashboard (UI)` ➔ `Axios Request` ➔ `TransferController.getDashboardTransfers()` ➔ `TransferServiceImpl.getDashboardTransfers()` ➔ `Applies Role Queries in SQL` ➔ `TransferRequestRepository` ➔ `TransferMapper (converts to DTO)` ➔ `Response` ➔ `Renders Tables and Badges`.
-
 ## Common Viva Questions
 * **Q: What determines which active transfers are shown on a user's dashboard?**
-  * **A:** Data access is scoped on the backend. `SYSTEM_ADMIN` sees all active transfers; `DELIVERY_PERSON` sees only transfers assigned specifically to them; `BRANCH_MANAGER` sees all transfers involving their branch; while `OFFICER` sees transfers involving their specific branch AND department.
+  * **A:** Scoping is enforced in `TransferServiceImpl.getDashboardTransfers()`. A `SYSTEM_ADMIN` sees all active transfers; `DELIVERY_PERSON` sees only transfers assigned to them; and Branch Managers/Officers are restricted to transfers where their branch is either the origin or destination. Officers are further restricted to transfers matching their specific department.
 
 ---
 
 # 3. Transfer Request Creation
+
+*Status: **[Fully Implemented]***
 
 ## Business Purpose
 Allows branch personnel to initiate an inter-branch transfer request for cash, stock inventory, or documents, without having to choose the destination supplying branch at creation.
@@ -157,19 +132,24 @@ Allows branch personnel to initiate an inter-branch transfer request for cash, s
 ## User Flow
 The initiator clicks "New Request". The page loads, auto-detecting the user's branch as the origin. They select a category. Choosing a CASH category displays an amount field. Choosing a STOCK category loads related stock items (SKUs) and displays quantity inputs. They choose priority, enter details, and hit Submit.
 
-## Frontend Files
-* `NewTransfer.tsx` → Manages the multi-step request creation form, category behavior updates, and validation.
-* `NewTransfer.css` → Styles form components, inputs, and conditional blocks.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/NewTransfer.tsx` (Form inputs, validation, and step guides)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/TransferController.java` (Exposes creation mapping)
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/LookupController.java` (Populates form selections)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java` (Applies business rules)
+* **Database**:
+  * `transfer_requests` (Inserts new row)
+  * `item_categories` (Resolves configuration details)
+  * `stock_items` (Resolves SKU selections)
 
-## Backend Files
-* `TransferController.java` → Exposes the request creation endpoint.
-* `TransferServiceImpl.java` → Handles the `initiateTransfer()` business logic, code generation, and manager bypass.
-* `TransferMapper.java` → Maps the incoming payload DTO to a persistent entity.
-
-## Database Tables
-* `transfer_requests` → Inserts a new request row.
-* `item_categories` → Resolves the category details.
-* `stock_items` → Resolves SKU definitions for stock selections.
+### Visual Source Mapping
+* **New Transfer Request Form**:
+  * **Page Component**: `frontend/src/pages/NewTransfer.tsx`
+  * **Child Components**: Category selection drawer, Dynamic amount/SKU fields
+  * **Styling Sheet**: `frontend/src/pages/NewTransfer.css`
+  * **Data Source APIs**: `GET /api/lookup/departments`, `GET /api/lookup/categories`, `GET /api/lookup/stock-items/{categoryId}`
 
 ## APIs Used
 * `GET /api/lookup/branches` → Populates branch information (read-only for non-admins).
@@ -178,26 +158,17 @@ The initiator clicks "New Request". The page loads, auto-detecting the user's br
 * `GET /api/lookup/stock-items/{categoryId}` → Loads active items for STOCK requests.
 * `POST /api/transfers` → Submits the DTO.
 
-## Visual Components
-* Multi-stage input fields.
-* Dynamic category behavior switches (renders currency inputs for cash, SKU picker + quantity fields for stock).
-* Priority selectors with color indicators.
-
-## Sorting / Filtering
-* **Category Filtering**: Regular officers are restricted client-side to seeing only categories mapping to their department, or categories marked as "Open Access" (departmentId is NULL).
-
-## Viva Demonstration Flow
-`New Request Form (UI)` ➔ `Fill Fields` ➔ `POST /api/transfers` ➔ `TransferController.initiateTransfer()` ➔ `TransferServiceImpl.initiateTransfer()` ➔ `Generates Request Code (REQ-YYYY-NNNN)` ➔ `Saves Entity` ➔ `Sets Status (PENDING_INTERNAL or PENDING_HQ_APPROVAL)` ➔ `Return Success DTO`.
-
 ## Common Viva Questions
 * **Q: Why does a manager's request skip the first state (PENDING_INTERNAL)?**
-  * **A:** Since the branch manager is the highest authority inside that branch, they do not require internal approval. The service layer (`TransferServiceImpl.java`) detects their manager role and automatically sets the status to `PENDING_HQ_APPROVAL`, mapping the manager as the internal approver.
-* **Q: How is the request code generated?**
-  * **A:** In `TransferServiceImpl.java`, the system counts current database entries, adds 1, and concatenates it with the current year (e.g. `REQ-2026-0089`).
+  * **A:** In `TransferServiceImpl.initiateTransfer()`, the service layer checks if the creator's role matches `MANAGER_ROLES`. If true, the system skips internal approval and sets the request's status to `PENDING_HQ_APPROVAL`, saving the creator as the internal approver.
+* **Q: How is the unique request code generated?**
+  * **A:** In `TransferServiceImpl.initiateTransfer()`, the system counts existing rows, formats the count, and concatenates it with the current year: `REQ-YYYY-NNNN` (e.g., `REQ-2026-0045`).
 
 ---
 
 # 4. Transfer Workflow Lifecycle
+
+*Status: **[Fully Implemented]***
 
 ## Business Purpose
 Coordinates inter-branch transfers through a multi-stage state machine that prevents out-of-order handoffs, guarantees proper approvals, and records compliance states.
@@ -213,47 +184,39 @@ The request advances through 8 logical states:
 7. `DELIVERED` (Initiator inspects)
 8. `COMPLETED` / `REJECTED_ON_RECEIPT` (Terminal states)
 
-## Frontend Files
-* `TransferDetails.tsx` → The main page that displays full details and renders buttons based on status, branch boundaries, and roles.
-* `TransferDetails.css` → Handles state timelines, cards, buttons, and alert layouts.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/TransferDetails.tsx` (Main view component displaying details and actions)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/TransferController.java` (Exposes state transition endpoints)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java` (Executes validations and transitions)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/AuditServiceImpl.java` (Logs action records)
+* **Database**:
+  * `transfer_requests` (Tracks current status)
+  * `audit_logs` (Records historical log rows)
 
-## Backend Files
-* `TransferController.java` → Maps the endpoints for each step of the state machine.
-* `TransferServiceImpl.java` → Validates the state transition rules, checks permissions, and performs updates.
-* `AuditServiceImpl.java` → Records each state transition.
-
-## Database Tables
-* `transfer_requests` → Holds the current `status` field.
-* `audit_logs` → Tracks state changes chronologically.
+### Visual Source Mapping
+* **Transfer Details Screen**:
+  * **Page Component**: `frontend/src/pages/TransferDetails.tsx`
+  * **Timeline Source**: Timeline stepper displaying chronological stages based on `transfer.status`.
+  * **Status Badge Source**: Class selector returning style variables based on `transfer.status`.
+  * **Action Panel Source**: Contextual action cards displaying buttons only if the user is authorized for the current stage.
+  * **API Source**: `GET /api/transfers/{requestId}` (Fetches details, stepper, and nested audit logs)
 
 ## APIs Used
-* `GET /api/transfers/{id}` → Renders current request details and states.
-* `POST /api/transfers/{id}/approve-internal` (Step 1)
-* `POST /api/transfers/{id}/hq-verify` (Step 2)
-* `POST /api/transfers/{id}/accept` (Step 3)
-* `POST /api/transfers/{id}/release` (Step 4)
-* `POST /api/transfers/{id}/pickup` (Step 5)
-* `POST /api/transfers/{id}/deliver` (Step 6)
-* `POST /api/transfers/{id}/close` (Step 7)
-
-## Visual Components
-* Visual chevron process timeline showing past, current, and future stages.
-* Status badges (colored by stage severity).
-* Timestamps of step completions on the card layout.
-
-## Sorting / Filtering
-* Frontend gates visual action panels; buttons are visible only to the target actor for the current status.
-
-## Viva Demonstration Flow
-`TransferDetails (UI)` ➔ `User Clicks Action Button` ➔ `Trigger API Call` ➔ `TransferController` ➔ `TransferServiceImpl` ➔ `Validates User and Transition` ➔ `Updates DB Entity` ➔ `AuditServiceImpl Logs Entry` ➔ `Response Success` ➔ `UI Triggers Refresh`.
+* `GET /api/transfers/{requestId}` → Renders current request details and states.
+* `POST /api/transfers/{requestId}/approve-internal` (Source manager approval)
+* `POST /api/transfers/{requestId}/reject-internal` (Source manager rejection)
 
 ## Common Viva Questions
 * **Q: How does the system prevent out-of-order workflow execution?**
-  * **A:** The business rules are enforced on both layers. The frontend hides buttons for invalid stages, and `TransferServiceImpl.java` checks current database values before executing transitions, throwing a `BusinessRuleViolationException` if a step is out of order.
+  * **A:** Enforced on both layers. The React client hides buttons for invalid stages, and `TransferServiceImpl.java` methods check that the current database status matches the required preceding state before executing updates. If a violation is detected, a `BusinessRuleViolationException` is thrown.
 
 ---
 
 # 5. HQ Routing & Assignment
+
+*Status: **[Fully Implemented]***
 
 ## Business Purpose
 Maintains central control over inter-branch logistics. Decentralized branch creators do not determine which branch supplies their requested asset; HQ Logistics evaluates reserves and routes the supply order to the most appropriate branch.
@@ -261,38 +224,35 @@ Maintains central control over inter-branch logistics. Decentralized branch crea
 ## User Flow
 HQ Logistics Officer views their dashboard queue (`PENDING_HQ_APPROVAL`). They select a request. The details panel presents dropdown lists of branches and departments. For CASH, the branch choices highlight live balances. HQ selects the supplier and clicks "Verify & Route".
 
-## Frontend Files
-* `TransferDetails.tsx` → Conditionally renders the HQ assignment panel for `HQ_LOGISTICS_OFFICER` when status is `PENDING_HQ_APPROVAL`.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/TransferDetails.tsx` (Conditionally renders the HQ assignment selector panel)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/TransferController.java` (Exposes `/hq-verify` endpoint)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java` (Executes the `hqVerify()` method)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/CashServiceImpl.java` (Supplies branch cash balances)
+* **Database**:
+  * `transfer_requests` (Updates `destination_branch_id`, `destination_department_id`, and `hq_approver_id` fields)
+  * `branch_cash_balance` / `branch_stock_balance` (Vault levels checked during routing)
 
-## Backend Files
-* `TransferController.java` → Processes the routing API call.
-* `TransferServiceImpl.java` → Processes `hqVerify()`, registers target supplier details, and updates the status.
-* `CashServiceImpl.java` / `StockServiceImpl.java` → Provides live balances for decision warnings.
-
-## Database Tables
-* `transfer_requests` → Binds `destination_branch_id` and `destination_department_id` on routing.
-* `branch_cash_balance` / `branch_stock_balance` → Read-only balances used during routing decisions.
+### Visual Source Mapping
+* **HQ Action Panel**:
+  * **Page Component**: `frontend/src/pages/TransferDetails.tsx` (Renders selector dropdowns for HQ role)
+  * **Styling Sheet**: `frontend/src/pages/TransferDetails.css`
+  * **Data Source APIs**: `GET /api/lookup/branches`, `GET /api/lookup/branches/{branchId}/departments`, `GET /api/cash/balances` (For vault levels warnings)
 
 ## APIs Used
-* `POST /api/transfers/{id}/hq-verify` → Triggers routing (submits `VerificationRequestDto` containing destination branch and department).
-
-## Visual Components
-* Supplying branch and department selectors.
-* Supply warnings indicating if the target branch vault balance is below the requested threshold.
-
-## Sorting / Filtering
-None.
-
-## Viva Demonstration Flow
-`HQ Officer opens TransferDetails` ➔ `Selects Supply Branch & Department` ➔ `Submits Routing DTO` ➔ `POST .../hq-verify` ➔ `TransferController` ➔ `TransferServiceImpl.hqVerify()` ➔ `Binds Destination to Entity` ➔ `Updates Status to PENDING_ASSIGNMENT` ➔ `Audit Logged` ➔ `Redirects/Refreshes`.
+* `POST /api/transfers/{requestId}/hq-verify` → Triggers routing (submits destination branch and department).
 
 ## Common Viva Questions
-* **Q: Why does the system support deferred routing by HQ instead of creator choice?**
+* **Q: Why does the system defer routing to HQ instead of letting the creator select the source branch?**
   * **A:** To prevent branch coordination issues and cash hoarding. Requisitioning branches do not know which branch has excess inventory or vault cash; HQ manages overall liquidity and makes informed routing decisions.
 
 ---
 
 # 6. Destination Acceptance & Driver Assignment
+
+*Status: **[Fully Implemented]***
 
 ## Business Purpose
 Gives the supplying branch control over their physical inventory. They verify they have the asset, allocate specific cash denominations or physical stock, and schedule an available courier.
@@ -300,34 +260,29 @@ Gives the supplying branch control over their physical inventory. They verify th
 ## User Flow
 A branch officer at the supplying branch sees a routed transfer in `PENDING_ASSIGNMENT`. They open it. For CASH, they enter the cash denomination count. For STOCK, they see quantity requirements (low stock warnings appear if on-hand quantity is too low). They choose an available courier from the driver dropdown and hit "Accept & Assign".
 
-## Frontend Files
-* `TransferDetails.tsx` → Displays acceptance form, denomination calculator, driver selector, and stock alerts.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/TransferDetails.tsx` (Conditionally renders the acceptance sheet, denomination spreadsheet, and driver selector)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/TransferController.java` (Exposes accept endpoint)
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/LookupController.java` (Exposes available drivers endpoint)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java` (Binds courier and advances state)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/CashServiceImpl.java` (Processes denomination counts)
+* **Database**:
+  * `transfer_requests` (Updates `dept_acceptor_id`, `delivery_person_id`, and status fields)
+  * `cash_transfer_denominations` (Stores note counts matching transfer amount)
 
-## Backend Files
-* `TransferController.java` → Processes the acceptance endpoints.
-* `TransferServiceImpl.java` → Validates note values and driver availability, registers coordinates, and advances status to `PENDING_FINAL_RELEASE`.
-* `LookupController.java` → Supplies the list of available drivers.
-
-## Database Tables
-* `transfer_requests` → Links the assigned delivery user, acceptor user, and denominations flag.
-* `users` → Filters for available delivery drivers.
-* `cash_transfer_denominations` → Stores note counts for cash transfers.
+### Visual Source Mapping
+* **Acceptance Action Panel**:
+  * **Page Component**: `frontend/src/pages/TransferDetails.tsx` (Denominations count and courier selection dropdown)
+  * **Styling Sheet**: `frontend/src/pages/TransferDetails.css`
+  * **Data Source APIs**: `GET /api/lookup/users/delivery-persons/available` (Fetches available drivers), `POST /api/cash/denominations/{requestId}`
 
 ## APIs Used
 * `GET /api/lookup/users/delivery-persons/available` → Fetches drivers with `role = DELIVERY_PERSON` and `isAvailable = true`.
-* `POST /api/cash/denominations/{id}` → Saves cash note counts.
-* `POST /api/transfers/{id}/accept` → Completes acceptance (submits courier selection).
-
-## Visual Components
-* Note Denomination Grid (renders inputs for ৳1 to ৳1000, calculating the total dynamically).
-* Low Stock Alert Banner (renders if destination stock is less than the requested amount).
-* Courier Select Dropdown.
-
-## Sorting / Filtering
-* **Driver Lookup**: Filtered strictly on the database layer to return only users with role `DELIVERY_PERSON` and `is_available = true`.
-
-## Viva Demonstration Flow
-`Accept Form (UI)` ➔ `Note Denomination Inputs` ➔ `Driver Selected` ➔ `POST Denominations` ➔ `POST .../accept` ➔ `TransferServiceImpl.acceptAndAssignDriver()` ➔ `Validates Driver and State` ➔ `Assigns Driver` ➔ `Updates Status to PENDING_FINAL_RELEASE`.
+* `POST /api/cash/denominations/{requestId}` → Saves cash note counts.
+* `POST /api/transfers/{requestId}/accept` → Completes acceptance (submits courier selection).
+* `POST /api/transfers/{requestId}/reject-destination` → Returns request to HQ queue.
 
 ## Common Viva Questions
 * **Q: How does driver availability tracking work?**
@@ -337,33 +292,31 @@ A branch officer at the supplying branch sees a routed transfer in `PENDING_ASSI
 
 # 7. Final Release Workflow
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Branch gatekeeping. Ensures that a branch manager at the supplying branch authorizes the physical release of the assets before a courier can carry them away.
 
 ## User Flow
 The supplying branch manager views the request in `PENDING_FINAL_RELEASE`. They review the details (denominations, stock items, driver) and click "Approve & Release".
 
-## Frontend Files
-* `TransferDetails.tsx` → Renders the manager action panel for supplying managers.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/TransferDetails.tsx` (Renders supplying branch manager action panel)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/TransferController.java` (Exposes release endpoint)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java` (Executes the `releaseFinal()` method)
+* **Database**:
+  * `transfer_requests` (Updates `final_releaser_id` and sets status to `READY_FOR_PICKUP`)
 
-## Backend Files
-* `TransferController.java` → Processes final release calls.
-* `TransferServiceImpl.java` → Validates the manager's role at the destination branch and updates the status to `READY_FOR_PICKUP`.
-
-## Database Tables
-* `transfer_requests` → Updates the status field.
+### Visual Source Mapping
+* **Final Release Panel**:
+  * **Page Component**: `frontend/src/pages/TransferDetails.tsx` (Conditionally renders for supplying branch manager role)
+  * **Data Source API**: `POST /api/transfers/{requestId}/release`
 
 ## APIs Used
-* `POST /api/transfers/{id}/release` → Triggers final release.
-
-## Visual Components
-* Release Control Card with confirmation buttons.
-
-## Sorting / Filtering
-None.
-
-## Viva Demonstration Flow
-`Manager Action Panel` ➔ `Click Release` ➔ `POST .../release` ➔ `TransferController` ➔ `TransferServiceImpl.releaseRequest()` ➔ `Validates Manager at Destination Branch` ➔ `Status set to READY_FOR_PICKUP` ➔ `Success Response`.
+* `POST /api/transfers/{requestId}/release` → Triggers final release.
+* `POST /api/transfers/{requestId}/reject-release` → Rejects and routes back to HQ.
 
 ## Common Viva Questions
 * **Q: Can an officer perform the final release step?**
@@ -373,39 +326,37 @@ None.
 
 # 8. Courier Pickup & Delivery
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Tracks the physical movement of assets. Locks driver availability while in transit, and executes automated balance and ledger updates at pickup and delivery.
 
 ## User Flow
 The assigned driver logs in and views their dashboard queue (`READY_FOR_PICKUP`). They click "Confirm Pickup" upon collecting the asset. Status changes to `IN_TRANSIT` (locking the driver's availability). Upon arrival, the driver clicks "Confirm Delivery". Status changes to `DELIVERED` (restoring the driver's availability).
 
-## Frontend Files
-* `TransferDetails.tsx` → Renders the courier action panels (Confirm Pickup / Confirm Delivery).
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/TransferDetails.tsx` (Conditionally renders driver pickup and delivery actions)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/TransferController.java` (Exposes pickup and deliver endpoints)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java` (Triggers status changes and ledger actions)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/CashServiceImpl.java` (Performs cash ledger updates)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/StockServiceImpl.java` (Performs stock ledger updates)
+* **Database**:
+  * `transfer_requests` (Updates `picked_up_at` and `delivered_at` timestamps)
+  * `users` (Updates courier `is_available` flag)
+  * `branch_cash_balance` / `branch_stock_balance` (Modifies supplying and receiving branch balances)
+  * `cash_ledger` / `stock_ledger` (Inserts `TRANSFER_OUT` at pickup and `TRANSFER_IN` at delivery)
 
-## Backend Files
-* `TransferController.java` → Processes pickup and delivery REST calls.
-* `TransferServiceImpl.java` → Validates driver identity, changes status, updates driver availability, and triggers ledger updates via Cash or Stock services.
-* `CashServiceImpl.java` / `StockServiceImpl.java` → Performs balance deductions and credits.
-
-## Database Tables
-* `transfer_requests` → Tracks courier actions.
-* `users` → Sets driver `is_available` to `false` on pickup, and `true` on delivery.
-* `branch_cash_balance` / `branch_stock_balance` → Debits/Credits.
-* `cash_ledger` / `stock_ledger` → Records ledger logs.
+### Visual Source Mapping
+* **Courier Actions Box**:
+  * **Page Component**: `frontend/src/pages/TransferDetails.tsx` (Renders for assigned courier role)
+  * **Styling Sheet**: `frontend/src/pages/TransferDetails.css`
+  * **Data Source APIs**: `POST /api/transfers/{requestId}/pickup`, `POST /api/transfers/{requestId}/deliver`
 
 ## APIs Used
-* `POST /api/transfers/{id}/pickup` → Processes pickup (debits supplier balances, logs `TRANSFER_OUT` in ledger, locks driver).
-* `POST /api/transfers/{id}/deliver` → Processes delivery (credits receiver balances, logs `TRANSFER_IN` in ledger, releases driver).
-
-## Visual Components
-* Courier status alert banner.
-* Large action buttons (Confirm Pickup, Confirm Delivery).
-
-## Sorting / Filtering
-* Frontend gates visual access; panels are visible only to the user whose ID matches the request's `deliveryPersonId`.
-
-## Viva Demonstration Flow
-`Driver UI` ➔ `Click Pickup` ➔ `POST .../pickup` ➔ `TransferService` ➔ `Deducts Supplying Branch Balance` ➔ `Logs TRANSFER_OUT Ledger Entry` ➔ `Sets Driver isAvailable = false` ➔ `Status set to IN_TRANSIT` ➔ `Driver Clicks Deliver` ➔ `POST .../deliver` ➔ `TransferService` ➔ `Adds Receiving Branch Balance` ➔ `Logs TRANSFER_IN Ledger Entry` ➔ `Sets Driver isAvailable = true` ➔ `Status set to DELIVERED`.
+* `POST /api/transfers/{requestId}/pickup` → Processes pickup (debits supplier balances, logs `TRANSFER_OUT` in ledger, locks driver).
+* `POST /api/transfers/{requestId}/deliver` → Processes delivery (credits receiver balances, logs `TRANSFER_IN` in ledger, releases driver).
 
 ## Common Viva Questions
 * **Q: Why are vault and stock balances debited on pickup, rather than on delivery?**
@@ -415,37 +366,34 @@ The assigned driver logs in and views their dashboard queue (`READY_FOR_PICKUP`)
 
 # 9. Request Completion & Rejection
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Establishes recipient verification and fallback workflows. The creator must confirm they received the assets in correct order, or reject them (triggering a reversal of ledger updates).
 
 ## User Flow
 The original request initiator views the request in `DELIVERED`. They select "Accept & Close" or "Reject & Revert". If they reject, they must enter a mandatory rejection reason. The request becomes `COMPLETED` or `REJECTED_ON_RECEIPT`.
 
-## Frontend Files
-* `TransferDetails.tsx` → Displays the recipient confirmation panel.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/TransferDetails.tsx` (Conditionally renders recipient actions)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/TransferController.java` (Exposes close endpoint)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java` (Processes `closeRequest()` and initiates reversals)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/CashServiceImpl.java` (Applies cash reversals math)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/StockServiceImpl.java` (Applies stock reversals math)
+* **Database**:
+  * `transfer_requests` (Updates status to `COMPLETED` or `REJECTED_ON_RECEIPT`, sets `closed_at` and `final_note`)
+  * `branch_cash_balance` / `branch_stock_balance` (Reverses balances if rejected)
+  * `cash_ledger` / `stock_ledger` (Appends `REVERSAL_OUT` for origin branch and `REVERSAL_IN` for destination branch)
 
-## Backend Files
-* `TransferController.java` → Processes completion calls.
-* `TransferServiceImpl.java` → Handles `closeRequest()`, updates status, and triggers reversals if rejected.
-* `CashServiceImpl.java` / `StockServiceImpl.java` → Reverses balance transactions.
-
-## Database Tables
-* `transfer_requests` → Updates status to `COMPLETED` or `REJECTED_ON_RECEIPT`.
-* `branch_cash_balance` / `branch_stock_balance` → Reverses balances on rejection.
-* `cash_ledger` / `stock_ledger` → Appends `REVERSAL_OUT` and `REVERSAL_IN` entries.
+### Visual Source Mapping
+* **Verification Form Box**:
+  * **Page Component**: `frontend/src/pages/TransferDetails.tsx` (Renders for request initiator)
+  * **Data Source API**: `POST /api/transfers/{requestId}/close` (Submits `accepted` decision and `finalNote`)
 
 ## APIs Used
-* `POST /api/transfers/{id}/close` → Submits verification (payload DTO contains `accepted` flag and `finalNote` text).
-
-## Visual Components
-* Verification Form with decision selectors (Accept / Reject).
-* Mandatory Rejection Note input area.
-
-## Sorting / Filtering
-* Frontend gates visual access; panel is visible only to the original `initiatedById` user.
-
-## Viva Demonstration Flow
-`Initiator Form` ➔ `Choose Decision` ➔ `POST .../close` ➔ `TransferServiceImpl.closeRequest()` ➔ `If Accepted: Status set to COMPLETED` ➔ `If Rejected: Status set to REJECTED_ON_RECEIPT` ➔ `Triggers Cash/Stock Service Reversal` ➔ `Balances Restored` ➔ `Logs REVERSAL Entries` ➔ `Returns Response`.
+* `POST /api/transfers/{requestId}/close` → Submits verification (payload DTO contains `accepted` flag and `finalNote` text).
 
 ## Common Viva Questions
 * **Q: What happens if a recipient rejects a cash transfer upon arrival?**
@@ -455,36 +403,33 @@ The original request initiator views the request in `DELIVERED`. They select "Ac
 
 # 10. Cash Vault Module
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Maintains live, real-time balances in local currencies (৳) for each bank branch, providing cash vault tracking for all locations.
 
 ## User Flow
 Branch Managers and System Admins access `/cash/ledger`. Admins see a consolidated overview of balances across all branch vaults, while managers view their local branch reserves.
 
-## Frontend Files
-* `CashLedger.tsx` → Displays branch selector panels, balance hero cards, and ledger tables.
-* `CashLedger.css` → Handles visual styling for currency display cards.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/CashLedger.tsx` (Consolidated balances grid and local hero cards)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/CashController.java` (Exposes balance mappings)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/CashServiceImpl.java` (Processes balance lookups)
+* **Database**:
+  * `branch_cash_balance` (Tracks live cash vault levels)
 
-## Backend Files
-* `CashController.java` → Handles balance queries.
-* `CashServiceImpl.java` → Evaluates and returns branch balance records.
-
-## Database Tables
-* `branch_cash_balance` → Tracks live cash vault totals for each branch.
+### Visual Source Mapping
+* **Cash Vault Balances View**:
+  * **Page Component**: `frontend/src/pages/CashLedger.tsx`
+  * **Child Components**: Consolidated Branch Cards Grid (Admin view), Local Branch Vault Card
+  * **Styling Sheet**: `frontend/src/pages/CashLedger.css`
+  * **Data Source APIs**: `GET /api/cash/balances` (Admin overview), `GET /api/cash/balance/{branchId}` (Local view)
 
 ## APIs Used
 * `GET /api/cash/balances` → Returns balances for all branch vaults (Admin view).
 * `GET /api/cash/balance/{branchId}` → Returns balance for a single branch.
-
-## Visual Components
-* Multi-Branch Balance Overview Grid with card counters.
-* Local Branch Vault Hero Card showing current balance in ৳.
-
-## Sorting / Filtering
-* Branch picker (restricted to admins; managers are locked to their own branch).
-
-## Viva Demonstration Flow
-`Open Cash Ledger Page` ➔ `Calls GET /api/cash/balances` ➔ `CashServiceImpl` ➔ `BranchCashBalanceRepository` ➔ `Renders Vault Balance Grid`.
 
 ## Common Viva Questions
 * **Q: How does the system ensure the vault balance is never modified directly?**
@@ -494,43 +439,41 @@ Branch Managers and System Admins access `/cash/ledger`. Admins see a consolidat
 
 # 11. Cash Denomination Handling
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Ensures physical vault counts match the digital ledger. Supplying branches must break down cash transfers by exact note quantities, verifying counts before the assets leave the vault.
 
 ## User Flow
-At the `PENDING_ASSIGNMENT` stage, the destination officer inputs the note count breakdown (e.g. ৳1000 × 5, ৳500 × 10). The system validates that the calculated sum matches the requested transfer amount.
+At the `PENDING_ASSIGNMENT` stage, the destination officer inputs the note count breakdown (e.g., ৳1000 × 5, ৳500 × 10). The system validates that the calculated sum matches the requested transfer amount.
 
-## Frontend Files
-* `TransferDetails.tsx` → Conditionally renders the denomination input sheet.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/TransferDetails.tsx` (Conditionally renders the denomination breakdown form)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/CashController.java` (Exposes denomination endpoints)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/CashServiceImpl.java` (Validates and saves denomination lists)
+* **Database**:
+  * `cash_transfer_denominations` (Stores quantity breakdown of notes for ৳1 to ৳1000)
 
-## Backend Files
-* `CashController.java` → Processes denomination data.
-* `CashServiceImpl.java` → Implements `saveDenominations()`, validating that the note breakdown matches the requested amount.
-
-## Database Tables
-* `cash_transfer_denominations` → Stores note counts (supports notes from ৳1 to ৳1000).
+### Visual Source Mapping
+* **Note Denomination Spreadsheet Grid**:
+  * **Page Component**: `frontend/src/pages/TransferDetails.tsx` (Renders denomination input rows and sub-totals)
+  * **Data Source APIs**: `POST /api/cash/denominations/{requestId}` (Saves data), `GET /api/cash/denominations/{requestId}` (Fetches details)
 
 ## APIs Used
 * `POST /api/cash/denominations/{requestId}` → Saves note counts.
 * `GET /api/cash/denominations/{requestId}` → Fetches note counts for read-only displays.
 
-## Visual Components
-* Note entry spreadsheet grid showing sub-totals and grand totals calculated dynamically.
-* Match indicator (displays green checkmark if sum matches requested transfer amount).
-
-## Sorting / Filtering
-None.
-
-## Viva Demonstration Flow
-`Acceptance Panel` ➔ `Enter Note Counts` ➔ `Calculate Total` ➔ `POST .../denominations` ➔ `CashServiceImpl.saveDenominations()` ➔ `Validates Sum == requestedAmount` ➔ `Saves note counts` ➔ `Returns Success`.
-
 ## Common Viva Questions
 * **Q: What happens if the sum of note values does not match the requested amount?**
-  * **A:** The system rejects the submission with a validation error, blocking the user from proceeding with driver assignment until the counts are corrected.
+  * **A:** In `CashServiceImpl.submitDenominations()`, the service layer validates that the sum matches the requested transfer amount. If the amounts do not match, it throws a validation error, blocking the user from proceeding with driver assignment.
 
 ---
 
 # 12. Cash Adjustments
+
+*Status: **[Fully Implemented]***
 
 ## Business Purpose
 Provides a secure, dual-custody audit pathway to manually adjust branch vault balances for audits, cash imports, or sorting corrections.
@@ -538,33 +481,29 @@ Provides a secure, dual-custody audit pathway to manually adjust branch vault ba
 ## User Flow
 An officer in the Cash Operations department submits an adjustment request (Credit or Debit, amount, and justification). The request is logged as `PENDING`. The branch manager views the request on their dashboard, reviews the justification, and approves or rejects it.
 
-## Frontend Files
-* `ManualAdjustment.tsx` → Renders adjustment submission forms (for Officers) and pending approval tables (for Managers).
-* `ManualAdjustment.css` → Handles visual styling for adjustment panels.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/ManualAdjustment.tsx` (Form inputs for Officers, approval lists for Managers)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/CashController.java` (Exposes adjustment mappings)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/CashServiceImpl.java` (Processes `submitAdjustment()` and `approveAdjustment()`)
+* **Database**:
+  * `cash_manual_adjustments` (Tracks pending and resolved adjustments)
+  * `branch_cash_balance` (Updated on approval)
+  * `cash_ledger` (Appends `MANUAL_CREDIT` or `MANUAL_DEBIT` entries)
 
-## Backend Files
-* `CashController.java` → Processes adjustment submissions and approvals.
-* `CashServiceImpl.java` → Processes `submitAdjustment()` and `decideAdjustment()`, updating balances and ledgers on approval.
-
-## Database Tables
-* `cash_manual_adjustments` → Stores details of pending and resolved adjustments.
+### Visual Source Mapping
+* **Manual Cash Adjustments Workspace**:
+  * **Page Component**: `frontend/src/pages/ManualAdjustment.tsx`
+  * **Child Components**: Submission Form, Pending Cards Feed (Manager view), Adjustment Logs Table
+  * **Styling Sheet**: `frontend/src/pages/ManualAdjustment.css`
+  * **Data Source APIs**: `POST /api/cash/adjust` (Submit request), `POST /api/cash/adjust/{adjustmentId}/decide` (Approve/Reject request), `GET /api/cash/adjust/pending` (Dashboard widgets details)
 
 ## APIs Used
 * `POST /api/cash/adjust` → Submits a new adjustment request.
 * `POST /api/cash/adjust/{id}/decide` → Approves or rejects a pending adjustment.
 * `GET /api/cash/adjust/pending` → Fetches pending adjustments for the manager's branch.
 * `GET /api/cash/adjust/all` → Fetches adjustment history.
-
-## Visual Components
-* Adjustment Submission Form (Credit/Debit selector, amount, justification text area).
-* Manager pending approvals feed.
-* Adjustment history table with status indicators (PENDING/APPROVED/REJECTED).
-
-## Sorting / Filtering
-* Frontend displays input controls based on role. Officers submit requests, while managers approve or reject them.
-
-## Viva Demonstration Flow
-`Officer Form` ➔ `Submit Request` ➔ `POST /api/cash/adjust` ➔ `Manager Dashboard Alert` ➔ `Manager Opens Form` ➔ `POST .../decide` ➔ `CashServiceImpl.decideAdjustment()` ➔ `If Approved: Updates BranchCashBalance` ➔ `Logs MANUAL_ADJUSTMENT Ledger Entry` ➔ `Saves State` ➔ `Success`.
 
 ## Common Viva Questions
 * **Q: How does the system prevent managers from approving arbitrary cash adjustments that exceed reserves?**
@@ -574,36 +513,32 @@ An officer in the Cash Operations department submits an adjustment request (Cred
 
 # 13. Cash Ledger
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Maintains an immutable, chronological, append-only transaction ledger for branch vault movements.
 
 ## User Flow
 Managers or Admins open `/cash/ledger` to inspect every single cash deposit, withdrawal, transfer, or adjustment that took place.
 
-## Frontend Files
-* `CashLedger.tsx` → Renders local vault summaries, branch grids, and ledger tables.
-* `CashLedger.css` → Handles style configurations.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/CashLedger.tsx` (Transaction tables and local branch panels)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/CashController.java` (Exposes ledger endpoints)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/CashServiceImpl.java` (Fetches ledger logs)
+* **Database**:
+  * `cash_ledger` (Immutable transaction log table)
 
-## Backend Files
-* `CashController.java` → Exposes ledger endpoints.
-* `CashServiceImpl.java` → Fetches ledger logs.
-
-## Database Tables
-* `cash_ledger` → Immutable transactions history table.
+### Visual Source Mapping
+* **Ledger View Screen**:
+  * **Page Component**: `frontend/src/pages/CashLedger.tsx`
+  * **Child Components**: Printable table, ledger row highlight cards
+  * **Styling Sheet**: `frontend/src/pages/CashLedger.css`
+  * **Data Source API**: `GET /api/cash/ledger/{branchId}`
 
 ## APIs Used
 * `GET /api/cash/ledger/{branchId}` → Fetches vault transactions history.
-
-## Visual Components
-* Color-coded transaction table rows (Green for credits like `TRANSFER_IN` or `MANUAL_CREDIT`, Red for debits like `TRANSFER_OUT` or `MANUAL_DEBIT`, Orange for adjustments).
-* Printable Ledger Grid layout.
-
-## Sorting / Filtering
-* Filtered chronologically (newest entries first).
-* Branch selector (visible to System Admins only).
-
-## Viva Demonstration Flow
-`Open Cash Ledger` ➔ `GET .../ledger/{branchId}` ➔ `CashServiceImpl.getLedger()` ➔ `CashLedgerRepository` ➔ `Populate UI Table` ➔ `Click Request Code` ➔ `Navigate to Transfer Details`.
 
 ## Common Viva Questions
 * **Q: Can a ledger entry be deleted or edited if an error is made?**
@@ -613,35 +548,33 @@ Managers or Admins open `/cash/ledger` to inspect every single cash deposit, wit
 
 # 14. Stock Inventory Module
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Tracks physical, countable asset inventories (e.g. computers, network routers, office furniture) across multiple branches.
 
 ## User Flow
 Authorized personnel access the stock dashboards to review current item quantities across all branch vaults.
 
-## Frontend Files
-* `StockLedger.tsx` → Displays system-wide branch quantities, SKU chips, and ledger tables.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/StockLedger.tsx` (Pills panel and branch summaries)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/StockController.java` (Exposes inventory endpoints)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/StockServiceImpl.java` (Fetches balances)
+* **Database**:
+  * `branch_stock_balance` (Tracks live inventory levels per branch per SKU)
 
-## Backend Files
-* `StockController.java` → Processes stock balance requests.
-* `StockServiceImpl.java` → Fetches stock balance details.
-
-## Database Tables
-* `branch_stock_balance` → Tracks live quantities per stock item at each branch.
+### Visual Source Mapping
+* **Stock Inventory View**:
+  * **Page Component**: `frontend/src/pages/StockLedger.tsx`
+  * **Child Components**: Branch Summaries Cards (HQ view), Balances Chips Panel, Quantity cards
+  * **Styling Sheet**: `frontend/src/pages/StockLedger.css`
+  * **Data Source APIs**: `GET /api/stock/balances` (Admin overview), `GET /api/stock/balances/{branchId}` (Branch inventory levels)
 
 ## APIs Used
 * `GET /api/stock/balances` → Returns stock balances across all locations.
 * `GET /api/stock/balances/{branchId}` → Returns stock balances for a single branch.
-
-## Visual Components
-* Stock Level overview grids.
-* Branch item quantity list.
-
-## Sorting / Filtering
-* Filtered by Branch or Stock Item SKU.
-
-## Viva Demonstration Flow
-`View Stock Balances` ➔ `GET .../stock/balances` ➔ `StockServiceImpl` ➔ `BranchStockBalanceRepository` ➔ `Populate balance cards`.
 
 ## Common Viva Questions
 * **Q: How does the stock inventory system differentiate between item types?**
@@ -651,38 +584,34 @@ Authorized personnel access the stock dashboards to review current item quantiti
 
 # 15. Stock Item Management
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 System catalog management. Allows administrators to define and manage individual stock items (SKUs) nested under STOCK categories.
 
 ## User Flow
 The System Admin opens `/admin/items`, selects a category with STOCK behavior, and opens the stock items panel to add, edit, or toggle the active status of items (SKUs).
 
-## Frontend Files
-* `ItemManagement.tsx` → Renders categories, stock item sub-panels, and SKU forms.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/admin/ItemManagement.tsx` (Category grid and stock items drawer)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/OrgManagementController.java` (Exposes CRUD endpoints)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/ManagementServiceImpl.java` (Executes database modifications)
+* **Database**:
+  * `stock_items` (Stores name, unit, and active status per SKU)
 
-## Backend Files
-* `OrgManagementController.java` → Exposes CRUD endpoints for stock items.
-* `ManagementServiceImpl.java` → Processes stock item database updates.
-
-## Database Tables
-* `stock_items` → Stores item details (name, code, unit, active status) nested under an `item_category`.
+### Visual Source Mapping
+* **Stock Catalog Admin Portal**:
+  * **Page Component**: `frontend/src/pages/admin/ItemManagement.tsx`
+  * **Child Components**: Stock Items List sliding drawer, SKU entry form
+  * **Data Source APIs**: `GET /api/admin/org/items/{categoryId}/stock-items` (Fetches SKUs), `POST /api/admin/org/items/{categoryId}/stock-items` (Adds new SKU), `PUT /api/admin/org/stock-items/{stockItemId}/toggle-active` (Toggles item status)
 
 ## APIs Used
 * `GET /api/admin/org/items/{categoryId}/stock-items` → Fetches SKUs for a category.
 * `POST /api/admin/org/items/{categoryId}/stock-items` → Adds a new SKU.
 * `PUT /api/admin/org/stock-items/{stockItemId}` → Edits a SKU's details.
 * `PUT /api/admin/org/stock-items/{stockItemId}/toggle-active` → Toggles item active status.
-
-## Visual Components
-* Nested Stock Items Overlay panel.
-* Inline SKU details form.
-* Status toggles.
-
-## Sorting / Filtering
-* Display is filtered by category.
-
-## Viva Demonstration Flow
-`Admin Dashboard` ➔ `Select Stock Category` ➔ `Open SKU panel` ➔ `POST new item` ➔ `ManagementServiceImpl.createStockItem()` ➔ `Saves to stock_items` ➔ `Refreshes list`.
 
 ## Common Viva Questions
 * **Q: What happens if a stock item is deactivated?**
@@ -692,39 +621,37 @@ The System Admin opens `/admin/items`, selects a category with STOCK behavior, a
 
 # 16. Stock Adjustments
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Maintains inventory accuracy. Allows officers to submit quantity adjustments (Credit/Debit) for items within their department, subject to manager approval.
 
 ## User Flow
 An officer submits an adjustment request (amount, item SKU, and reason). The request is logged as `PENDING`. The branch manager reviews the request and approves or rejects it.
 
-## Frontend Files
-* `StockAdjustment.tsx` → Renders adjustment forms, manager approval views, and historical logs.
-* `StockAdjustment.css` → Handles visual styling.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/StockAdjustment.tsx` (Officer submission form, Manager approval queue)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/StockController.java` (Exposes adjustment endpoints)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/StockServiceImpl.java` (Processes `submitAdjustment()` and `approveAdjustment()`)
+* **Database**:
+  * `stock_manual_adjustments` (Tracks pending and resolved adjustments)
+  * `branch_stock_balance` (Updated on approval)
+  * `stock_ledger` (Appends `MANUAL_CREDIT` or `MANUAL_DEBIT` entries)
 
-## Backend Files
-* `StockController.java` → Processes stock adjustment requests.
-* `StockServiceImpl.java` → Processes `submitAdjustment()` and `decideAdjustment()`, validating balances and logging adjustments.
-
-## Database Tables
-* `stock_manual_adjustments` → Stores stock adjustment requests and resolutions.
+### Visual Source Mapping
+* **Stock Adjustments Workspace**:
+  * **Page Component**: `frontend/src/pages/StockAdjustment.tsx`
+  * **Child Components**: Submission Form, Pending approvals list, Adjustment logs
+  * **Styling Sheet**: `frontend/src/pages/StockAdjustment.css`
+  * **Data Source APIs**: `POST /api/stock/adjust` (Submit request), `POST /api/stock/adjust/{adjustmentId}/decide` (Approve/Reject request), `GET /api/stock/adjust/pending` (Pending approvals feed)
 
 ## APIs Used
 * `POST /api/stock/adjust` → Submits a new adjustment request.
 * `POST /api/stock/adjust/{id}/decide` → Approves or rejects an adjustment request.
 * `GET /api/stock/adjust/pending` → Fetches pending adjustments for the manager's branch.
 * `GET /api/stock/adjust/all` → Fetches adjustment history.
-
-## Visual Components
-* SKU selection drop-downs.
-* Pending approvals feed.
-* History logs with approval status tags.
-
-## Sorting / Filtering
-* Submission lists are filtered by department and branch boundaries.
-
-## Viva Demonstration Flow
-`Officer Form` ➔ `Select SKU` ➔ `Submit Adjustment` ➔ `POST .../adjust` ➔ `Manager Reviews Approval Feed` ➔ `POST .../decide` ➔ `StockServiceImpl.decideAdjustment()` ➔ `If Approved: Updates BranchStockBalance` ➔ `Logs STOCK Ledger Entry` ➔ `Saves State` ➔ `Success`.
 
 ## Common Viva Questions
 * **Q: Are stock adjustments scoped by department?**
@@ -734,36 +661,32 @@ An officer submits an adjustment request (amount, item SKU, and reason). The req
 
 # 17. Stock Ledger
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Maintains an immutable, chronological, append-only transaction ledger for branch stock movements.
 
 ## User Flow
 Managers, Officers, and Admins open `/stock/ledger` to inspect every single stock movement, deposit, withdrawal, or adjustment.
 
-## Frontend Files
-* `StockLedger.tsx` → Renders SKU chip selectors, branch balance sheets, and transaction logs.
-* `StockLedger.css` → Handles visual styling.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/StockLedger.tsx` (Balances panel and transaction tables)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/StockController.java` (Exposes ledger endpoints)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/StockServiceImpl.java` (Fetches ledger logs)
+* **Database**:
+  * `stock_ledger` (Immutable transactional history table)
 
-## Backend Files
-* `StockController.java` → Exposes stock ledger endpoints.
-* `StockServiceImpl.java` → Fetches stock ledger logs.
-
-## Database Tables
-* `stock_ledger` → Immutable history table for stock movements.
+### Visual Source Mapping
+* **Stock Ledger View**:
+  * **Page Component**: `frontend/src/pages/StockLedger.tsx`
+  * **Child Components**: SKU selector pills panel, Ledger logs printable table
+  * **Styling Sheet**: `frontend/src/pages/StockLedger.css`
+  * **Data Source API**: `GET /api/stock/ledger/{branchId}/{stockItemId}`
 
 ## APIs Used
 * `GET /api/stock/ledger/{branchId}/{stockItemId}` → Fetches stock ledger logs.
-
-## Visual Components
-* SKU pills showing live quantities.
-* Color-coded ledger logs.
-* Landscape print layout.
-
-## Sorting / Filtering
-* Filtered by Branch or Stock Item SKU.
-
-## Viva Demonstration Flow
-`Open Stock Ledger` ➔ `Select Branch` ➔ `Click SKU Pill` ➔ `GET .../ledger/{branch}/{sku}` ➔ `StockServiceImpl` ➔ `Populate Table`.
 
 ## Common Viva Questions
 * **Q: What details are captured in a stock ledger entry?**
@@ -773,33 +696,28 @@ Managers, Officers, and Admins open `/stock/ledger` to inspect every single stoc
 
 # 18. Audit Logging
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Maintains an immutable audit trail for compliance purposes. Records every action, status transition, actor, IP address, and comment on every transfer request.
 
 ## User Flow
 Admins and managers view audit logs on the transfer details screen, tracking the progress and history of each request.
 
-## Frontend Files
-* `TransferDetails.tsx` → Renders the workflow stepper and audit history log.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/TransferDetails.tsx` (Displays chronological history stepper)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/TransferController.java` (Resolves logs in detail mapping)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/AuditServiceImpl.java` (Implements `logAction()` to write audit entries)
+* **Database**:
+  * `audit_logs` (Stores actor, actions, IP addresses, statuses, and notes)
 
-## Backend Files
-* `AuditService.java` / `AuditServiceImpl.java` → Implements `logAction()`, appending logs for workflow actions.
-
-## Database Tables
-* `audit_logs` → Immutable log table mapping actors, actions, and states.
-
-## APIs Used
-* Logs are fetched as part of the `/api/transfers/{id}` detail response payload.
-
-## Visual Components
-* Chronological stepper timeline.
-* Audit trail table (visible to System Admins only).
-
-## Sorting / Filtering
-* Ordered chronologically (newest entries first).
-
-## Viva Demonstration Flow
-`Workflow Action` ➔ `Service invokes AuditService.logAction()` ➔ `Appends row to audit_logs` ➔ `Loads in details view`.
+### Visual Source Mapping
+* **Transfer Audit Stepper**:
+  * **Page Component**: `frontend/src/pages/TransferDetails.tsx`
+  * **Child Components**: Chronological Stepper component, Complete logs table (visible to System Admins only)
+  * **Data Source API**: `GET /api/transfers/{requestId}` (Returns audit logs inside detail response payload)
 
 ## Common Viva Questions
 * **Q: How does the system protect audit logs from modification?**
@@ -809,32 +727,28 @@ Admins and managers view audit logs on the transfer details screen, tracking the
 
 # 19. Branch Management
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Organizational structure management. Allows administrators to manage branch details and map department relationships.
 
 ## User Flow
 Admins open `/admin/branches` to add branches, edit details, map department associations, or toggle active status.
 
-## Frontend Files
-* `BranchManagement.tsx` → Renders the branch list cards, search filters, and edit drawers.
-
-## Backend Files
-* `OrgManagementController.java` → Exposes branch CRUD endpoints.
-* `ManagementServiceImpl.java` → Handles database operations for branches.
-
-## Database Tables
-* `branches` → Stores branch details (code, name, type, active status).
-* `branch_departments` → Join table mapping departments to branches.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/admin/BranchManagement.tsx` (Branches workspace form)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/OrgManagementController.java` (Exposes branch endpoints)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/ManagementServiceImpl.java` (Handles updates)
+* **Database**:
+  * `branches` (Stores branch code, type, and details)
+  * `branch_departments` (Join table mapping departments to branches)
 
 ## APIs Used
-* `GET/POST/PUT /api/admin/org/branches` → Manages branch details.
-
-## Visual Components
-* Branch summary cards showing code and active departments.
-* Edit Form sliding drawer.
-
-## Sorting / Filtering
-* Search bar filters branches by code or name.
+* `GET /api/admin/org/branches` → Fetches all branches.
+* `POST /api/admin/org/branches` → Creates a new branch.
+* `PUT /api/admin/org/branches/{id}` → Updates branch details.
 
 ## Common Viva Questions
 * **Q: What is the purpose of the branch_departments join table?**
@@ -844,36 +758,34 @@ Admins open `/admin/branches` to add branches, edit details, map department asso
 
 # 20. Department Management
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Organizational structure management. Allows administrators to define global departments and map them to branches.
 
 ## User Flow
 Admins open `/admin/departments` to create departments and configure branch mappings.
 
-## Frontend Files
-* `DepartmentManagement.tsx` → Renders the department list, branch mapping controls, and edit dialogs.
-
-## Backend Files
-* `OrgManagementController.java` → Exposes department CRUD endpoints.
-* `ManagementServiceImpl.java` → Handles database operations for departments.
-
-## Database Tables
-* `departments` → Stores department names.
-* `branch_departments` → Join table mapping departments to branches.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/admin/DepartmentManagement.tsx` (Departments workspace form)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/OrgManagementController.java` (Exposes department endpoints)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/ManagementServiceImpl.java` (Handles updates)
+* **Database**:
+  * `departments` (Stores department names and properties)
+  * `branch_departments` (Join table mapping departments to branches)
 
 ## APIs Used
-* `GET/POST/PUT /api/admin/org/departments` → Manages department details.
-
-## Visual Components
-* Department grid.
-* Branch mapping dialogs.
-
-## Sorting / Filtering
-None.
+* `GET /api/admin/org/departments` → Fetches all departments.
+* `POST /api/admin/org/departments` → Creates a new department.
+* `PUT /api/admin/org/departments/{id}` → Updates department details.
 
 ---
 
 # 21. User Management
+
+*Status: **[Fully Implemented]***
 
 ## Business Purpose
 Administrative security and access control. Allows administrators to manage user accounts, assign roles, and map users to branches and departments.
@@ -881,27 +793,21 @@ Administrative security and access control. Allows administrators to manage user
 ## User Flow
 Admins open `/admin/users` to create user accounts, assign roles, edit details, or toggle active status.
 
-## Frontend Files
-* `UserManagement.tsx` → Renders the user list, search filters, and account edit forms.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/admin/UserManagement.tsx` (User workspace table)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/UserManagementController.java` (Exposes user CRUD)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/ManagementServiceImpl.java` (Handles passwords and profiles updates)
+* **Database**:
+  * `users` (Stores employee accounts, roles, and statuses)
 
-## Backend Files
-* `UserManagementController.java` → Exposes user CRUD endpoints.
-* `ManagementServiceImpl.java` → Handles user creation, password hashing, and role assignment.
-
-## Database Tables
-* `users` → Stores user accounts and profile details.
-
-## APIs Used
-* `GET/POST/PUT /api/admin/users` → Manages user accounts.
-* `PUT /api/admin/users/{userId}/toggle-active` → Activates or deactivates a user account.
-
-## Visual Components
-* User directory table.
-* Account Edit forms.
-* Custom error overlay banners for administrative actions (added in Conversation 92d3a6cd...).
-
-## Sorting / Filtering
-* Search and filter controls by role, branch, or active status.
+### Visual Source Mapping
+* **User Management View**:
+  * **Page Component**: `frontend/src/pages/admin/UserManagement.tsx`
+  * **Child Components**: User details drawer, Account Edit forms, custom error overlay alert banner
+  * **Styling Sheet**: `frontend/src/pages/admin/Admin.css`
+  * **Data Source APIs**: `GET /api/admin/users`, `POST /api/admin/users`, `PUT /api/admin/users/{userId}`, `PUT /api/admin/users/{userId}/toggle-active`
 
 ## Common Viva Questions
 * **Q: What happens to a deactivated user?**
@@ -911,36 +817,34 @@ Admins open `/admin/users` to create user accounts, assign roles, edit details, 
 
 # 22. Item Category Management
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Assets catalog management. Allows administrators to manage item categories, configure behavior types, and map department ownerships.
 
 ## User Flow
 Admins open `/admin/items` to create categories, configure behavior types (CASH/STOCK/DOCUMENT_CASE), assign department mappings, and manage sensitivity levels.
 
-## Frontend Files
-* `ItemManagement.tsx` → Renders the category list, behavior selectors, and stock item panels.
-
-## Backend Files
-* `OrgManagementController.java` → Exposes category CRUD endpoints.
-* `ManagementServiceImpl.java` → Handles category database operations.
-
-## Database Tables
-* `item_categories` → Stores category details (name, behavior type, sensitivity, department mapping).
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/admin/ItemManagement.tsx` (Item management panel)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/OrgManagementController.java` (Exposes categories CRUD)
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/ManagementServiceImpl.java` (Handles database updates)
+* **Database**:
+  * `item_categories` (Stores behavior configuration, sensitivity level, and department mapping)
 
 ## APIs Used
-* `GET/POST/PUT /api/admin/org/items` → Manages item categories.
-* `PUT /api/admin/org/items/{id}/toggle-active` → Toggles category active status.
-
-## Visual Components
-* Category grid showing behavior pill badges.
-* Category Form edit drawer.
-
-## Sorting / Filtering
-None.
+* `GET /api/admin/org/items` → Fetches item categories.
+* `POST /api/admin/org/items` → Creates a new category.
+* `PUT /api/admin/org/items/{categoryId}` → Updates item category details.
+* `PUT /api/admin/org/items/{categoryId}/toggle-active` → Toggles category active status.
 
 ---
 
-# 23. Stock Category Behavior System (CASH / STOCK / DOCUMENT_CASE)
+# 23. Stock Category Behavior System
+
+*Status: **[Fully Implemented]***
 
 ## Business Purpose
 Decouples catalog items from hard-coded workflow logic. The category behavior type dynamically triggers ledger updates, denomination checks, or stock selectors.
@@ -948,22 +852,16 @@ Decouples catalog items from hard-coded workflow logic. The category behavior ty
 ## User Flow
 Choosing a category on the New Request form dynamically adjusts the layout (revealing cash fields for CASH, stock fields for STOCK, or standard fields for DOCUMENT_CASE).
 
-## Frontend Files
-* `NewTransfer.tsx` → Conditionally renders inputs based on category behavior.
-* `TransferDetails.tsx` → Renders action panels based on behavior type validations.
-
-## Backend Files
-* `TransferServiceImpl.java` → Validates and applies behavior rules at workflow steps.
-* `CategoryBehavior.java` → Enum class (CASH, STOCK, DOCUMENT_CASE).
-
-## Database Tables
-* `item_categories` → Stores the `behavior_type` configuration.
-
-## APIs Used
-None (Enforced across transfer workflows).
-
-## Visual Components
-* Behavior labels (Green for CASH, Blue for STOCK, Grey for DOCUMENT_CASE).
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/NewTransfer.tsx` (Conditionally shows/hides amount/SKU fields)
+  * `frontend/src/pages/TransferDetails.tsx` (Toggles denominations grid and stock level alerts)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java` (Executes behavior-based validations)
+* **Backend Enums**:
+  * `backend/src/main/java/com/jamunabank/branchsync/model/enums/CategoryBehavior.java` (Enum declaration: `CASH`, `STOCK`, `DOCUMENT_CASE`)
+* **Database**:
+  * `item_categories` (Columns: `behavior_type` storing enum string values)
 
 ## Common Viva Questions
 * **Q: What are the three behavior types and what do they trigger?**
@@ -976,36 +874,31 @@ None (Enforced across transfer workflows).
 
 # 24. Branch Directory
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Facilitates internal communication. Allows managers to look up contact details and active departments for other branches.
 
 ## User Flow
 A manager opens `/branch-directory` and searches for branches by name or region to view contact info and active departments.
 
-## Frontend Files
-* `BranchDirectory.tsx` → Renders the directory list, search filters, and details cards.
-* `BranchDirectory.css` → Handles visual styling.
-
-## Backend Files
-* `UserController.java` → Exposes the branch directory endpoint.
-
-## Database Tables
-* `branches` → Resolves branch details.
-* `departments` → Resolves department details.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/BranchDirectory.tsx` (Contact list and search filters)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/UserController.java` (Exposes `/branch-directory` endpoint)
+* **Database**:
+  * `branches` (Resolves contact details, district, and division)
+  * `departments` (Resolves active department names)
 
 ## APIs Used
 * `GET /api/users/branch-directory` → Returns details for active branches and departments.
 
-## Visual Components
-* Branch details cards (Address, Phone, Email).
-* Department badge lists.
-
-## Sorting / Filtering
-* Search filters by branch name, code, district, or division.
-
 ---
 
 # 25. Reports / Print Features
+
+*Status: **[Fully Implemented]***
 
 ## Business Purpose
 Generates physical documents and printable worksheets for audits and transfer verifications.
@@ -1013,20 +906,22 @@ Generates physical documents and printable worksheets for audits and transfer ve
 ## User Flow
 Users click "Print Slip" on a transfer details screen or "Print Ledger" on a ledger dashboard to generate a clean, print-formatted page.
 
-## Frontend Files
-* `TransferDetails.tsx` → Renders printable transfer slips.
-* `CashLedger.tsx` / `StockLedger.tsx` → Renders printable ledger sheets.
-
-## Visual Components
-* Printable templates containing branch stamps, signatures, and transaction details.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/TransferDetails.tsx` (Printable transfer slip template)
+  * `frontend/src/pages/CashLedger.tsx` (Printable cash ledger template)
+  * `frontend/src/pages/StockLedger.tsx` (Printable stock ledger template)
+  * `frontend/src/pages/TransferHistory.tsx` (Printable history listing template)
 
 ## Common Viva Questions
 * **Q: Did you use a PDF generator on the backend?**
-  * **A:** No. The system uses a clean client-side approach with CSS print media queries (`@media print`), which hide sidebars and layouts to render print-optimized documents directly through the browser.
+  * **A:** No. The system uses CSS print media queries (`@media print`) and native browser window scripting. This approach generates print-optimized documents directly in the browser client without putting load on the backend.
 
 ---
 
 # 26. Role-Based Access Control
+
+*Status: **[Fully Implemented]***
 
 ## Business Purpose
 Ensures security and operational segregation of duties, restricting actions to authorized roles.
@@ -1034,16 +929,15 @@ Ensures security and operational segregation of duties, restricting actions to a
 ## User Flow
 The user's role determines which sidebar links and action buttons are visible in the UI. Unauthorized requests are blocked on the backend.
 
-## Frontend Files
-* `Sidebar.tsx` → Controls menu visibility.
-* `TransferDetails.tsx` → Controls button visibility based on role checks.
-
-## Backend Files
-* `UnauthorizedRoleException.java` → Handled by the global exception resolver.
-* Service implementations enforce role checks.
-
-## Database Tables
-* `roles` → Stores role definitions.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/components/Layout/Sidebar.tsx` (Hides/shows menu links based on role checks)
+  * `frontend/src/pages/TransferDetails.tsx` (Restricts action panels visibility)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/exception/UnauthorizedRoleException.java` (Exception class thrown on violation)
+  * Service implementations (Enforce role checks on transitions)
+* **Database**:
+  * `roles` (System role names)
 
 ## Common Viva Questions
 * **Q: Is RBAC enforced only on the frontend?**
@@ -1053,25 +947,28 @@ The user's role determines which sidebar links and action buttons are visible in
 
 # 27. Notification / Attention Required Widgets
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Highlights outstanding actions for the user, preventing workflow bottlenecks.
 
 ## User Flow
 On logging in, users review the "Attention Required" widget on their dashboard to see outstanding tasks.
 
-## Frontend Files
-* `Dashboard.tsx` → Fetches and renders the pending actions feed.
-
-## Database Tables
-* `transfer_requests` → Source for pending items.
-
-## Visual Components
-* Highlighted action alerts.
-* Red pending item badges.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/Dashboard.tsx` (Attention required widget component)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/repository/TransferRequestRepository.java` (Pulls active requests matching action states)
+  * `backend/src/main/java/com/jamunabank/branchsync/repository/CashManualAdjustmentRepository.java` (Pulls pending cash adjustments)
+* **Database**:
+  * `transfer_requests` / `cash_manual_adjustments` (Sources for pending action counts)
 
 ---
 
 # 28. Lookup APIs
+
+*Status: **[Fully Implemented]***
 
 ## Business Purpose
 Provides public, read-only reference data to populate dropdown selectors throughout the application.
@@ -1079,11 +976,14 @@ Provides public, read-only reference data to populate dropdown selectors through
 ## User Flow
 Form dropdown lists are dynamically populated using lookup endpoints.
 
-## Frontend Files
-* Form components invoke Axios requests to lookup URLs.
-
-## Backend Files
-* `LookupController.java` → Exposes lookup endpoints.
+### Feature Dependency Map
+* **Frontend**:
+  * `frontend/src/pages/NewTransfer.tsx` (Fetches lookup selections)
+  * `frontend/src/pages/TransferDetails.tsx` (Fetches lookup selections)
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/controller/LookupController.java` (Exposes lookup endpoints)
+* **Database**:
+  * `branches` / `departments` / `item_categories` / `users` / `stock_items` (Read lookup data)
 
 ## APIs Used
 * `GET /api/lookup/branches`
@@ -1096,15 +996,19 @@ Form dropdown lists are dynamically populated using lookup endpoints.
 
 # 29. Database Architecture
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Maintains a clean, normalized relational database to organize user profiles, branch assets, and workflow history.
 
-## Backend Files
-* JPA Entity mappings in `model/entity/` map classes to database tables.
-* `branchsync.sql` contains the complete schema and seed data.
+### Feature Dependency Map
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/model/entity/...` (JPA mappings)
+* **SQL Seeds**:
+  * `backend/src/main/resources/branchsync.sql` (Creates schema and inserts seed data)
 
 ## Database Tables
-The system operates 15 tables:
+The system manages 15 operational tables:
 * Core: `users`, `roles`, `branches`, `departments`, `branch_departments`, `item_categories`, `transfer_requests`, `audit_logs`.
 * Cash: `branch_cash_balance`, `cash_ledger`, `cash_transfer_denominations`, `cash_manual_adjustments`.
 * Stock: `stock_items`, `branch_stock_balance`, `stock_ledger`, `stock_manual_adjustments`.
@@ -1113,12 +1017,15 @@ The system operates 15 tables:
 
 # 30. Security Configuration
 
+*Status: **[Fully Implemented]***
+
 ## Business Purpose
 Hardens the Spring Boot API, manages request authentication, enables CORS, and validates passwords.
 
-## Backend Files
-* `SecurityConfig.java` → Configures HTTP security, stateless sessions, JWT filter binding, and endpoint permissions.
-* `Sha256PasswordEncoder.java` → Hashing validator.
+### Feature Dependency Map
+* **Backend**:
+  * `backend/src/main/java/com/jamunabank/branchsync/security/SecurityConfig.java` (Configures filter chain)
+  * `backend/src/main/java/com/jamunabank/branchsync/security/Sha256PasswordEncoder.java` (Validates password hashes)
 
 ## Common Viva Questions
 * **Q: Why does the system configure CORS?**
@@ -1126,177 +1033,255 @@ Hardens the Spring Boot API, manages request authentication, enables CORS, and v
 
 ---
 
+## Complete Sorting, Filtering, and Search Traceability
+
+Use this traceability table to explain how search, sorting, filtering, and pagination are executed on different screens:
+
+| Visual Screen | Supported Operation | Execution Layer | Frontend File | Backend Endpoint | Repository / Service Layer Responsible |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Dashboard Screen** | Active Queue Filter | Client-Side JS | `frontend/src/pages/Dashboard.tsx` | `GET /api/transfers` | `TransferServiceImpl.getDashboardTransfers()` pulls security-scoped list. Client-side JS runs `isActionable()` checks to build the "Attention Required" widget. |
+| **Transfer History Screen** | Multi-Parameter Search, Status/Priority/Branch/Dates Filtering, sorting, and user-action scope | Client-Side JS (Dynamic derived list) | `frontend/src/pages/TransferHistory.tsx` | `GET /api/transfers/history` | `TransferServiceImpl.getTransferHistory()` returns all historical records. Frontend dynamic list `.filter()` evaluates search parameters and `.sort()` matches sort order selections. |
+| **Cash Ledger Screen** | Branch Vault Selector & consolidated overview | Database & Controller Layer | `frontend/src/pages/CashLedger.tsx` | `GET /api/cash/balances` (consolidated) & `GET /api/cash/ledger/{branchId}` (detailed history) | `CashServiceImpl.getLedger()` retrieves chronological ledger transactions. Branch selection is restricted to managers. Admins can select any branch. |
+| **Stock Ledger Screen** | Item SKU pills, Branch Selector, search, and department filters | Client-Side JS & Controller Layer | `frontend/src/pages/StockLedger.tsx` | `GET /api/stock/balances/{branchId}` & `GET /api/stock/ledger/{branchId}/{stockItemId}` | `StockServiceImpl.getLedger()` loads data. Frontend client filters lists by search terms, manages selected department dropdowns, and loads item-specific stock ledgers. |
+| **User Management Screen** | Search & filters (role, branch, active status) | Client-Side JS | `frontend/src/pages/admin/UserManagement.tsx` | `GET /api/admin/users` | `ManagementServiceImpl.getAllUsers()` fetches records. Frontend processes search terms and active flags client-side. |
+| **Branch Management Screen** | Search branches by code or name | Client-Side JS | `frontend/src/pages/admin/BranchManagement.tsx` | `GET /api/admin/org/branches` | `ManagementServiceImpl.getAllBranches()` fetches records. Frontend processes search matches client-side. |
+| **Department Management Screen** | Listing & branch mapping | Controller Layer | `frontend/src/pages/admin/DepartmentManagement.tsx` | `GET /api/admin/org/departments` | `ManagementServiceImpl.getAllDepartments()` fetches master list database rows. |
+| **Item Category Management Screen** | Listing & active toggles | Controller Layer | `frontend/src/pages/admin/ItemManagement.tsx` | `GET /api/admin/org/items` | `ManagementServiceImpl.getAllItemCategories()` loads master list category rows. |
+
+---
+
+## Complete Database Impact Maps
+
+Use this section to trace exactly how the database changes on a specific action:
+
+### 1. Request Creation
+* **Inserted**: Row in `transfer_requests` table (stores creator context, requested amounts or SKU mapping, codes, and timestamps).
+* **Inserted**: Row in `audit_logs` table (action = `CREATED`, fromStatus = `null`, toStatus = `PENDING_INTERNAL` [or `PENDING_HQ_APPROVAL` for managers]).
+* **Modified**: None.
+
+### 2. Internal Approval
+* **Inserted**: Row in `audit_logs` table (action = `APPROVED_INTERNAL`, fromStatus = `PENDING_INTERNAL`, toStatus = `PENDING_HQ_APPROVAL`).
+* **Modified**: `transfer_requests` table (updates `status` to `PENDING_HQ_APPROVAL` and `internal_approver_id` column).
+
+### 3. HQ Routing (`hqVerify` - Approved)
+* **Inserted**: Row in `audit_logs` table (action = `HQ_APPROVED`, fromStatus = `PENDING_HQ_APPROVAL`, toStatus = `PENDING_ASSIGNMENT`).
+* **Modified**: `transfer_requests` table (updates `status` to `PENDING_ASSIGNMENT`, `hq_approver_id`, `hq_approved_at`, `destination_branch_id`, and `destination_department_id`).
+
+### 4. Destination Acceptance (`acceptAndAssignDriver`)
+* **Inserted**: Row in `cash_transfer_denominations` table (if `CASH` request: inserts quantity count of selected notes).
+* **Inserted**: Row in `audit_logs` table (action = `ASSIGNED_DRIVER`, fromStatus = `PENDING_ASSIGNMENT`, toStatus = `PENDING_FINAL_RELEASE`).
+* **Modified**: `transfer_requests` table (updates `status` to `PENDING_FINAL_RELEASE`, `dept_acceptor_id`, and `delivery_person_id`).
+
+### 5. Final Release (`releaseFinal`)
+* **Inserted**: Row in `audit_logs` table (action = `RELEASED`, fromStatus = `PENDING_FINAL_RELEASE`, toStatus = `READY_FOR_PICKUP`).
+* **Modified**: `transfer_requests` table (updates `status` to `READY_FOR_PICKUP` and `final_releaser_id`).
+
+### 6. Courier Pickup (`markPickedUp`)
+* **Inserted**: Row in `audit_logs` table (action = `PICKED_UP`, fromStatus = `READY_FOR_PICKUP`, toStatus = `IN_TRANSIT`).
+* **Inserted**: Ledger entry row in `cash_ledger` or `stock_ledger` tables (action = `TRANSFER_OUT` for supplying branch).
+* **Modified**: `transfer_requests` table (updates `status` to `IN_TRANSIT` and `picked_up_at` timestamp).
+* **Modified**: `users` table (updates assigned courier `is_available` flag to `false`).
+* **Modified**: `branch_cash_balance` or `branch_stock_balance` tables (debits supplying branch vault cash or SKU balance).
+
+### 7. Courier Delivery (`markDelivered`)
+* **Inserted**: Row in `audit_logs` table (action = `DELIVERED`, fromStatus = `IN_TRANSIT`, toStatus = `DELIVERED`).
+* **Inserted**: Ledger entry row in `cash_ledger` or `stock_ledger` tables (action = `TRANSFER_IN` for receiving branch).
+* **Modified**: `transfer_requests` table (updates `status` to `DELIVERED` and `delivered_at` timestamp).
+* **Modified**: `users` table (updates courier `is_available` flag to `true`).
+* **Modified**: `branch_cash_balance` or `branch_stock_balance` tables (credits receiving branch vault cash or SKU balance).
+
+### 8. Request Completion (`closeRequest` - Accepted)
+* **Inserted**: Row in `audit_logs` table (action = `COMPLETED`, fromStatus = `DELIVERED`, toStatus = `COMPLETED`).
+* **Modified**: `transfer_requests` table (updates `status` to `COMPLETED`, `closed_at` timestamp, and `final_note`).
+
+### 9. Request Rejection (`closeRequest` - Rejected)
+* **Inserted**: Row in `audit_logs` table (action = `REJECTED`, fromStatus = `DELIVERED`, toStatus = `REJECTED_ON_RECEIPT`).
+* **Inserted**: Two ledger entries in `cash_ledger` or `stock_ledger` tables (`REVERSAL_OUT` debits receiving branch; `REVERSAL_IN` credits supplying branch).
+* **Modified**: `transfer_requests` table (updates `status` to `REJECTED_ON_RECEIPT`, `closed_at` timestamp, and `final_note`).
+* **Modified**: `branch_cash_balance` or `branch_stock_balance` tables (restores balances: debits receiving branch, credits supplying branch).
+
+### 10. Cash Adjustment Approval (`approveAdjustment` - Approved)
+* **Inserted**: Row in `cash_ledger` table (action = `MANUAL_CREDIT` or `MANUAL_DEBIT`).
+* **Modified**: `cash_manual_adjustments` table (updates `status` to `APPROVED`, `approved_by` and `decided_at`).
+* **Modified**: `branch_cash_balance` table (adjusts branch vault cash up or down).
+
+### 11. Stock Adjustment Approval (`approveAdjustment` - Approved)
+* **Inserted**: Row in `stock_ledger` table (action = `MANUAL_CREDIT` or `MANUAL_DEBIT`).
+* **Modified**: `stock_manual_adjustments` table (updates `status` to `APPROVED`, `approved_by` and `decided_at`).
+* **Modified**: `branch_stock_balance` table (adjusts item SKU balance up or down).
+
+---
+
 ## Complete Project File Map
 
-### Frontend Files (`frontend/src/`)
+Use this directory map to identify file responsibilities:
 
-#### Pages (`pages/`)
-* `Login.tsx` → Handles user credentials input, toggles password visibility, and manages login requests.
-* `Dashboard.tsx` → Renders the landing page containing welcome cards, pending action widgets, and active transfers.
-* `NewTransfer.tsx` → Form to create a new inter-branch transfer request, adapting layouts based on selected behaviors.
-* `TransferDetails.tsx` → Core page managing transfer details, process timelines, and workflow actions.
-* `TransferHistory.tsx` → Searchable and filterable history grid of resolved transfers.
-* `BranchDirectory.tsx` → Contact directory showing branch and department details.
-* `Profile.tsx` → Profile manager showing user details and password modification controls.
-* `CashLedger.tsx` → Displays branch vaults cash balances and transaction ledger logs.
-* `ManualAdjustment.tsx` → Submission forms and manager approval cards for cash adjustments.
-* `StockLedger.tsx` → Displays branch inventory levels, SKU cards, and stock ledger logs.
-* `StockAdjustment.tsx` → Submission forms and manager approval cards for stock adjustments.
-* `admin/BranchManagement.tsx` → Branch administrative manager.
-* `admin/DepartmentManagement.tsx` → Department administrative manager.
-* `admin/ItemManagement.tsx` → Category and stock item SKU administrative manager.
-* `admin/UserManagement.tsx` → User profiles and permissions administrative manager.
+### Frontend Components Map (`frontend/src/`)
 
-#### Components (`components/`)
-* `ProtectedRoute.tsx` → Authentication guard directing unauthorized traffic to the login screen.
-* `Layout/Layout.tsx` → Main shell component binding sidebars, topbars, and page content areas.
-* `Layout/Sidebar.tsx` → Navigation sidebar displaying menu options based on user roles.
-* `Layout/Topbar.tsx` → Header component rendering user details and profile menus.
+* `frontend/src/pages/Login.tsx`
+  * *Responsibility*: Renders the Login page, manages input state, toggles password visibility, and triggers authentication requests.
+* `frontend/src/pages/Dashboard.tsx`
+  * *Responsibility*: Renders the landing page containing welcome cards, pending action widgets, and active transfers.
+* `frontend/src/pages/NewTransfer.tsx`
+  * *Responsibility*: Form to create a new inter-branch transfer request, adapting layouts based on selected behaviors.
+* `frontend/src/pages/TransferDetails.tsx`
+  * *Responsibility*: Core page managing transfer details, process timelines, and workflow actions.
+* `frontend/src/pages/TransferHistory.tsx`
+  * *Responsibility*: Searchable and filterable history grid of resolved transfers.
+* `frontend/src/pages/BranchDirectory.tsx`
+  * *Responsibility*: Contact directory showing branch and department details.
+* `frontend/src/pages/Profile.tsx`
+  * *Responsibility*: Profile manager showing user details and password modification controls.
+* `frontend/src/pages/CashLedger.tsx`
+  * *Responsibility*: Displays branch vaults cash balances and transaction ledger logs.
+* `frontend/src/pages/ManualAdjustment.tsx`
+  * *Responsibility*: Submission forms and manager approval cards for cash adjustments.
+* `frontend/src/pages/StockLedger.tsx`
+  * *Responsibility*: Displays branch inventory levels, SKU cards, and stock ledger logs.
+* `frontend/src/pages/StockAdjustment.tsx`
+  * *Responsibility*: Submission forms and manager approval cards for stock adjustments.
+* `frontend/src/pages/admin/BranchManagement.tsx`
+  * *Responsibility*: Branch administrative manager.
+* `frontend/src/pages/admin/DepartmentManagement.tsx`
+  * *Responsibility*: Department administrative manager.
+* `frontend/src/pages/admin/ItemManagement.tsx`
+  * *Responsibility*: Category and stock item SKU administrative manager.
+* `frontend/src/pages/admin/UserManagement.tsx`
+  * *Responsibility*: User profiles and permissions administrative manager.
+* `frontend/src/components/ProtectedRoute.tsx`
+  * *Responsibility*: Authentication guard directing unauthorized traffic to the login screen.
+* `frontend/src/components/Layout/Layout.tsx`
+  * *Responsibility*: Main shell component binding sidebars, topbars, and page content areas.
+* `frontend/src/components/Layout/Sidebar.tsx`
+  * *Responsibility*: Navigation sidebar displaying menu options based on user roles.
+* `frontend/src/components/Layout/Topbar.tsx`
+  * *Responsibility*: Header component rendering user details and profile menus.
+* `frontend/src/context/AuthContext.tsx`
+  * *Responsibility*: Maintains the global React authentication state, saving user profile data and tokens.
+* `frontend/src/api/axiosConfig.ts`
+  * *Responsibility*: Configures Axios clients to attach JWT Bearer tokens and intercept session expirations.
+* `frontend/src/types/transfer.ts`
+  * *Responsibility*: Declares TypeScript typings for API responses.
+* `frontend/src/index.css`
+  * *Responsibility*: Global style resets, typography rules, and utility classes.
+* `frontend/src/variables.css`
+  * *Responsibility*: Defines CSS custom properties for color palettes, shadow designs, and spacing scales.
+* `frontend/src/App.css`
+  * *Responsibility*: App-level layout resets.
 
-#### Contexts (`context/`)
-* `AuthContext.tsx` → Maintains the global React authentication state, saving user profile data and tokens.
+### Backend Components Map (`backend/src/main/java/com/jamunabank/branchsync/`)
 
-#### API configurations (`api/`)
-* `axiosConfig.ts` → Configures Axios clients to attach JWT Bearer tokens and intercept session expirations.
-
-#### Typings (`types/`)
-* `transfer.ts` → Declares TypeScript typings for API responses.
-
-#### Styling (`styles/`)
-* `index.css` → Global style resets, typography rules, and utility classes.
-* `variables.css` → Defines CSS custom properties for color palettes, shadow designs, and spacing scales.
-* `App.css` → App-level layout resets.
-* Per-page CSS files (e.g. `Login.css`, `Dashboard.css`, `NewTransfer.css`) provide isolated styles for specific screens.
-
----
-
-### Backend Files (`backend/src/main/java/com/jamunabank/branchsync/`)
-
-#### Controllers (`controller/`)
-* `AuthController.java` → Processes employee logins and returns authentication tokens.
-* `TransferController.java` → Manages the transfer request workflow state machine.
-* `CashController.java` → Manages branch vault balances, denominations sheets, ledgers, and cash adjustments.
-* `StockController.java` → Manages branch inventory, SKUs, ledgers, and stock adjustments.
-* `LookupController.java` → Exposes reference data to populate frontend forms.
-* `OrgManagementController.java` → Admin endpoints managing branches, departments, categories, and stock items.
-* `UserManagementController.java` → Admin endpoints managing user accounts.
-* `UserController.java` → Processes user profile queries and branch directories.
-
-#### Services (`service/`)
-* `TransferService.java` / `TransferServiceImpl.java` → Implements the transfer request state machine and workflow transitions.
-* `CashService.java` / `CashServiceImpl.java` → Manages branch vault math, ledger logs, and cash adjustments.
-* `StockService.java` / `StockServiceImpl.java` → Manages branch inventory counts, ledger logs, and stock adjustments.
-* `AuditService.java` / `impl/AuditServiceImpl.java` → Appends audit trails for transfer request status updates.
-* `ManagementService.java` / `impl/ManagementServiceImpl.java` → Administrative engine for organization details and user accounts.
-
-#### Repositories (`repository/`)
-* `UserRepository.java` → Accesses user account tables.
-* `RoleRepository.java` → Accesses user role tables.
-* `BranchRepository.java` → Accesses branch tables.
-* `DepartmentRepository.java` → Accesses department tables.
-* `ItemCategoryRepository.java` → Accesses item category tables.
-* `TransferRequestRepository.java` → Accesses transfer request tables.
-* `AuditLogRepository.java` → Accesses audit log tables.
-* `BranchCashBalanceRepository.java` → Accesses live cash balance tables.
-* `CashLedgerRepository.java` → Accesses cash ledger tables.
-* `CashTransferDenominationRepository.java` → Accesses denomination breakdown tables.
-* `CashManualAdjustmentRepository.java` → Accesses cash adjustment tables.
-* `StockItemRepository.java` → Accesses stock SKU tables.
-* `BranchStockBalanceRepository.java` → Accesses live stock quantity tables.
-* `StockLedgerRepository.java` → Accesses stock ledger tables.
-* `StockManualAdjustmentRepository.java` → Accesses stock adjustment tables.
-
-#### Entities (`model/entity/`)
-* `User.java` → Represents employee accounts.
-* `Role.java` → Represents system role definitions.
-* `Branch.java` → Represents bank branches.
-* `Department.java` → Represents departments.
-* `ItemCategory.java` → Represents asset categories.
-* `TransferRequest.java` → Represents transfer requests.
-* `AuditLog.java` → Represents workflow audit logs.
-* `BranchCashBalance.java` → Represents live branch cash vaults.
-* `CashLedgerEntry.java` → Represents vault transaction records.
-* `CashTransferDenomination.java` → Represents note counts for cash transfers.
-* `CashManualAdjustment.java` → Represents cash adjustments.
-* `StockItem.java` → Represents stock inventory items (SKUs).
-* `BranchStockBalance.java` → Represents live branch stock counts.
-* `StockLedgerEntry.java` → Represents stock transaction records.
-* `StockManualAdjustment.java` → Represents stock adjustments.
-
-#### Enums (`model/enums/`)
-* `BranchType.java` → Declares branch classifications (`HQ`, `AD_BRANCH`, `SUB_BRANCH`).
-* `CategoryBehavior.java` → Declares category behavior types (`CASH`, `STOCK`, `DOCUMENT_CASE`).
-
-#### Security (`security/`)
-* `SecurityConfig.java` → Configures HTTP security, stateless sessions, JWT filter bindings, and path permissions.
-* `JwtUtils.java` → Generates, decodes, and validates JWT authentication tokens.
-* `JwtAuthenticationFilter.java` → Intercepts calls to validate JWT signatures and populate the SecurityContext.
-* `CustomUserDetailsService.java` → Loads user details from database by Employee ID.
-* `CustomUserDetails.java` → Wraps user details for use by Spring Security.
-* `Sha256PasswordEncoder.java` → Hashing validator matching credentials.
-
-#### DTOs (`dto/`)
-* `LoginRequestDto.java` & `JwtResponseDto.java` → Models authentication exchange payloads.
-* `InitiateTransferRequestDto.java` → Models request creation data.
-* `ApprovalRequestDto.java` → Models internal approval decisions.
-* `VerificationRequestDto.java` → Models HQ verification decisions and destination mappings.
-* `CompletionRequestDto.java` → Models recipient acceptance or rejection decisions.
-* `CreateUserDto.java` / `CreateBranchDto.java` / `CreateDepartmentDto.java` / `CreateItemCategoryDto.java` → Models administrative creation payloads.
-* `TransferResponseDto.java` → Models lightweight transfer items for dashboard tables.
-* `TransferDetailDto.java` → Models complete transfer details and workflow records.
-* `AuditLogResponseDto.java` → Models audit log entries.
-* `ErrorResponse.java` → Models standardized error messages.
-
-#### Exceptions & Mappers (`exception/` & `mapper/`)
-* `GlobalExceptionHandler.java` → Intercepts runtime exceptions, returning standardized JSON error payloads.
-* `ResourceNotFoundException.java` → 404 error handler.
-* `UnauthorizedRoleException.java` → 403 error handler.
-* `BusinessRuleViolationException.java` → 400 error handler.
-* `TransferMapper.java` → Maps between transfer request entities and response DTOs.
+* `backend/src/main/java/com/jamunabank/branchsync/controller/AuthController.java`
+  * *Responsibility*: Processes employee logins and returns authentication tokens.
+* `backend/src/main/java/com/jamunabank/branchsync/controller/TransferController.java`
+  * *Responsibility*: Manages the transfer request workflow state machine. Exposes endpoints for workflow progression and logs auditing.
+* `backend/src/main/java/com/jamunabank/branchsync/controller/CashController.java`
+  * *Responsibility*: Manages branch vault balances, denominations sheets, ledgers, and cash adjustments.
+* `backend/src/main/java/com/jamunabank/branchsync/controller/StockController.java`
+  * *Responsibility*: Manages branch inventory, SKUs, ledgers, and stock adjustments.
+* `backend/src/main/java/com/jamunabank/branchsync/controller/LookupController.java`
+  * *Responsibility*: Exposes reference data to populate frontend forms.
+* `backend/src/main/java/com/jamunabank/branchsync/controller/OrgManagementController.java`
+  * *Responsibility*: Admin endpoints managing branches, departments, categories, and stock items.
+* `backend/src/main/java/com/jamunabank/branchsync/controller/UserManagementController.java`
+  * *Responsibility*: Admin endpoints managing user accounts.
+* `backend/src/main/java/com/jamunabank/branchsync/controller/UserController.java`
+  * *Responsibility*: Processes user profile queries and branch directories.
+* `backend/src/main/java/com/jamunabank/branchsync/service/TransferService.java`
+  * *Responsibility*: Declares the interface for managing transfer requests.
+* `backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java`
+  * *Responsibility*: Implements the transfer request state machine, transitions logic, and validation checks.
+* `backend/src/main/java/com/jamunabank/branchsync/service/CashService.java`
+  * *Responsibility*: Declares the interface for managing cash vault math, ledgers, and adjustments.
+* `backend/src/main/java/com/jamunabank/branchsync/service/impl/CashServiceImpl.java`
+  * *Responsibility*: Implements cash vault balance checks, note denomination validation, and manual cash adjustments.
+* `backend/src/main/java/com/jamunabank/branchsync/service/StockService.java`
+  * *Responsibility*: Declares the interface for managing stock quantities, SKU levels, and adjustments.
+* `backend/src/main/java/com/jamunabank/branchsync/service/impl/StockServiceImpl.java`
+  * *Responsibility*: Implements branch stock balance tracking, stock ledger entries, and stock adjustments.
+* `backend/src/main/java/com/jamunabank/branchsync/service/AuditService.java`
+  * *Responsibility*: Declares the audit logging interface.
+* `backend/src/main/java/com/jamunabank/branchsync/service/impl/AuditServiceImpl.java`
+  * *Responsibility*: Implements log tracking inside the database.
+* `backend/src/main/java/com/jamunabank/branchsync/service/ManagementService.java`
+  * *Responsibility*: Declares administrative management interfaces.
+* `backend/src/main/java/com/jamunabank/branchsync/service/impl/ManagementServiceImpl.java`
+  * *Responsibility*: Administrative engine for updating branches, departments, stock items, and user accounts.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/UserRepository.java`
+  * *Responsibility*: Database access for user entities.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/RoleRepository.java`
+  * *Responsibility*: Database access for role entities.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/BranchRepository.java`
+  * *Responsibility*: Database access for branch entities.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/DepartmentRepository.java`
+  * *Responsibility*: Database access for department entities.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/ItemCategoryRepository.java`
+  * *Responsibility*: Database access for item category entities.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/TransferRequestRepository.java`
+  * *Responsibility*: Database access for transfer request entities.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/AuditLogRepository.java`
+  * *Responsibility*: Database access for audit log entities.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/BranchCashBalanceRepository.java`
+  * *Responsibility*: Database access for live cash balance entities.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/CashLedgerRepository.java`
+  * *Responsibility*: Database access for cash ledger entities.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/CashTransferDenominationRepository.java`
+  * *Responsibility*: Database access for denomination entities.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/CashManualAdjustmentRepository.java`
+  * *Responsibility*: Database access for cash manual adjustments.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/StockItemRepository.java`
+  * *Responsibility*: Database access for stock SKU entities.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/BranchStockBalanceRepository.java`
+  * *Responsibility*: Database access for branch SKU quantity balances.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/StockLedgerRepository.java`
+  * *Responsibility*: Database access for stock ledger entities.
+* `backend/src/main/java/com/jamunabank/branchsync/repository/StockManualAdjustmentRepository.java`
+  * *Responsibility*: Database access for stock manual adjustments.
 
 ---
 
-## Defense Quick Navigation Guide
+## Viva Emergency Navigation
 
-If an examiner asks about a specific feature, use this quick-reference guide to open the correct files immediately:
+If the examiner asks about a specific feature, use this quick checklist under pressure to navigate immediately to the source files:
 
-### 1. Cash Adjustments
-* **Frontend**: `ManualAdjustment.tsx` (Line 1: submit form & pending approvals)
-* **Controller**: `CashController.java` (Line 1: submit/decide endpoints)
-* **Service**: `CashServiceImpl.java` (Line 1: `submitAdjustment()`, `decideAdjustment()`)
-* **Entity**: `CashManualAdjustment.java` (JPA Entity class)
-* **Table**: `cash_manual_adjustments` (Relational table)
+### Login
+* **Frontend Component**: `frontend/src/pages/Login.tsx` (Renders credentials form)
+* **Backend Controller**: `backend/src/main/java/com/jamunabank/branchsync/controller/AuthController.java` (Exposes login path endpoint)
+* **Backend Custom Password Encoder**: `backend/src/main/java/com/jamunabank/branchsync/security/Sha256PasswordEncoder.java` (Hashed comparisons)
+* **Database Table**: `users` (User records source)
 
-### 2. HQ Routing & Destination Mapping
-* **Frontend**: `TransferDetails.tsx` (Look for `VerificationRequestDto` and `handleHqVerify`)
-* **Controller**: `TransferController.java` (Look for `hqVerify` mapping)
-* **Service**: `TransferServiceImpl.java` (Look for `hqVerify()` method)
-* **Entity**: `TransferRequest.java` (Fields: `destinationBranch`, `destinationDepartment`)
-* **Table**: `transfer_requests` (Columns: `destination_branch_id`, `destination_department_id`)
+### JWT
+* **Security Filter**: `backend/src/main/java/com/jamunabank/branchsync/security/JwtAuthenticationFilter.java` (Verifies headers)
+* **Token Utility Component**: `backend/src/main/java/com/jamunabank/branchsync/security/JwtUtils.java` (Generates and decodes tokens)
+* **Frontend Token Interceptor**: `frontend/src/api/axiosConfig.ts` (Appends JWT to headers)
+* **Spring Security Config**: `backend/src/main/java/com/jamunabank/branchsync/security/SecurityConfig.java` (Declares paths permissions)
 
-### 3. Stock Category Behavior (CASH / STOCK / DOCUMENT_CASE)
-* **Frontend**: `NewTransfer.tsx` (Conditionally renders cash/stock inputs)
-* **Controller**: `TransferController.java` (Maps transfer CRUD)
-* **Service**: `TransferServiceImpl.java` (Look for `isCashBehavior` and `isStockBehavior` helpers)
-* **Entity**: `ItemCategory.java` (Field: `CategoryBehavior behaviorType`)
-* **Table**: `item_categories` (Column: `behavior_type`)
+### HQ Routing
+* **Frontend Routing Handler**: `frontend/src/pages/TransferDetails.tsx` (Function: `handleHqVerify()`)
+* **Backend Controller Endpoint**: `backend/src/main/java/com/jamunabank/branchsync/controller/TransferController.java` (Exposes `/hq-verify` path endpoint)
+* **Backend Routing Method**: `backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java` (Method: `hqVerify()`)
+* **Entity Relationships**: `backend/src/main/java/com/jamunabank/branchsync/model/entity/TransferRequest.java` (Fields: `destinationBranch`, `destinationDepartment`)
 
-### 4. Cash Vault Note Denominations
-* **Frontend**: `TransferDetails.tsx` (Look for `Denomination Grid` and `POST /api/cash/denominations`)
-* **Controller**: `CashController.java` (Look for `saveDenominations` mapping)
-* **Service**: `CashServiceImpl.java` (Look for `saveDenominations()` method)
-* **Entity**: `CashTransferDenomination.java` (JPA Entity class)
-* **Table**: `cash_transfer_denominations` (Relational table)
+### Cash Transfer
+* **Denominations Form UI**: `frontend/src/pages/TransferDetails.tsx` (Denomination spreadsheets grid markup)
+* **Denominations Controller**: `backend/src/main/java/com/jamunabank/branchsync/controller/CashController.java` (Function: `submitDenominations()`)
+* **Denominations Service Method**: `backend/src/main/java/com/jamunabank/branchsync/service/impl/CashServiceImpl.java` (Method: `submitDenominations()`)
+* **Database Tables**: `cash_transfer_denominations` (Stores counts) & `branch_cash_balance` (Vault amounts)
 
-### 5. Stock Inventory SKU Levels & Ledger
-* **Frontend**: `StockLedger.tsx` (Main view)
-* **Controller**: `StockController.java` (Exposes balances/ledgers)
-* **Service**: `StockServiceImpl.java` (Manages stock movements and ledger logging)
-* **Entity**: `StockLedgerEntry.java` & `BranchStockBalance.java` (JPA Entity classes)
-* **Table**: `stock_ledger` & `branch_stock_balance` (Relational tables)
+### Stock Adjustment
+* **Frontend Adjustments UI**: `frontend/src/pages/StockAdjustment.tsx` (Submission cards and pending list)
+* **Backend Controller**: `backend/src/main/java/com/jamunabank/branchsync/controller/StockController.java` (Endpoint functions: `submitAdjustment()`, `decideAdjustment()`)
+* **Backend Service Logic**: `backend/src/main/java/com/jamunabank/branchsync/service/impl/StockServiceImpl.java` (Methods: `submitAdjustment()`, `approveAdjustment()`)
+* **Database Table**: `stock_manual_adjustments` (Tracks approvals details) & `stock_ledger` (Stores logs)
 
-### 6. Security & JWT Validation
-* **Backend Security Configuration**: `SecurityConfig.java` (Spring Security settings)
-* **Request Interceptor Filter**: `JwtAuthenticationFilter.java` (Intercepts and checks tokens)
-* **Credentials Encoder**: `Sha256PasswordEncoder.java` (SHA-256 validator)
-* **Token Utility Component**: `JwtUtils.java` (Generates/verifies tokens)
+### Audit Log
+* **Audit Logging Engine**: `backend/src/main/java/com/jamunabank/branchsync/service/impl/AuditServiceImpl.java` (Method: `logAction()`)
+* **JPA Repository**: `backend/src/main/java/com/jamunabank/branchsync/repository/AuditLogRepository.java` (Log DB access)
+* **Frontend Timeline View**: `frontend/src/pages/TransferDetails.tsx` (Renders stepper stepper)
+* **Database Table**: `audit_logs` (Append-only database rows)
+
+### Transfer Workflow
+* **Frontend Timeline Component**: `frontend/src/pages/TransferDetails.tsx` (Renders stepper stages cards)
+* **Workflow Service Engines**: `backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java` (Method transitions: `initiateTransfer()`, `approveInternal()`, `hqVerify()`, `acceptAndAssignDriver()`, `releaseFinal()`, `markPickedUp()`, `markDelivered()`, `closeRequest()`)
+* **API Endpoints Map**: `backend/src/main/java/com/jamunabank/branchsync/controller/TransferController.java` (Progress endpoints)
+* **Database Table**: `transfer_requests` (Tracks the current status column)
