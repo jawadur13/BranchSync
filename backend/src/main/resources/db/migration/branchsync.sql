@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 22, 2026 at 03:12 PM
+-- Generation Time: May 30, 2026 at 02:45 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -104,7 +104,33 @@ INSERT INTO `audit_logs` (`audit_id`, `request_id`, `actor_id`, `action`, `from_
 (62, 14, 33, 'PICKED_UP', 'READY_FOR_PICKUP', 'IN_TRANSIT', NULL, '127.0.0.1', '2026-05-20 01:11:41'),
 (63, 14, 33, 'DELIVERED', 'IN_TRANSIT', 'DELIVERED', NULL, '127.0.0.1', '2026-05-20 01:11:46'),
 (64, 14, 5, 'COMPLETED', 'DELIVERED', 'COMPLETED', '', '127.0.0.1', '2026-05-20 01:16:09'),
-(65, 12, 19, 'COMPLETED', 'DELIVERED', 'COMPLETED', '', '127.0.0.1', '2026-05-20 13:15:45');
+(65, 12, 19, 'COMPLETED', 'DELIVERED', 'COMPLETED', '', '127.0.0.1', '2026-05-20 13:15:45'),
+(66, 15, 26, 'CREATED', NULL, 'PENDING_INTERNAL', NULL, '127.0.0.1', '2026-05-22 14:28:27'),
+(67, 15, 12, 'APPROVED_INTERNAL', 'PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', NULL, '127.0.0.1', '2026-05-22 14:29:39'),
+(68, 11, 38, 'HQ_REJECTED', 'PENDING_HQ_APPROVAL', 'REJECTED_BY_HQ', 'invalid', '127.0.0.1', '2026-05-22 14:30:56'),
+(69, 15, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-22 14:32:22'),
+(70, 15, 16, 'DESTINATION_REJECTED', 'PENDING_ASSIGNMENT', 'PENDING_HQ_APPROVAL', 'Low stock at branch', '127.0.0.1', '2026-05-22 14:34:31'),
+(71, 15, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-22 14:34:56'),
+(72, 15, 44, 'ASSIGNED_DRIVER', 'PENDING_ASSIGNMENT', 'PENDING_FINAL_RELEASE', NULL, '127.0.0.1', '2026-05-22 14:35:58'),
+(73, 15, 5, 'RELEASED', 'PENDING_FINAL_RELEASE', 'READY_FOR_PICKUP', NULL, '127.0.0.1', '2026-05-22 14:36:57'),
+(74, 15, 33, 'PICKED_UP', 'READY_FOR_PICKUP', 'IN_TRANSIT', NULL, '127.0.0.1', '2026-05-22 14:38:12'),
+(75, 15, 33, 'DELIVERED', 'IN_TRANSIT', 'DELIVERED', NULL, '127.0.0.1', '2026-05-22 14:38:15'),
+(76, 15, 26, 'COMPLETED', 'DELIVERED', 'COMPLETED', '', '127.0.0.1', '2026-05-22 14:38:48'),
+(77, 16, 20, 'CREATED', NULL, 'PENDING_INTERNAL', NULL, '127.0.0.1', '2026-05-26 09:48:01'),
+(78, 16, 11, 'APPROVED_INTERNAL', 'PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', NULL, '127.0.0.1', '2026-05-26 09:48:56'),
+(79, 16, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-26 09:52:41'),
+(80, 16, 12, 'DESTINATION_REJECTED', 'PENDING_ASSIGNMENT', 'PENDING_HQ_APPROVAL', 'sent to wrong dept', '127.0.0.1', '2026-05-26 09:54:37'),
+(81, 16, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-26 09:55:04'),
+(82, 16, 25, 'ASSIGNED_DRIVER', 'PENDING_ASSIGNMENT', 'PENDING_FINAL_RELEASE', NULL, '127.0.0.1', '2026-05-26 09:55:45'),
+(83, 16, 12, 'RELEASED', 'PENDING_FINAL_RELEASE', 'READY_FOR_PICKUP', NULL, '127.0.0.1', '2026-05-26 09:57:38'),
+(84, 16, 36, 'PICKED_UP', 'READY_FOR_PICKUP', 'IN_TRANSIT', NULL, '127.0.0.1', '2026-05-26 09:58:51'),
+(85, 16, 36, 'DELIVERED', 'IN_TRANSIT', 'DELIVERED', NULL, '127.0.0.1', '2026-05-26 09:59:30'),
+(86, 16, 20, 'COMPLETED', 'DELIVERED', 'COMPLETED', '', '127.0.0.1', '2026-05-26 10:02:34'),
+(87, 17, 41, 'CREATED', NULL, 'PENDING_INTERNAL', NULL, '127.0.0.1', '2026-05-26 10:40:50'),
+(88, 17, 12, 'APPROVED_INTERNAL', 'PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', NULL, '127.0.0.1', '2026-05-26 10:41:29'),
+(89, 17, 38, 'HQ_APPROVED', 'PENDING_HQ_APPROVAL', 'PENDING_ASSIGNMENT', NULL, '127.0.0.1', '2026-05-26 10:45:54'),
+(90, 18, 26, 'CREATED', NULL, 'PENDING_INTERNAL', NULL, '127.0.0.1', '2026-05-26 10:47:28'),
+(91, 18, 12, 'APPROVED_INTERNAL', 'PENDING_INTERNAL', 'PENDING_HQ_APPROVAL', NULL, '127.0.0.1', '2026-05-26 10:48:20');
 
 -- --------------------------------------------------------
 
@@ -221,6 +247,76 @@ CREATE TABLE `branch_stock_balance` (
   `branch_id` bigint(20) NOT NULL,
   `stock_item_id` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `branch_stock_balance`
+--
+
+INSERT INTO `branch_stock_balance` (`balance_id`, `current_quantity`, `last_updated_at`, `branch_id`, `stock_item_id`) VALUES
+(1, 5, '2026-05-22 19:51:09.000000', 2, 1),
+(2, 40, '2026-05-22 19:51:08.000000', 2, 3),
+(3, 34, '2026-05-22 19:51:07.000000', 2, 2),
+(4, 36, '2026-05-22 19:51:06.000000', 2, 4),
+(5, 35, '2026-05-22 19:51:05.000000', 2, 5),
+(6, 2, '2026-05-22 19:54:11.000000', 2, 6),
+(7, 3, '2026-05-22 20:02:16.000000', 2, 7),
+(8, 2, '2026-05-22 20:02:14.000000', 2, 8),
+(9, 15, '2026-05-22 20:07:32.000000', 2, 34),
+(10, 12, '2026-05-22 20:07:32.000000', 2, 35),
+(11, 3, '2026-05-22 20:07:31.000000', 2, 36),
+(12, 1, '2026-05-22 20:07:31.000000', 2, 37),
+(13, 39, '2026-05-26 15:59:30.000000', 2, 38),
+(14, 6, '2026-05-22 20:07:30.000000', 2, 39),
+(15, 40, '2026-05-22 20:07:29.000000', 2, 28),
+(16, 61, '2026-05-22 20:07:29.000000', 2, 30),
+(17, 40, '2026-05-22 20:07:28.000000', 2, 16),
+(18, 31, '2026-05-22 20:07:27.000000', 2, 17),
+(19, 40, '2026-05-22 20:11:00.000000', 2, 18),
+(20, 4, '2026-05-22 20:11:00.000000', 2, 19),
+(21, 1, '2026-05-22 20:10:59.000000', 2, 20),
+(22, 2, '2026-05-22 20:10:59.000000', 2, 21),
+(23, 251, '2026-05-22 20:38:12.000000', 2, 9),
+(24, 453, '2026-05-22 20:10:58.000000', 2, 10),
+(25, 234, '2026-05-22 20:10:58.000000', 2, 11),
+(26, 600, '2026-05-22 20:10:57.000000', 2, 12),
+(27, 323, '2026-05-22 20:10:57.000000', 2, 13),
+(28, 47, '2026-05-22 20:10:56.000000', 2, 14),
+(29, 300, '2026-05-22 20:10:56.000000', 2, 15),
+(30, 69, '2026-05-22 20:10:54.000000', 2, 27),
+(31, 49, '2026-05-22 20:38:15.000000', 3, 9),
+(32, 30, '2026-05-26 07:48:44.000000', 3, 1),
+(33, 42, '2026-05-26 07:48:44.000000', 3, 2),
+(34, 39, '2026-05-26 07:48:43.000000', 3, 3),
+(35, 40, '2026-05-26 07:48:43.000000', 3, 4),
+(36, 43, '2026-05-26 07:48:42.000000', 3, 5),
+(37, 2, '2026-05-26 07:48:42.000000', 3, 6),
+(38, 2, '2026-05-26 07:48:42.000000', 3, 7),
+(39, 1, '2026-05-26 07:48:42.000000', 3, 8),
+(40, 16, '2026-05-26 07:48:41.000000', 3, 34),
+(41, 5, '2026-05-26 07:48:41.000000', 3, 35),
+(42, 2, '2026-05-26 07:48:41.000000', 3, 36),
+(43, 2, '2026-05-26 07:48:41.000000', 3, 37),
+(44, 23, '2026-05-26 15:58:51.000000', 3, 38),
+(45, 1, '2026-05-26 07:48:40.000000', 3, 39),
+(46, 49, '2026-05-26 07:48:40.000000', 3, 28),
+(47, 50, '2026-05-26 07:48:40.000000', 3, 29),
+(48, 30, '2026-05-26 07:48:39.000000', 3, 30),
+(49, 500, '2026-05-26 07:48:39.000000', 3, 31),
+(50, 14, '2026-05-26 07:48:39.000000', 3, 32),
+(51, 45, '2026-05-26 07:48:38.000000', 3, 33),
+(52, 400, '2026-05-26 07:48:38.000000', 3, 10),
+(53, 561, '2026-05-26 07:48:38.000000', 3, 11),
+(54, 160, '2026-05-26 07:48:38.000000', 3, 12),
+(55, 200, '2026-05-26 07:48:37.000000', 3, 13),
+(56, 120, '2026-05-26 07:48:37.000000', 3, 15),
+(57, 120, '2026-05-26 07:48:37.000000', 3, 14),
+(58, 130, '2026-05-26 07:48:36.000000', 3, 27),
+(59, 20, '2026-05-26 07:48:36.000000', 3, 17),
+(60, 40, '2026-05-26 07:48:35.000000', 3, 16),
+(61, 40, '2026-05-26 07:48:35.000000', 3, 18),
+(62, 10, '2026-05-26 07:48:35.000000', 3, 19),
+(63, 1, '2026-05-26 07:48:34.000000', 3, 20),
+(64, 3, '2026-05-26 07:48:33.000000', 3, 21);
 
 -- --------------------------------------------------------
 
@@ -384,11 +480,10 @@ INSERT INTO `item_categories` (`category_id`, `category_name`, `department_id`, 
 (3, 'Demand Draft', 1, 'HIGH', 'Demand draft documents for inter-branch transfer', '2026-05-04 16:32:09', b'1', 'DOCUMENT_CASE'),
 (4, 'Computers', 2, 'HIGH', 'Employee laptops and Desktops', '2026-05-04 16:32:09', b'1', 'STOCK'),
 (5, 'Network Equipment', 2, 'MEDIUM', 'Routers, switches, and network accessories', '2026-05-04 16:32:09', b'1', 'STOCK'),
-(6, 'Office Printer', 2, 'MEDIUM', 'Laser and inkjet printers', '2026-05-04 16:32:09', b'1', 'DOCUMENT_CASE'),
-(7, 'Stationery Pack', 3, 'LOW', 'General office stationery bundle', '2026-05-04 16:32:09', b'1', 'DOCUMENT_CASE'),
+(6, 'Office Equipment', 2, 'MEDIUM', 'Equipment\'s used in office ', '2026-05-04 16:32:09', b'1', 'STOCK'),
+(7, 'Stationery Pack', 3, 'LOW', 'General office stationery bundle', '2026-05-04 16:32:09', b'1', 'STOCK'),
 (8, 'Printed Forms', 3, 'LOW', 'Pre-printed official bank forms', '2026-05-04 16:32:09', b'1', 'STOCK'),
 (9, 'Office Furniture', 3, 'LOW', 'Chairs, desks, and minor office items', '2026-05-04 16:32:09', b'1', 'STOCK'),
-(10, 'Security Badge', 4, 'HIGH', 'Access control badges for staff', '2026-05-04 16:32:09', b'1', 'DOCUMENT_CASE'),
 (11, 'CCTV Equipment', 4, 'CRITICAL', 'Surveillance cameras and recording equipment', '2026-05-04 16:32:09', b'1', 'STOCK'),
 (13, 'Customer Documents', 6, 'MEDIUM', 'Documents like kyc, personal forms, etc..', '2026-05-19 04:43:09', b'1', 'DOCUMENT_CASE');
 
@@ -437,7 +532,45 @@ CREATE TABLE `stock_items` (
 --
 
 INSERT INTO `stock_items` (`stock_item_id`, `category_id`, `item_name`, `unit`, `description`, `is_active`, `created_at`) VALUES
-(1, 4, 'Laptop', 'pcs', 'Laptop used by officers', 1, '2026-05-22 06:38:27');
+(1, 4, 'Laptop', 'pcs', 'Laptop used by officers', 1, '2026-05-22 06:38:27'),
+(2, 4, 'Monitor', 'pcs', '', 1, '2026-05-22 07:33:10'),
+(3, 4, 'Keyboard', 'pcs', '', 1, '2026-05-22 08:01:12'),
+(4, 4, 'Mouse', 'pcs', '', 1, '2026-05-22 08:01:21'),
+(5, 4, 'Ups', 'pcs', '', 1, '2026-05-22 08:01:36'),
+(6, 5, 'Router', 'pcs', '', 1, '2026-05-22 08:03:33'),
+(7, 5, 'Network Switch', 'pcs', '', 1, '2026-05-22 08:03:45'),
+(8, 5, 'LAN Cable Box', 'pcs', '', 1, '2026-05-22 08:04:03'),
+(9, 8, 'Savings Account Opening Form', 'pcs', '', 1, '2026-05-22 08:04:46'),
+(10, 8, 'Current Account Opening Form', 'pcs', '', 1, '2026-05-22 08:05:06'),
+(11, 8, 'FDR Application Form', 'pcs', '', 1, '2026-05-22 08:05:28'),
+(12, 8, 'Debit Card Request Form', 'pcs', '', 1, '2026-05-22 08:05:42'),
+(13, 8, 'Cheque Requisition Form', 'pcs', '', 1, '2026-05-22 08:05:50'),
+(14, 8, 'Loan Application Form', 'pcs', '', 1, '2026-05-22 08:06:00'),
+(15, 8, 'Customer Information Update Form', 'pcs', '', 1, '2026-05-22 08:06:07'),
+(16, 9, 'Executive Chair', 'pcs', '', 1, '2026-05-22 08:07:00'),
+(17, 9, 'Customer Chair', 'pcs', '', 1, '2026-05-22 08:07:07'),
+(18, 9, 'Office Desk', 'pcs', '', 1, '2026-05-22 08:07:20'),
+(19, 9, 'Filing Cabinet', 'pcs', '', 1, '2026-05-22 08:07:32'),
+(20, 9, 'Reception Table', 'pcs', '', 1, '2026-05-22 08:07:40'),
+(21, 9, 'Waiting Sofa', 'pcs', '', 1, '2026-05-22 08:07:53'),
+(22, 11, 'CCTV Camera', 'pcs', '', 1, '2026-05-22 08:08:14'),
+(23, 11, 'DVR Unit', 'pcs', '', 1, '2026-05-22 08:08:25'),
+(24, 11, 'NVR Unit', 'pcs', '', 1, '2026-05-22 08:08:32'),
+(25, 11, 'CCTV Monitor', 'pcs', '', 1, '2026-05-22 08:08:39'),
+(26, 11, 'CCTV Cable Bundle', 'pcs', '', 1, '2026-05-22 08:08:47'),
+(27, 8, 'Demand Draft Empty Form', 'pcs', '', 1, '2026-05-22 08:10:04'),
+(28, 7, 'Pen Box', 'pcs', '', 1, '2026-05-22 08:15:57'),
+(29, 7, 'A4 Paper Ream', 'pcs', '', 1, '2026-05-22 08:16:05'),
+(30, 7, 'Stapler', 'pcs', '', 1, '2026-05-22 08:16:15'),
+(31, 7, 'Envelope Pack', 'pcs', '', 1, '2026-05-22 08:16:44'),
+(32, 7, 'Marker Box', 'pcs', '', 1, '2026-05-22 08:16:51'),
+(33, 7, 'File Folder Pack', 'pcs', '', 1, '2026-05-22 08:17:00'),
+(34, 6, 'Office Printer', 'pcs', '', 1, '2026-05-22 08:22:27'),
+(35, 6, 'Scanner', 'pcs', '', 1, '2026-05-22 08:22:37'),
+(36, 6, 'Photocopier', 'pcs', '', 1, '2026-05-22 08:22:46'),
+(37, 6, 'Projector', 'pcs', '', 1, '2026-05-22 08:22:53'),
+(38, 6, 'Telephone Set', 'pcs', '', 1, '2026-05-22 08:23:00'),
+(39, 6, 'Paper Shredder', 'pcs', '', 1, '2026-05-22 08:23:09');
 
 -- --------------------------------------------------------
 
@@ -460,6 +593,79 @@ CREATE TABLE `stock_ledger` (
   `request_id` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `stock_ledger`
+--
+
+INSERT INTO `stock_ledger` (`ledger_id`, `balance_after`, `balance_before`, `created_at`, `entry_type`, `quantity`, `reason`, `actor_id`, `approver_id`, `branch_id`, `stock_item_id`, `request_id`) VALUES
+(1, 35, 0, '2026-05-22 19:51:05.000000', 'MANUAL_ADJUSTMENT', 35, 'initial add', 20, 3, 2, 5, NULL),
+(2, 36, 0, '2026-05-22 19:51:06.000000', 'MANUAL_ADJUSTMENT', 36, 'initial add', 20, 3, 2, 4, NULL),
+(3, 34, 0, '2026-05-22 19:51:07.000000', 'MANUAL_ADJUSTMENT', 34, 'initial add', 20, 3, 2, 2, NULL),
+(4, 40, 0, '2026-05-22 19:51:08.000000', 'MANUAL_ADJUSTMENT', 40, 'initial add', 20, 3, 2, 3, NULL),
+(5, 5, 0, '2026-05-22 19:51:09.000000', 'MANUAL_ADJUSTMENT', 5, 'initial add', 20, 3, 2, 1, NULL),
+(6, 2, 0, '2026-05-22 19:54:11.000000', 'MANUAL_ADJUSTMENT', 2, 'initial', 20, 3, 2, 6, NULL),
+(7, 2, 0, '2026-05-22 20:02:14.000000', 'MANUAL_ADJUSTMENT', 2, 'initial add', 20, 3, 2, 8, NULL),
+(8, 3, 0, '2026-05-22 20:02:16.000000', 'MANUAL_ADJUSTMENT', 3, 'initial add', 20, 3, 2, 7, NULL),
+(9, 31, 0, '2026-05-22 20:07:27.000000', 'MANUAL_ADJUSTMENT', 31, 'Initial add', 21, 3, 2, 17, NULL),
+(10, 40, 0, '2026-05-22 20:07:28.000000', 'MANUAL_ADJUSTMENT', 40, 'Initial add', 21, 3, 2, 16, NULL),
+(11, 61, 0, '2026-05-22 20:07:29.000000', 'MANUAL_ADJUSTMENT', 61, 'Initial add', 21, 3, 2, 30, NULL),
+(12, 40, 0, '2026-05-22 20:07:29.000000', 'MANUAL_ADJUSTMENT', 40, 'Initial add', 21, 3, 2, 28, NULL),
+(13, 6, 0, '2026-05-22 20:07:30.000000', 'MANUAL_ADJUSTMENT', 6, 'initial add', 20, 3, 2, 39, NULL),
+(14, 37, 0, '2026-05-22 20:07:30.000000', 'MANUAL_ADJUSTMENT', 37, 'initial add', 20, 3, 2, 38, NULL),
+(15, 1, 0, '2026-05-22 20:07:31.000000', 'MANUAL_ADJUSTMENT', 1, 'initial add', 20, 3, 2, 37, NULL),
+(16, 3, 0, '2026-05-22 20:07:31.000000', 'MANUAL_ADJUSTMENT', 3, 'initial add', 20, 3, 2, 36, NULL),
+(17, 12, 0, '2026-05-22 20:07:32.000000', 'MANUAL_ADJUSTMENT', 12, 'initial add', 20, 3, 2, 35, NULL),
+(18, 15, 0, '2026-05-22 20:07:32.000000', 'MANUAL_ADJUSTMENT', 15, 'initial add', 20, 3, 2, 34, NULL),
+(19, 69, 0, '2026-05-22 20:10:54.000000', 'MANUAL_ADJUSTMENT', 69, 'Initial add', 21, 3, 2, 27, NULL),
+(20, 300, 0, '2026-05-22 20:10:56.000000', 'MANUAL_ADJUSTMENT', 300, 'Initial add', 21, 3, 2, 15, NULL),
+(21, 47, 0, '2026-05-22 20:10:56.000000', 'MANUAL_ADJUSTMENT', 47, 'Initial add', 21, 3, 2, 14, NULL),
+(22, 323, 0, '2026-05-22 20:10:57.000000', 'MANUAL_ADJUSTMENT', 323, 'Initial add', 21, 3, 2, 13, NULL),
+(23, 600, 0, '2026-05-22 20:10:57.000000', 'MANUAL_ADJUSTMENT', 600, 'Initial add', 21, 3, 2, 12, NULL),
+(24, 234, 0, '2026-05-22 20:10:58.000000', 'MANUAL_ADJUSTMENT', 234, 'Initial add', 21, 3, 2, 11, NULL),
+(25, 453, 0, '2026-05-22 20:10:58.000000', 'MANUAL_ADJUSTMENT', 453, 'Initial add', 21, 3, 2, 10, NULL),
+(26, 300, 0, '2026-05-22 20:10:58.000000', 'MANUAL_ADJUSTMENT', 300, 'Initial add', 21, 3, 2, 9, NULL),
+(27, 2, 0, '2026-05-22 20:10:59.000000', 'MANUAL_ADJUSTMENT', 2, 'Initial add', 21, 3, 2, 21, NULL),
+(28, 1, 0, '2026-05-22 20:10:59.000000', 'MANUAL_ADJUSTMENT', 1, 'Initial add', 21, 3, 2, 20, NULL),
+(29, 4, 0, '2026-05-22 20:11:00.000000', 'MANUAL_ADJUSTMENT', 4, 'Initial add', 21, 3, 2, 19, NULL),
+(30, 40, 0, '2026-05-22 20:11:00.000000', 'MANUAL_ADJUSTMENT', 40, 'Initial add', 21, 3, 2, 18, NULL),
+(31, 251, 300, '2026-05-22 20:38:12.000000', 'TRANSFER_OUT', 49, 'Stock transfer sent (Req: REQ-2026-0011)', 33, NULL, 2, 9, 15),
+(32, 49, 0, '2026-05-22 20:38:15.000000', 'TRANSFER_IN', 49, 'Stock transfer received (Req: REQ-2026-0011)', 33, NULL, 3, 9, 15),
+(33, 3, 0, '2026-05-26 07:48:33.000000', 'MANUAL_ADJUSTMENT', 3, 'initial add', 26, 6, 3, 21, NULL),
+(34, 1, 0, '2026-05-26 07:48:34.000000', 'MANUAL_ADJUSTMENT', 1, 'initial add', 26, 6, 3, 20, NULL),
+(35, 10, 0, '2026-05-26 07:48:35.000000', 'MANUAL_ADJUSTMENT', 10, 'initial add', 26, 6, 3, 19, NULL),
+(36, 40, 0, '2026-05-26 07:48:35.000000', 'MANUAL_ADJUSTMENT', 40, 'initial add', 26, 6, 3, 18, NULL),
+(37, 40, 0, '2026-05-26 07:48:35.000000', 'MANUAL_ADJUSTMENT', 40, 'initial add', 26, 6, 3, 16, NULL),
+(38, 20, 0, '2026-05-26 07:48:36.000000', 'MANUAL_ADJUSTMENT', 20, 'initial add', 26, 6, 3, 17, NULL),
+(39, 130, 0, '2026-05-26 07:48:36.000000', 'MANUAL_ADJUSTMENT', 130, 'initial add', 26, 6, 3, 27, NULL),
+(40, 120, 0, '2026-05-26 07:48:37.000000', 'MANUAL_ADJUSTMENT', 120, 'initial add', 26, 6, 3, 14, NULL),
+(41, 120, 0, '2026-05-26 07:48:37.000000', 'MANUAL_ADJUSTMENT', 120, 'initial add', 26, 6, 3, 15, NULL),
+(42, 200, 0, '2026-05-26 07:48:37.000000', 'MANUAL_ADJUSTMENT', 200, 'initial add', 26, 6, 3, 13, NULL),
+(43, 160, 0, '2026-05-26 07:48:38.000000', 'MANUAL_ADJUSTMENT', 160, 'initial add', 26, 6, 3, 12, NULL),
+(44, 561, 0, '2026-05-26 07:48:38.000000', 'MANUAL_ADJUSTMENT', 561, 'initial add', 26, 6, 3, 11, NULL),
+(45, 400, 0, '2026-05-26 07:48:38.000000', 'MANUAL_ADJUSTMENT', 400, 'initial add', 26, 6, 3, 10, NULL),
+(46, 45, 0, '2026-05-26 07:48:38.000000', 'MANUAL_ADJUSTMENT', 45, 'initial add', 26, 6, 3, 33, NULL),
+(47, 14, 0, '2026-05-26 07:48:39.000000', 'MANUAL_ADJUSTMENT', 14, 'initial add', 26, 6, 3, 32, NULL),
+(48, 500, 0, '2026-05-26 07:48:39.000000', 'MANUAL_ADJUSTMENT', 500, 'initial add', 26, 6, 3, 31, NULL),
+(49, 30, 0, '2026-05-26 07:48:39.000000', 'MANUAL_ADJUSTMENT', 30, 'initial add', 26, 6, 3, 30, NULL),
+(50, 50, 0, '2026-05-26 07:48:40.000000', 'MANUAL_ADJUSTMENT', 50, 'initial add', 26, 6, 3, 29, NULL),
+(51, 49, 0, '2026-05-26 07:48:40.000000', 'MANUAL_ADJUSTMENT', 49, 'initial add', 26, 6, 3, 28, NULL),
+(52, 1, 0, '2026-05-26 07:48:40.000000', 'MANUAL_ADJUSTMENT', 1, 'initial add', 25, 6, 3, 39, NULL),
+(53, 25, 0, '2026-05-26 07:48:40.000000', 'MANUAL_ADJUSTMENT', 25, 'initial add', 25, 6, 3, 38, NULL),
+(54, 2, 0, '2026-05-26 07:48:41.000000', 'MANUAL_ADJUSTMENT', 2, 'initial add', 25, 6, 3, 37, NULL),
+(55, 2, 0, '2026-05-26 07:48:41.000000', 'MANUAL_ADJUSTMENT', 2, 'initial add', 25, 6, 3, 36, NULL),
+(56, 5, 0, '2026-05-26 07:48:41.000000', 'MANUAL_ADJUSTMENT', 5, 'initial add', 25, 6, 3, 35, NULL),
+(57, 16, 0, '2026-05-26 07:48:41.000000', 'MANUAL_ADJUSTMENT', 16, 'initial add', 25, 6, 3, 34, NULL),
+(58, 1, 0, '2026-05-26 07:48:42.000000', 'MANUAL_ADJUSTMENT', 1, 'initial add', 25, 6, 3, 8, NULL),
+(59, 2, 0, '2026-05-26 07:48:42.000000', 'MANUAL_ADJUSTMENT', 2, 'initial add', 25, 6, 3, 7, NULL),
+(60, 2, 0, '2026-05-26 07:48:42.000000', 'MANUAL_ADJUSTMENT', 2, 'initial add', 25, 6, 3, 6, NULL),
+(61, 43, 0, '2026-05-26 07:48:42.000000', 'MANUAL_ADJUSTMENT', 43, 'initial add', 25, 6, 3, 5, NULL),
+(62, 40, 0, '2026-05-26 07:48:43.000000', 'MANUAL_ADJUSTMENT', 40, 'initial add', 25, 6, 3, 4, NULL),
+(63, 39, 0, '2026-05-26 07:48:43.000000', 'MANUAL_ADJUSTMENT', 39, 'initial add', 25, 6, 3, 3, NULL),
+(64, 42, 0, '2026-05-26 07:48:44.000000', 'MANUAL_ADJUSTMENT', 42, 'initial add', 25, 6, 3, 2, NULL),
+(65, 30, 0, '2026-05-26 07:48:44.000000', 'MANUAL_ADJUSTMENT', 30, 'initial add', 25, 6, 3, 1, NULL),
+(66, 23, 25, '2026-05-26 15:58:51.000000', 'TRANSFER_OUT', 2, 'Stock transfer sent (Req: REQ-2026-0012)', 36, NULL, 3, 38, 16),
+(67, 39, 37, '2026-05-26 15:59:30.000000', 'TRANSFER_IN', 2, 'Stock transfer received (Req: REQ-2026-0012)', 36, NULL, 2, 38, 16);
+
 -- --------------------------------------------------------
 
 --
@@ -479,6 +685,75 @@ CREATE TABLE `stock_manual_adjustments` (
   `decided_at` datetime(6) DEFAULT NULL,
   `decision_note` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `stock_manual_adjustments`
+--
+
+INSERT INTO `stock_manual_adjustments` (`adjustment_id`, `branch_id`, `stock_item_id`, `quantity`, `reason`, `status`, `submitted_by_id`, `submitted_at`, `approved_by_id`, `decided_at`, `decision_note`) VALUES
+(1, 2, 1, 5, 'initial add', 'APPROVED', 20, '2026-05-22 19:47:55.000000', 3, '2026-05-22 19:51:09.000000', ''),
+(2, 2, 3, 40, 'initial add', 'APPROVED', 20, '2026-05-22 19:48:19.000000', 3, '2026-05-22 19:51:08.000000', ''),
+(3, 2, 2, 34, 'initial add', 'APPROVED', 20, '2026-05-22 19:49:05.000000', 3, '2026-05-22 19:51:07.000000', ''),
+(4, 2, 4, 36, 'initial add', 'APPROVED', 20, '2026-05-22 19:49:25.000000', 3, '2026-05-22 19:51:06.000000', ''),
+(5, 2, 5, 35, 'initial add', 'APPROVED', 20, '2026-05-22 19:49:51.000000', 3, '2026-05-22 19:51:05.000000', ''),
+(6, 2, 6, 2, 'initial', 'APPROVED', 20, '2026-05-22 19:54:00.000000', 3, '2026-05-22 19:54:11.000000', ''),
+(7, 2, 7, 3, 'initial add', 'APPROVED', 20, '2026-05-22 20:01:24.000000', 3, '2026-05-22 20:02:16.000000', ''),
+(8, 2, 8, 2, 'initial add', 'APPROVED', 20, '2026-05-22 20:01:45.000000', 3, '2026-05-22 20:02:14.000000', ''),
+(9, 2, 34, 15, 'initial add', 'APPROVED', 20, '2026-05-22 20:02:34.000000', 3, '2026-05-22 20:07:32.000000', ''),
+(10, 2, 35, 12, 'initial add', 'APPROVED', 20, '2026-05-22 20:02:44.000000', 3, '2026-05-22 20:07:32.000000', ''),
+(11, 2, 36, 3, 'initial add', 'APPROVED', 20, '2026-05-22 20:02:54.000000', 3, '2026-05-22 20:07:31.000000', ''),
+(12, 2, 37, 1, 'initial add', 'APPROVED', 20, '2026-05-22 20:03:04.000000', 3, '2026-05-22 20:07:31.000000', ''),
+(13, 2, 38, 37, 'initial add', 'APPROVED', 20, '2026-05-22 20:03:23.000000', 3, '2026-05-22 20:07:30.000000', ''),
+(14, 2, 39, 6, 'initial add', 'APPROVED', 20, '2026-05-22 20:03:33.000000', 3, '2026-05-22 20:07:30.000000', ''),
+(15, 2, 28, 40, 'Initial add', 'APPROVED', 21, '2026-05-22 20:05:21.000000', 3, '2026-05-22 20:07:29.000000', ''),
+(16, 2, 30, 61, 'Initial add', 'APPROVED', 21, '2026-05-22 20:05:47.000000', 3, '2026-05-22 20:07:29.000000', ''),
+(17, 2, 16, 40, 'Initial add', 'APPROVED', 21, '2026-05-22 20:06:08.000000', 3, '2026-05-22 20:07:28.000000', ''),
+(18, 2, 17, 31, 'Initial add', 'APPROVED', 21, '2026-05-22 20:06:22.000000', 3, '2026-05-22 20:07:27.000000', ''),
+(19, 2, 18, 40, 'Initial add', 'APPROVED', 21, '2026-05-22 20:08:24.000000', 3, '2026-05-22 20:11:00.000000', ''),
+(20, 2, 19, 4, 'Initial add', 'APPROVED', 21, '2026-05-22 20:08:39.000000', 3, '2026-05-22 20:11:00.000000', ''),
+(21, 2, 20, 1, 'Initial add', 'APPROVED', 21, '2026-05-22 20:08:51.000000', 3, '2026-05-22 20:10:59.000000', ''),
+(22, 2, 21, 2, 'Initial add', 'APPROVED', 21, '2026-05-22 20:09:00.000000', 3, '2026-05-22 20:10:59.000000', ''),
+(23, 2, 9, 300, 'Initial add', 'APPROVED', 21, '2026-05-22 20:09:12.000000', 3, '2026-05-22 20:10:58.000000', ''),
+(24, 2, 10, 453, 'Initial add', 'APPROVED', 21, '2026-05-22 20:09:24.000000', 3, '2026-05-22 20:10:58.000000', ''),
+(25, 2, 11, 234, 'Initial add', 'APPROVED', 21, '2026-05-22 20:09:36.000000', 3, '2026-05-22 20:10:58.000000', ''),
+(26, 2, 12, 600, 'Initial add', 'APPROVED', 21, '2026-05-22 20:09:47.000000', 3, '2026-05-22 20:10:57.000000', ''),
+(27, 2, 13, 323, 'Initial add', 'APPROVED', 21, '2026-05-22 20:10:08.000000', 3, '2026-05-22 20:10:57.000000', ''),
+(28, 2, 14, 47, 'Initial add', 'APPROVED', 21, '2026-05-22 20:10:22.000000', 3, '2026-05-22 20:10:56.000000', ''),
+(29, 2, 15, 300, 'Initial add', 'APPROVED', 21, '2026-05-22 20:10:36.000000', 3, '2026-05-22 20:10:56.000000', ''),
+(30, 2, 27, 69, 'Initial add', 'APPROVED', 21, '2026-05-22 20:10:46.000000', 3, '2026-05-22 20:10:54.000000', ''),
+(31, 3, 1, 30, 'initial add', 'APPROVED', 25, '2026-05-26 07:41:22.000000', 6, '2026-05-26 07:48:44.000000', ''),
+(32, 3, 2, 42, 'initial add', 'APPROVED', 25, '2026-05-26 07:41:48.000000', 6, '2026-05-26 07:48:44.000000', ''),
+(33, 3, 3, 39, 'initial add', 'APPROVED', 25, '2026-05-26 07:42:03.000000', 6, '2026-05-26 07:48:43.000000', ''),
+(34, 3, 4, 40, 'initial add', 'APPROVED', 25, '2026-05-26 07:42:13.000000', 6, '2026-05-26 07:48:43.000000', ''),
+(35, 3, 5, 43, 'initial add', 'APPROVED', 25, '2026-05-26 07:42:25.000000', 6, '2026-05-26 07:48:42.000000', ''),
+(36, 3, 6, 2, 'initial add', 'APPROVED', 25, '2026-05-26 07:42:34.000000', 6, '2026-05-26 07:48:42.000000', ''),
+(37, 3, 7, 2, 'initial add', 'APPROVED', 25, '2026-05-26 07:42:43.000000', 6, '2026-05-26 07:48:42.000000', ''),
+(38, 3, 8, 1, 'initial add', 'APPROVED', 25, '2026-05-26 07:42:54.000000', 6, '2026-05-26 07:48:42.000000', ''),
+(39, 3, 34, 16, 'initial add', 'APPROVED', 25, '2026-05-26 07:43:06.000000', 6, '2026-05-26 07:48:41.000000', ''),
+(40, 3, 35, 5, 'initial add', 'APPROVED', 25, '2026-05-26 07:43:19.000000', 6, '2026-05-26 07:48:41.000000', ''),
+(41, 3, 36, 2, 'initial add', 'APPROVED', 25, '2026-05-26 07:43:30.000000', 6, '2026-05-26 07:48:41.000000', ''),
+(42, 3, 37, 2, 'initial add', 'APPROVED', 25, '2026-05-26 07:43:42.000000', 6, '2026-05-26 07:48:41.000000', ''),
+(43, 3, 38, 25, 'initial add', 'APPROVED', 25, '2026-05-26 07:43:53.000000', 6, '2026-05-26 07:48:40.000000', ''),
+(44, 3, 39, 1, 'initial add', 'APPROVED', 25, '2026-05-26 07:44:02.000000', 6, '2026-05-26 07:48:40.000000', ''),
+(45, 3, 28, 49, 'initial add', 'APPROVED', 26, '2026-05-26 07:44:38.000000', 6, '2026-05-26 07:48:40.000000', ''),
+(46, 3, 29, 50, 'initial add', 'APPROVED', 26, '2026-05-26 07:44:48.000000', 6, '2026-05-26 07:48:40.000000', ''),
+(47, 3, 30, 30, 'initial add', 'APPROVED', 26, '2026-05-26 07:44:58.000000', 6, '2026-05-26 07:48:39.000000', ''),
+(48, 3, 31, 500, 'initial add', 'APPROVED', 26, '2026-05-26 07:45:10.000000', 6, '2026-05-26 07:48:39.000000', ''),
+(49, 3, 32, 14, 'initial add', 'APPROVED', 26, '2026-05-26 07:45:22.000000', 6, '2026-05-26 07:48:39.000000', ''),
+(50, 3, 33, 45, 'initial add', 'APPROVED', 26, '2026-05-26 07:45:34.000000', 6, '2026-05-26 07:48:38.000000', ''),
+(51, 3, 10, 400, 'initial add', 'APPROVED', 26, '2026-05-26 07:45:50.000000', 6, '2026-05-26 07:48:38.000000', ''),
+(52, 3, 11, 561, 'initial add', 'APPROVED', 26, '2026-05-26 07:46:00.000000', 6, '2026-05-26 07:48:38.000000', ''),
+(53, 3, 12, 160, 'initial add', 'APPROVED', 26, '2026-05-26 07:46:10.000000', 6, '2026-05-26 07:48:38.000000', ''),
+(54, 3, 13, 200, 'initial add', 'APPROVED', 26, '2026-05-26 07:46:22.000000', 6, '2026-05-26 07:48:37.000000', ''),
+(55, 3, 15, 120, 'initial add', 'APPROVED', 26, '2026-05-26 07:46:36.000000', 6, '2026-05-26 07:48:37.000000', ''),
+(56, 3, 14, 120, 'initial add', 'APPROVED', 26, '2026-05-26 07:46:46.000000', 6, '2026-05-26 07:48:37.000000', ''),
+(57, 3, 27, 130, 'initial add', 'APPROVED', 26, '2026-05-26 07:46:58.000000', 6, '2026-05-26 07:48:36.000000', ''),
+(58, 3, 17, 20, 'initial add', 'APPROVED', 26, '2026-05-26 07:47:10.000000', 6, '2026-05-26 07:48:36.000000', ''),
+(59, 3, 16, 40, 'initial add', 'APPROVED', 26, '2026-05-26 07:47:19.000000', 6, '2026-05-26 07:48:35.000000', ''),
+(60, 3, 18, 40, 'initial add', 'APPROVED', 26, '2026-05-26 07:47:34.000000', 6, '2026-05-26 07:48:35.000000', ''),
+(61, 3, 19, 10, 'initial add', 'APPROVED', 26, '2026-05-26 07:47:43.000000', 6, '2026-05-26 07:48:35.000000', ''),
+(62, 3, 20, 1, 'initial add', 'APPROVED', 26, '2026-05-26 07:47:52.000000', 6, '2026-05-26 07:48:34.000000', ''),
+(63, 3, 21, 3, 'initial add', 'APPROVED', 26, '2026-05-26 07:48:00.000000', 6, '2026-05-26 07:48:33.000000', '');
 
 -- --------------------------------------------------------
 
@@ -528,10 +803,14 @@ INSERT INTO `transfer_requests` (`request_id`, `request_code`, `title`, `descrip
 (4, 'REQ-2026-0004', 'need demand draft', '', 3, 'HIGH', 'REJECTED_BY_HQ', 1, 1, 14, 2, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-19 05:23:14', '2026-05-17 14:44:04', 38, '2026-05-19 11:23:14.000000', 'invalid request', NULL, 0, NULL, NULL),
 (5, 'REQ-2026-0005', 'test', 'test', 2, 'URGENT', 'PENDING_ASSIGNMENT', 3, 1, 24, 6, 2, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-17 23:48:06', 38, '2026-05-18 05:50:13.000000', NULL, NULL, 0, NULL, NULL),
 (10, 'REQ-2026-0006', 'kyc', 'kyc for 110100', 13, 'URGENT', 'PENDING_ASSIGNMENT', 3, 6, 41, 12, 2, 6, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-19 05:21:04', 38, '2026-05-19 11:27:55.000000', NULL, NULL, 0, NULL, NULL),
-(11, 'REQ-2026-0007', 'FDR opening form', 'need supply of 100-200 blank FDR opening form ', 8, 'NORMAL', 'PENDING_HQ_APPROVAL', 7, 3, 39, 42, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not available', NULL, '2026-05-19 06:42:37', NULL, NULL, NULL, NULL, 0, NULL, NULL),
+(11, 'REQ-2026-0007', 'FDR opening form', 'need supply of 100-200 blank FDR opening form ', 8, 'NORMAL', 'REJECTED_BY_HQ', 7, 3, 39, 42, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'not available', '2026-05-22 14:30:56', '2026-05-19 06:42:37', 38, '2026-05-22 20:30:56.000000', 'invalid', NULL, 0, NULL, NULL),
 (12, 'REQ-2026-0008', 'Cash Require', 'need cash due to shortage', 1, 'URGENT', 'COMPLETED', 2, 1, 19, 3, 1, 1, 17, 2, 33, '2026-05-19 17:14:13', '2026-05-19 17:14:17', '', '2026-05-20 13:15:45', '2026-05-19 17:09:52', 38, '2026-05-19 23:11:12.000000', NULL, 1000000.00, 1, NULL, NULL),
 (13, 'REQ-2026-0009', 'Cash requirement', 'Cash requirement due to shortage', 1, 'URGENT', 'COMPLETED', 2, 1, 22, 11, 3, 1, 24, 6, 36, '2026-05-19 23:13:49', '2026-05-19 23:13:51', '', '2026-05-19 23:14:58', '2026-05-19 23:04:28', 38, '2026-05-20 05:10:26.000000', NULL, 1000000.00, 1, NULL, NULL),
-(14, 'REQ-2026-0010', 'cash shortage', 'test', 1, 'URGENT', 'COMPLETED', 2, NULL, 5, 5, 3, 1, 24, 6, 33, '2026-05-20 01:11:41', '2026-05-20 01:11:46', '', '2026-05-20 01:16:09', '2026-05-20 01:06:43', 38, '2026-05-20 07:08:44.000000', NULL, 1000000.00, 1, NULL, NULL);
+(14, 'REQ-2026-0010', 'cash shortage', 'test', 1, 'URGENT', 'COMPLETED', 2, NULL, 5, 5, 3, 1, 24, 6, 33, '2026-05-20 01:11:41', '2026-05-20 01:11:46', '', '2026-05-20 01:16:09', '2026-05-20 01:06:43', 38, '2026-05-20 07:08:44.000000', NULL, 1000000.00, 1, NULL, NULL),
+(15, 'REQ-2026-0011', 'need savings account opening form', 'need savings account opening form for low stock at the branch', 8, 'HIGH', 'COMPLETED', 3, 3, 26, 12, 2, 3, 44, 5, 33, '2026-05-22 14:38:12', '2026-05-22 14:38:15', '', '2026-05-22 14:38:48', '2026-05-22 14:28:27', 38, '2026-05-22 20:34:56.000000', NULL, NULL, 0, 9, 49),
+(16, 'REQ-2026-0012', 'Need Telephone Set', 'due to shortage in telephone set used by officers, we need 2 more at this branch', 6, 'NORMAL', 'COMPLETED', 2, 2, 20, 11, 3, 2, 25, 12, 36, '2026-05-26 09:58:51', '2026-05-26 09:59:30', '', '2026-05-26 10:02:34', '2026-05-26 09:48:01', 38, '2026-05-26 15:55:04.000000', NULL, NULL, 0, 38, 2),
+(17, 'REQ-2026-0013', 'kyc document need ', 'kyc document need for account 1101002345678', 13, 'URGENT', 'PENDING_ASSIGNMENT', 3, 6, 41, 12, 2, 6, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-26 10:40:50', 38, '2026-05-26 16:45:54.000000', NULL, NULL, 0, NULL, NULL),
+(18, 'REQ-2026-0014', 'FDR Application Form request', 'need 10 FDR Application Form due to shortage', 8, 'NORMAL', 'PENDING_HQ_APPROVAL', 3, 3, 26, 12, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-05-26 10:47:28', NULL, NULL, NULL, NULL, 0, 11, 12);
 
 -- --------------------------------------------------------
 
@@ -589,7 +868,7 @@ INSERT INTO `users` (`user_id`, `employee_id`, `full_name`, `email`, `phone_numb
 (26, 'EMP-323', 'Jahirul Islam', 'jahirul.ctg@jamunabank.com', '01744440323', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 3, 3, 1, 1, '2026-05-04 16:32:09', '2026-05-04 16:56:26', NULL),
 (27, 'EMP-331', 'Munmun Akter', 'munmun.syl@jamunabank.com', '01744440331', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 4, 1, 1, 1, '2026-05-04 16:32:09', '2026-05-04 16:56:26', NULL),
 (28, 'EMP-332', 'Touhid Mia', 'touhid.syl@jamunabank.com', '01744440332', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 4, 3, 1, 1, '2026-05-04 16:32:09', '2026-05-04 16:56:26', NULL),
-(29, 'EMP-341', 'Maksuda Begum', 'maksuda.raj@jamunabank.com', '01744440341', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 5, 1, 1, 1, '2026-05-04 16:32:09', '2026-05-04 16:56:26', NULL),
+(29, 'EMP-341', 'Maksuda Begum', 'maksuda.raj@jamunabank.com', '01744440341', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 5, 1, 1, 1, '2026-05-04 16:32:09', '2026-05-27 09:42:51', NULL),
 (30, 'EMP-342', 'Selim Reza', 'selim.raj@jamunabank.com', '01744440342', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 5, 3, 1, 1, '2026-05-04 16:32:09', '2026-05-04 16:56:26', NULL),
 (31, 'EMP-351', 'Hafiza Khanam', 'hafiza.khl@jamunabank.com', '01744440351', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 6, 1, 1, 1, '2026-05-04 16:32:09', '2026-05-04 16:56:26', NULL),
 (32, 'EMP-352', 'Nazmul Haq', 'nazmul.khl@jamunabank.com', '01744440352', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 6, 3, 1, 1, '2026-05-04 16:32:09', '2026-05-04 16:56:26', NULL),
@@ -603,7 +882,8 @@ INSERT INTO `users` (`user_id`, `employee_id`, `full_name`, `email`, `phone_numb
 (40, 'EMP-503', 'Mizanur Rahaman Mizan', 'mizanur@jamunabank.com.bd', '01824844522', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 3, 7, NULL, 1, 1, '2026-05-15 14:10:06', '2026-05-15 14:10:06', NULL),
 (41, 'EMP-509', 'Robai Adnan', 'adnan@jamunabank.bd', '01922333345', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 3, 6, 1, 1, '2026-05-19 05:14:26', '2026-05-19 05:14:26', NULL),
 (42, 'EMP-510', 'Salam Mia', 'salam@jb.plc', '01922333345', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 2, 7, NULL, 1, 1, '2026-05-19 06:50:07', '2026-05-19 06:50:07', NULL),
-(43, 'EMP-190', 'Ahnab Tahmid', 'ahnab.fr@jamunabank.bd', '01922333345', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 7, 1, 1, 1, '2026-05-19 22:55:01', '2026-05-19 22:55:01', NULL);
+(43, 'EMP-190', 'Ahnab Tahmid', 'ahnab.fr@jamunabank.bd', '01922333345', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 7, 1, 1, 1, '2026-05-19 22:55:01', '2026-05-19 22:55:01', NULL),
+(44, 'EMP-110', 'Abdullah Al Saad', 'saad@jamunabank.bd', '01722221101', '75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=', 5, 2, 3, 1, 1, '2026-05-22 14:24:50', '2026-05-22 14:24:50', NULL);
 
 --
 -- Indexes for dumped tables
@@ -762,7 +1042,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `audit_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `audit_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
 
 --
 -- AUTO_INCREMENT for table `branches`
@@ -774,7 +1054,7 @@ ALTER TABLE `branches`
 -- AUTO_INCREMENT for table `branch_stock_balance`
 --
 ALTER TABLE `branch_stock_balance`
-  MODIFY `balance_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `balance_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
 
 --
 -- AUTO_INCREMENT for table `cash_ledger`
@@ -816,31 +1096,31 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `stock_items`
 --
 ALTER TABLE `stock_items`
-  MODIFY `stock_item_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `stock_item_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `stock_ledger`
 --
 ALTER TABLE `stock_ledger`
-  MODIFY `ledger_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `ledger_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
 
 --
 -- AUTO_INCREMENT for table `stock_manual_adjustments`
 --
 ALTER TABLE `stock_manual_adjustments`
-  MODIFY `adjustment_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `adjustment_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- AUTO_INCREMENT for table `transfer_requests`
 --
 ALTER TABLE `transfer_requests`
-  MODIFY `request_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `request_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `user_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- Constraints for dumped tables
