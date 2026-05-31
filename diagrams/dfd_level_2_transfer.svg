@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+  <defs>
+    <style>
+      .page { fill: #ffffff; }
+      .title { font: 700 24px Arial, sans-serif; fill: #12355f; text-anchor: middle; }
+      .process { fill: #dbeafe; stroke: #2563eb; stroke-width: 1.5; rx: 25; }
+      .process-text { font: 700 13px Arial, sans-serif; fill: #1e40af; text-anchor: middle; dominant-baseline: middle; }
+      .data-store { fill: #ffffff; stroke: #333333; stroke-width: 1.5; }
+      .ds-label { font: 700 12px Arial, sans-serif; fill: #333333; }
+      .data-flow { stroke: #111827; stroke-width: 1.1; fill: none; marker-end: url(#arrow); }
+      .flow-text { font: 400 10px Arial, sans-serif; fill: #374151; }
+    </style>
+    <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L5,3 z" fill="#111827"/>
+    </marker>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1200" height="1200"/>
+  <text class="title" x="600" y="50">DFD Level 2: Transfer Request Lifecycle</text>
+
+  <!-- Input -->
+  <text x="50" y="150" font-weight="bold">Requester Actions</text>
+  <path class="data-flow" d="M50 170 L250 170"/><text class="flow-text" x="100" y="160">Request Data</text>
+
+  <!-- 3.1 Initiate -->
+  <rect class="process" x="250" y="140" width="180" height="60"/>
+  <text class="process-text" x="340" y="170">3.1 Validate &amp; Create</text>
+  <path class="data-flow" d="M430 170 L600 170"/><text class="flow-text" x="480" y="160">Save New (PENDING)</text>
+
+  <!-- 3.2 Internal Approval -->
+  <rect class="process" x="250" y="300" width="180" height="60"/>
+  <text class="process-text" x="340" y="330">3.2 Source Approval</text>
+  <path class="data-flow" d="M430 330 L600 330"/><text class="flow-text" x="480" y="320">Update to ASSIGNMENT</text>
+
+  <!-- 3.3 Acceptance & Assignment -->
+  <rect class="process" x="250" y="460" width="180" height="60"/>
+  <text class="process-text" x="340" y="490">3.3 Assign Delivery</text>
+  <path class="data-flow" d="M430 490 L600 490"/><text class="flow-text" x="480" y="480">Update to FINAL_RELEASE</text>
+
+  <!-- 3.4 Release -->
+  <rect class="process" x="250" y="620" width="180" height="60"/>
+  <text class="process-text" x="340" y="650">3.4 Dest. Authorization</text>
+  <path class="data-flow" d="M430 650 L600 650"/><text class="flow-text" x="480" y="640">Update to READY</text>
+
+  <!-- 3.5 Logistics -->
+  <rect class="process" x="250" y="780" width="180" height="60"/>
+  <text class="process-text" x="340" y="810">3.5 Pickup &amp; Transit</text>
+  <path class="data-flow" d="M430 810 L600 810"/><text class="flow-text" x="480" y="800">Update to TRANSIT/DELIVERED</text>
+
+  <!-- 3.6 Closing -->
+  <rect class="process" x="250" y="940" width="180" height="60"/>
+  <text class="process-text" x="340" y="970">3.6 Verification &amp; Close</text>
+  <path class="data-flow" d="M430 970 L600 970"/><text class="flow-text" x="480" y="960">Set to COMPLETED/REJECTED</text>
+
+  <!-- Data Store (D3) -->
+  <path class="data-store" d="M600 100 L900 100 M600 1050 L900 1050"/>
+  <text class="ds-label" x="700" y="130">D3: Transfer Database</text>
+
+  <!-- Audit (External Process trigger) -->
+  <path class="data-flow" d="M750 100 C1100 100 1100 1050 750 1050"/><text class="flow-text" x="1050" y="550">Auto-Log Action to D4</text>
+
+</svg>

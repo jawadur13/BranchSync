@@ -1,0 +1,218 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200">
+  <defs>
+    <style>
+      .page { fill: #ffffff; }
+      .title { font: 700 24px Arial, sans-serif; fill: #12355f; text-anchor: middle; }
+      .subtitle { font: 400 13px Arial, sans-serif; fill: #52657a; text-anchor: middle; }
+      .boundary { fill: #f8fbff; stroke: #2f5f9f; stroke-width: 2; rx: 12; }
+      .boundary-title { font: 700 16px Arial, sans-serif; fill: #12355f; text-anchor: middle; }
+      .actor-line { stroke: #1f3e66; stroke-width: 2.2; fill: none; }
+      .actor-text { font: 700 12px Arial, sans-serif; fill: #101820; text-anchor: middle; }
+      .usecase { fill: #dfeecb; stroke: #2f5f9f; stroke-width: 2; }
+      .usecase-text { font: 600 11px Arial, sans-serif; fill: #101820; text-anchor: middle; dominant-baseline: middle; }
+      .link { stroke: #3f78bf; stroke-width: 1.8; fill: none; }
+      .include { stroke: #6c86aa; stroke-width: 1.4; stroke-dasharray: 6 5; fill: none; marker-end: url(#arrow); }
+      .include-text { font: 600 10px Arial, sans-serif; fill: #52657a; text-anchor: middle; }
+      .note { fill: #fff8db; stroke: #d7b84f; stroke-width: 1.5; rx: 6; }
+      .note-text { font: 400 11px Arial, sans-serif; fill: #4f4211; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#6c86aa"/>
+    </marker>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1800" height="1200"/>
+  <rect x="12" y="12" width="1776" height="1176" fill="none" stroke="#dce8f7"/>
+  <text class="title" x="900" y="42">BranchSync Use Case Diagram</text>
+  <text class="subtitle" x="900" y="64">Jamuna Bank PLC inter-branch transfer, cash vault, and stock inventory management</text>
+
+  <!-- System Boundary -->
+  <rect class="boundary" x="250" y="85" width="1300" height="1050"/>
+  <text class="boundary-title" x="900" y="112">BranchSync System</text>
+
+  <!-- ==================== LEFT ACTORS ==================== -->
+  <!-- System Admin -->
+  <g id="actor-system-admin" transform="translate(100 170)">
+    <circle class="actor-line" cx="0" cy="0" r="16"/>
+    <path class="actor-line" d="M0 16 L0 60 M-30 32 L30 32 M0 60 L-22 95 M0 60 L22 95"/>
+    <text class="actor-text" x="0" y="118">System Admin</text>
+  </g>
+
+  <!-- Officer / Requester -->
+  <g id="actor-officer" transform="translate(100 385)">
+    <circle class="actor-line" cx="0" cy="0" r="16"/>
+    <path class="actor-line" d="M0 16 L0 60 M-30 32 L30 32 M0 60 L-22 95 M0 60 L22 95"/>
+    <text class="actor-text" x="0" y="118">Officer / Requester</text>
+  </g>
+
+  <!-- Manager / FEO / OM -->
+  <g id="actor-manager" transform="translate(100 630)">
+    <circle class="actor-line" cx="0" cy="0" r="16"/>
+    <path class="actor-line" d="M0 16 L0 60 M-30 32 L30 32 M0 60 L-22 95 M0 60 L22 95"/>
+    <text class="actor-text" x="0" y="118">Manager / FEO / OM</text>
+  </g>
+
+  <!-- ==================== RIGHT ACTORS ==================== -->
+  <!-- HQ Logistics Officer (NEW) -->
+  <g id="actor-hq" transform="translate(1700 200)">
+    <circle class="actor-line" cx="0" cy="0" r="16"/>
+    <path class="actor-line" d="M0 16 L0 60 M-30 32 L30 32 M0 60 L-22 95 M0 60 L22 95"/>
+    <text class="actor-text" x="0" y="118">HQ Logistics Officer</text>
+  </g>
+
+  <!-- Destination Staff -->
+  <g id="actor-destination-staff" transform="translate(1700 450)">
+    <circle class="actor-line" cx="0" cy="0" r="16"/>
+    <path class="actor-line" d="M0 16 L0 60 M-30 32 L30 32 M0 60 L-22 95 M0 60 L22 95"/>
+    <text class="actor-text" x="0" y="118">Destination Staff</text>
+  </g>
+
+  <!-- Delivery Person -->
+  <g id="actor-delivery" transform="translate(1700 700)">
+    <circle class="actor-line" cx="0" cy="0" r="16"/>
+    <path class="actor-line" d="M0 16 L0 60 M-30 32 L30 32 M0 60 L-22 95 M0 60 L22 95"/>
+    <text class="actor-text" x="0" y="118">Delivery Person</text>
+  </g>
+
+  <!-- ==================== SHARED USE CASES ==================== -->
+  <ellipse class="usecase" cx="430" cy="155" rx="100" ry="30"/>
+  <text class="usecase-text" x="430" y="155">Login</text>
+
+  <ellipse class="usecase" cx="430" cy="230" rx="100" ry="30"/>
+  <text class="usecase-text" x="430" y="230">View Dashboard</text>
+
+  <ellipse class="usecase" cx="430" cy="305" rx="100" ry="30"/>
+  <text class="usecase-text" x="430" y="305">View Profile</text>
+
+  <ellipse class="usecase" cx="430" cy="380" rx="115" ry="30"/>
+  <text class="usecase-text" x="430" y="380">View Transfer History</text>
+
+  <ellipse class="usecase" cx="430" cy="455" rx="115" ry="30"/>
+  <text class="usecase-text" x="430" y="455">View Branch Directory</text>
+
+  <!-- ==================== ADMIN USE CASES ==================== -->
+  <ellipse class="usecase" cx="750" cy="155" rx="115" ry="30"/>
+  <text class="usecase-text" x="750" y="155">Manage Users</text>
+
+  <ellipse class="usecase" cx="750" cy="230" rx="130" ry="30"/>
+  <text class="usecase-text" x="750" y="230">Manage Branches</text>
+
+  <ellipse class="usecase" cx="750" cy="305" rx="140" ry="30"/>
+  <text class="usecase-text" x="750" y="305">Manage Departments</text>
+
+  <ellipse class="usecase" cx="750" cy="380" rx="145" ry="30"/>
+  <text class="usecase-text" x="750" y="380">Manage Item Categories</text>
+
+  <ellipse class="usecase" cx="750" cy="455" rx="145" ry="30"/>
+  <text class="usecase-text" x="750" y="455">Manage Stock Items (SKUs)</text>
+
+  <!-- ==================== TRANSFER WORKFLOW USE CASES ==================== -->
+  <ellipse class="usecase" cx="750" cy="560" rx="140" ry="30"/>
+  <text class="usecase-text" x="750" y="560">Create Transfer Request</text>
+
+  <ellipse class="usecase" cx="750" cy="635" rx="140" ry="30"/>
+  <text class="usecase-text" x="750" y="635">Approve Internally</text>
+
+  <!-- HQ Use Cases (NEW) -->
+  <ellipse class="usecase" cx="1100" cy="200" rx="155" ry="30"/>
+  <text class="usecase-text" x="1100" y="200">HQ Verify &amp; Route Transfer</text>
+
+  <!-- Destination Use Cases -->
+  <ellipse class="usecase" cx="1100" cy="450" rx="155" ry="30"/>
+  <text class="usecase-text" x="1100" y="450">Accept &amp; Assign Driver</text>
+
+  <ellipse class="usecase" cx="1100" cy="525" rx="130" ry="30"/>
+  <text class="usecase-text" x="1100" y="525">Final Release</text>
+
+  <ellipse class="usecase" cx="1100" cy="635" rx="130" ry="30"/>
+  <text class="usecase-text" x="1100" y="635">Submit Denominations</text>
+
+  <!-- Delivery Use Cases -->
+  <ellipse class="usecase" cx="1100" cy="700" rx="115" ry="30"/>
+  <text class="usecase-text" x="1100" y="700">Confirm Pickup</text>
+
+  <ellipse class="usecase" cx="1100" cy="770" rx="115" ry="30"/>
+  <text class="usecase-text" x="1100" y="770">Confirm Delivery</text>
+
+  <!-- Requester Close -->
+  <ellipse class="usecase" cx="430" cy="710" rx="145" ry="30"/>
+  <text class="usecase-text" x="430" y="710">Accept / Reject Receipt</text>
+
+  <!-- ==================== CASH / STOCK USE CASES (NEW) ==================== -->
+  <ellipse class="usecase" cx="430" cy="800" rx="120" ry="30"/>
+  <text class="usecase-text" x="430" y="800">View Cash Ledger</text>
+
+  <ellipse class="usecase" cx="430" cy="870" rx="120" ry="30"/>
+  <text class="usecase-text" x="430" y="870">View Stock Ledger</text>
+
+  <ellipse class="usecase" cx="750" cy="800" rx="155" ry="30"/>
+  <text class="usecase-text" x="750" y="800">Submit Cash Adjustment</text>
+
+  <ellipse class="usecase" cx="750" cy="870" rx="155" ry="30"/>
+  <text class="usecase-text" x="750" y="870">Submit Stock Adjustment</text>
+
+  <ellipse class="usecase" cx="1100" cy="870" rx="165" ry="30"/>
+  <text class="usecase-text" x="1100" y="870">Approve/Reject Adjustment</text>
+
+  <ellipse class="usecase" cx="430" cy="940" rx="130" ry="30"/>
+  <text class="usecase-text" x="430" y="940">Print Reports / Slips</text>
+
+  <!-- Internal audit use case -->
+  <ellipse class="usecase" cx="1100" cy="950" rx="120" ry="28"/>
+  <text class="usecase-text" x="1100" y="950">Write Audit Log</text>
+
+  <!-- ==================== ACTOR ASSOCIATIONS ==================== -->
+  <!-- System Admin links -->
+  <path class="link" d="M100 170 C200 160 310 150 330 155"/>
+  <path class="link" d="M100 170 C200 200 310 225 330 230"/>
+  <path class="link" d="M100 170 C240 180 550 148 635 155"/>
+  <path class="link" d="M100 170 C240 210 550 225 620 230"/>
+  <path class="link" d="M100 170 C240 270 550 295 610 305"/>
+  <path class="link" d="M100 170 C240 340 550 370 605 380"/>
+  <path class="link" d="M100 170 C240 380 550 445 605 455"/>
+
+  <!-- Officer links -->
+  <path class="link" d="M100 385 C220 370 310 350 330 305"/>
+  <path class="link" d="M100 385 C220 390 310 385 330 380"/>
+  <path class="link" d="M100 385 C220 420 310 445 315 455"/>
+  <path class="link" d="M100 385 C220 490 550 545 610 560"/>
+  <path class="link" d="M100 385 C220 580 310 690 315 710"/>
+  <path class="link" d="M100 385 C220 620 310 790 310 800"/>
+  <path class="link" d="M100 385 C220 650 310 860 310 870"/>
+  <path class="link" d="M100 385 C220 700 310 930 310 940"/>
+
+  <!-- Manager links -->
+  <path class="link" d="M100 630 C220 620 550 625 610 635"/>
+  <path class="link" d="M100 630 C250 600 550 560 610 560"/>
+  <path class="link" d="M100 630 C280 620 850 520 970 525"/>
+  <path class="link" d="M100 630 C220 710 310 790 310 800"/>
+  <path class="link" d="M100 630 C220 730 310 860 310 870"/>
+  <path class="link" d="M100 630 C300 800 900 870 935 870"/>
+
+  <!-- HQ Logistics Officer links (NEW) -->
+  <path class="link" d="M1700 200 L1255 200"/>
+  <path class="link" d="M1700 200 C1600 170 500 148 530 155"/>
+
+  <!-- Destination Staff links -->
+  <path class="link" d="M1700 450 L1255 450"/>
+  <path class="link" d="M1700 450 C1600 500 1250 520 1230 525"/>
+  <path class="link" d="M1700 450 C1600 580 1250 625 1230 635"/>
+
+  <!-- Delivery Person links -->
+  <path class="link" d="M1700 700 L1215 700"/>
+  <path class="link" d="M1700 700 C1600 740 1250 760 1215 770"/>
+
+  <!-- ==================== INCLUDE LINKS ==================== -->
+  <path class="include" d="M750 665 C800 780 960 930 980 950"/>
+  <text class="include-text" x="890" y="840">&lt;&lt;include&gt;&gt;</text>
+  <path class="include" d="M1100 730 C1105 800 1105 900 1100 922"/>
+  <path class="include" d="M1100 800 C1105 870 1105 910 1100 922"/>
+  <path class="include" d="M750 590 C820 700 960 920 980 950"/>
+  <path class="include" d="M1100 480 C1105 600 1105 910 1100 922"/>
+  <path class="include" d="M430 740 C600 890 950 945 980 950"/>
+
+  <!-- Workflow note -->
+  <rect class="note" x="290" y="1010" width="980" height="55"/>
+  <text class="note-text" x="310" y="1030">Workflow: Create → Internal Approval → HQ Routing → Accept &amp; Assign → Final Release → Pickup → Delivery → Verification</text>
+  <text class="note-text" x="310" y="1050">Category Behaviors: CASH (vault + denominations + ledger), STOCK (SKU + quantity + ledger), DOCUMENT_CASE (plain transfer)</text>
+</svg>

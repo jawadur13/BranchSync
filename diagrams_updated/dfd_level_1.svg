@@ -1,0 +1,199 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+  <defs>
+    <style>
+      .page { fill: #ffffff; }
+      .title { font: 700 24px Arial, sans-serif; fill: #12355f; text-anchor: middle; }
+      
+      /* Component Styling matching academic standards */
+      .entity { fill: #f8fafc; stroke: #1e293b; stroke-width: 1.5; rx: 2px; }
+      .entity-text { font: 700 12px Arial, sans-serif; fill: #0f172a; text-anchor: middle; dominant-baseline: middle; }
+      
+      .process { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.8; rx: 24; }
+      .process-text { font: 700 12px Arial, sans-serif; fill: #1e40af; text-anchor: middle; dominant-baseline: middle; }
+      
+      .data-store { fill: #ffffff; stroke: #334155; stroke-width: 1.5; }
+      .ds-label { font: 700 11px Arial, sans-serif; fill: #1e293b; }
+      .ds-desc { font: 400 9px Arial, sans-serif; fill: #64748b; }
+      
+      .data-flow { stroke: #334155; stroke-width: 1.2; fill: none; marker-end: url(#arrow); }
+      .flow-text { font: 500 10px Arial, sans-serif; fill: #334155; text-anchor: middle; }
+    </style>
+    <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L5,3 z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect class="page" width="1400" height="900"/>
+  <text class="title" x="700" y="50">DFD Level 1: System Overview (Presentation View)</text>
+
+  <!-- ==================== EXTERNAL ACTORS (LEFT & RIGHT) ==================== -->
+  
+  <!-- System Admin (Top Left) -->
+  <g transform="translate(50, 130)">
+    <rect class="entity" width="150" height="60"/>
+    <text class="entity-text" x="75" y="30">System Admin</text>
+  </g>
+  
+  <!-- Requester (Middle Left) -->
+  <g transform="translate(50, 420)">
+    <rect class="entity" width="150" height="60"/>
+    <text class="entity-text" x="75" y="30">Requester</text>
+  </g>
+  
+  <!-- HQ Logistics Officer (Bottom Left) -->
+  <g transform="translate(50, 610)">
+    <rect class="entity" width="150" height="60"/>
+    <text class="entity-text" x="75" y="22">HQ Logistics</text>
+    <text class="entity-text" x="75" y="38">Officer</text>
+  </g>
+
+  <!-- Approver / FEO (Top Right) -->
+  <g transform="translate(1200, 220)">
+    <rect class="entity" width="150" height="60"/>
+    <text class="entity-text" x="75" y="30">Approver / FEO</text>
+  </g>
+  
+  <!-- Delivery Person (Middle Right) -->
+  <g transform="translate(1200, 420)">
+    <rect class="entity" width="150" height="60"/>
+    <text class="entity-text" x="75" y="30">Delivery Person</text>
+  </g>
+
+
+  <!-- ==================== CORE WORKFLOW (CENTER) ==================== -->
+  
+  <!-- 3.0 Transfer Lifecycle (Pristine Centerpiece) -->
+  <rect class="process" x="580" y="395" width="240" height="110"/>
+  <text class="process-text" x="700" y="440">3.0 Transfer Lifecycle</text>
+  <text class="process-text" x="700" y="460" style="font-weight:normal; font-size:10px;">(Central Orchestrator)</text>
+
+  <!-- Datastore D3: Transfer Database (Directly Above 3.0) -->
+  <path class="data-store" d="M580 230 L820 230 M580 270 L820 270"/>
+  <text class="ds-label" x="590" y="248">D3: Transfer Database</text>
+  <text class="ds-desc" x="590" y="262">(requests, states, validations)</text>
+
+
+  <!-- ==================== LEFT MODULES (AUTH & ORG) ==================== -->
+
+  <!-- 1.0 User Auth & Access -->
+  <rect class="process" x="300" y="125" width="180" height="70"/>
+  <text class="process-text" x="390" y="160">1.0 User Auth &amp; Access</text>
+
+  <!-- 2.0 User & Org Management -->
+  <rect class="process" x="300" y="275" width="180" height="70"/>
+  <text class="process-text" x="390" y="310">2.0 User &amp; Org Mgmt</text>
+
+  <!-- Datastores D1 & D2 (Grouped next to Auth/Org Processes) -->
+  <!-- D1: User Database -->
+  <path class="data-store" d="M300 770 L480 770 M300 810 L480 810"/>
+  <text class="ds-label" x="310" y="788">D1: User Database</text>
+  <text class="ds-desc" x="310" y="802">(users, roles, employee_ids)</text>
+
+  <!-- D2: Org Config -->
+  <path class="data-store" d="M520 770 L720 770 M520 810 L720 810"/>
+  <text class="ds-label" x="530" y="788">D2: Org Config (Branch/Dept)</text>
+  <text class="ds-desc" x="530" y="802">(branches, departments, mappings)</text>
+
+
+  <!-- ==================== SUPPORTING BACKEND MODULES (BOTTOM LEFT / RIGHT / CENTER) ==================== -->
+
+  <!-- 5.0 Cash Vault Management (Bottom Left) -->
+  <rect class="process" x="290" y="550" width="200" height="80"/>
+  <text class="process-text" x="390" y="580">5.0 Cash Vault</text>
+  <text class="process-text" x="390" y="600">Management</text>
+
+  <!-- Datastore D5: Cash Vault DB -->
+  <path class="data-store" d="M290 680 L490 680 M290 720 L490 720"/>
+  <text class="ds-label" x="300" y="698">D5: Cash Vault DB</text>
+  <text class="ds-desc" x="300" y="712">(cash_ledger, balances, adjustments)</text>
+
+
+  <!-- 6.0 Stock Inventory Management (Bottom Right) -->
+  <rect class="process" x="910" y="550" width="200" height="80"/>
+  <text class="process-text" x="1010" y="580">6.0 Stock Inventory</text>
+  <text class="process-text" x="1010" y="600">Management</text>
+
+  <!-- Datastore D6: Stock Inventory DB -->
+  <path class="data-store" d="M910 680 L1110 680 M910 720 L1110 720"/>
+  <text class="ds-label" x="920" y="698">D6: Stock Inventory DB</text>
+  <text class="ds-desc" x="920" y="712">(items, stock_ledger, balances)</text>
+
+
+  <!-- 4.0 Audit & Logging (Below Center) -->
+  <rect class="process" x="610" y="600" width="180" height="70"/>
+  <text class="process-text" x="700" y="635">4.0 Audit &amp; Logging</text>
+
+  <!-- Datastore D4: Audit Logs -->
+  <path class="data-store" d="M610 720 L790 720 M610 760 L790 760"/>
+  <text class="ds-label" x="620" y="738">D4: Audit Logs</text>
+  <text class="ds-desc" x="620" y="752">(action, from/to status, acted_at)</text>
+
+
+  <!-- ==================== FLOWS & ROUTING CONNECTIONS ==================== -->
+
+  <!-- 1. Authentication Flows -->
+  <path class="data-flow" d="M 200 160 L 300 160"/>
+  <text class="flow-text" x="250" y="152">Login Details</text>
+
+  <!-- 2. Admin Actions -->
+  <path class="data-flow" d="M 150 190 L 150 310 L 300 310"/>
+  <text class="flow-text" x="220" y="302">Admin Actions</text>
+
+  <!-- 3. Requester submission to Central Workflow -->
+  <path class="data-flow" d="M 200 450 L 580 450"/>
+  <text class="flow-text" x="390" y="442">New Transfer Request</text>
+
+  <!-- 4. User Auth to User Db -->
+  <path class="data-flow" d="M 390 195 L 390 770"/>
+  <text class="flow-text" x="330" y="240">Validate User</text>
+
+  <!-- 5. User Mgmt to User Db & Org Db -->
+  <path class="data-flow" d="M 450 345 L 450 770"/>
+  <path class="data-flow" d="M 480 310 L 620 310 L 620 770"/>
+  <text class="flow-text" x="550" y="302">Save Configuration</text>
+
+  <!-- 6. User Auth → User Mgmt transition -->
+  <path class="data-flow" d="M 460 195 L 460 275"/>
+
+  <!-- 7. Core Workflow read/write to Transfer Database (Clean vertical mapping) -->
+  <path class="data-flow" d="M 700 395 L 700 270"/>
+  <text class="flow-text" x="650" y="335">Update States</text>
+
+  <!-- 8. HQ Logistics interaction with Cash Vault -->
+  <path class="data-flow" d="M 200 625 L 290 625"/>
+  <text class="flow-text" x="245" y="617">HQ Routing</text>
+  
+  <path class="data-flow" d="M 290 575 L 200 575"/>
+  <text class="flow-text" x="245" y="567">HQ Queue</text>
+
+  <!-- 9. Core Workflow to Cash Vault Management (Left Side connection) -->
+  <path class="data-flow" d="M 580 470 L 390 470 L 390 550"/>
+  <text class="flow-text" x="480" y="462">Cash Transfer Events</text>
+
+  <!-- 10. Core Workflow to Stock Inventory (Right Side connection) -->
+  <path class="data-flow" d="M 820 470 L 1010 470 L 1010 550"/>
+  <text class="flow-text" x="920" y="462">Stock Transfer Events</text>
+
+  <!-- 11. Cash Vault Management to D5 DB (Clean vertical path) -->
+  <path class="data-flow" d="M 390 630 L 390 680"/>
+  <text class="flow-text" x="450" y="658">Balances &amp; Ledger</text>
+
+  <!-- 12. Stock Management to D6 DB (Clean vertical path) -->
+  <path class="data-flow" d="M 1010 630 L 1010 680"/>
+  <text class="flow-text" x="1070" y="658">SKUs &amp; Ledger</text>
+
+  <!-- 13. Audit events logging (Central straight-down mapping) -->
+  <path class="data-flow" d="M 700 505 L 700 600"/>
+  <text class="flow-text" x="745" y="555">Capture Event</text>
+  
+  <path class="data-flow" d="M 700 670 L 700 720"/>
+
+  <!-- 14. Approver & FEO interaction with Central Workflow -->
+  <path class="data-flow" d="M 1200 250 L 700 250 L 700 395"/>
+  <text class="flow-text" x="950" y="242">Approval / Release</text>
+
+  <!-- 15. Delivery Person interaction with Central Workflow -->
+  <path class="data-flow" d="M 1200 450 L 820 450"/>
+  <text class="flow-text" x="1010" y="442">Pickup / Delivery</text>
+
+</svg>

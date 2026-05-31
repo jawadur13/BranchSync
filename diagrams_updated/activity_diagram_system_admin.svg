@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="900" viewBox="0 0 1000 900">
+  <defs>
+    <style>
+      .page { fill: #ffffff; }
+      .title { font: 700 24px Arial, sans-serif; fill: #12355f; text-anchor: middle; }
+      .activity { fill: #ffffff; stroke: #333333; stroke-width: 1.2; rx: 15; }
+      .activity-text { font: 400 12px Arial, sans-serif; fill: #111111; text-anchor: middle; dominant-baseline: middle; }
+      .decision { fill: #ffffff; stroke: #333333; stroke-width: 1.2; }
+      .decision-text { font: 700 11px Arial, sans-serif; fill: #111111; text-anchor: middle; dominant-baseline: middle; }
+      .flow-line { stroke: #333333; stroke-width: 1.2; fill: none; marker-end: url(#arrow); }
+      .start-node { fill: #111111; }
+      .end-node { fill: #ffffff; stroke: #111111; stroke-width: 2; }
+      .end-inner { fill: #111111; }
+      .label { font: 400 11px Arial, sans-serif; fill: #666666; }
+      .fork { stroke: #111111; stroke-width: 4; }
+    </style>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L7,4 z" fill="#333333"/>
+    </marker>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1000" height="900"/>
+  <text class="title" x="500" y="50">Activity Diagram: System Administration</text>
+
+  <!-- Start -->
+  <circle class="start-node" cx="500" cy="100" r="10"/>
+  <line class="flow-line" x1="500" y1="110" x2="500" y2="150"/>
+
+  <rect class="activity" x="425" y="150" width="150" height="40"/>
+  <text class="activity-text" x="500" y="170">Access Admin Panel</text>
+  <line class="flow-line" x1="500" y1="190" x2="500" y2="230"/>
+
+  <!-- Fork -->
+  <line class="fork" x1="130" y1="230" x2="870" y2="230"/>
+
+  <!-- User Management -->
+  <line class="flow-line" x1="200" y1="230" x2="200" y2="280"/>
+  <rect class="activity" x="125" y="280" width="150" height="40"/>
+  <text class="activity-text" x="200" y="300">User Management</text>
+  <line class="flow-line" x1="200" y1="320" x2="200" y2="360"/>
+  <rect class="activity" x="125" y="360" width="150" height="60"/>
+  <text class="activity-text" x="200" y="380">Create/Edit User</text>
+  <text class="activity-text" x="200" y="395">Assign Role &amp; Branch</text>
+  <line class="flow-line" x1="200" y1="420" x2="200" y2="470"/>
+
+  <!-- Org Management -->
+  <line class="flow-line" x1="400" y1="230" x2="400" y2="280"/>
+  <rect class="activity" x="325" y="280" width="150" height="40"/>
+  <text class="activity-text" x="400" y="300">Org Configuration</text>
+  <line class="flow-line" x1="400" y1="320" x2="400" y2="360"/>
+  <rect class="activity" x="325" y="360" width="150" height="60"/>
+  <text class="activity-text" x="400" y="380">Add/Update Branch</text>
+  <text class="activity-text" x="400" y="395">&amp; Departments</text>
+  <line class="flow-line" x1="400" y1="420" x2="400" y2="470"/>
+
+  <!-- Item Category Management -->
+  <line class="flow-line" x1="600" y1="230" x2="600" y2="280"/>
+  <rect class="activity" x="525" y="280" width="150" height="40"/>
+  <text class="activity-text" x="600" y="300">Item Categories</text>
+  <line class="flow-line" x1="600" y1="320" x2="600" y2="360"/>
+  <rect class="activity" x="515" y="360" width="170" height="60"/>
+  <text class="activity-text" x="600" y="375">Define Categories</text>
+  <text class="activity-text" x="600" y="390">Sensitivity &amp; Behavior</text>
+  <text class="activity-text" x="600" y="405">(CASH/STOCK/DOC_CASE)</text>
+  <line class="flow-line" x1="600" y1="420" x2="600" y2="470"/>
+
+  <!-- Stock Item (SKU) Management (NEW) -->
+  <line class="flow-line" x1="800" y1="230" x2="800" y2="280"/>
+  <rect class="activity" x="715" y="280" width="170" height="40"/>
+  <text class="activity-text" x="800" y="300">Stock Item (SKU) Mgmt</text>
+  <line class="flow-line" x1="800" y1="320" x2="800" y2="360"/>
+  <rect class="activity" x="715" y="360" width="170" height="60"/>
+  <text class="activity-text" x="800" y="380">Add/Edit/Toggle SKUs</text>
+  <text class="activity-text" x="800" y="395">Under STOCK Categories</text>
+  <line class="flow-line" x1="800" y1="420" x2="800" y2="470"/>
+
+  <!-- Join -->
+  <line class="fork" x1="130" y1="470" x2="870" y2="470"/>
+  <line class="flow-line" x1="500" y1="470" x2="500" y2="520"/>
+
+  <rect class="activity" x="425" y="520" width="150" height="40"/>
+  <text class="activity-text" x="500" y="540">Sync to Database</text>
+  <line class="flow-line" x1="500" y1="560" x2="500" y2="610"/>
+
+  <!-- End -->
+  <g transform="translate(500, 630)">
+    <circle class="end-node" cx="0" cy="0" r="15"/>
+    <circle class="end-inner" cx="0" cy="0" r="8"/>
+  </g>
+
+  <!-- Note -->
+  <rect x="250" y="730" width="500" height="50" rx="8" fill="#fff8db" stroke="#d7b84f" stroke-width="1.5"/>
+  <text x="500" y="752" text-anchor="middle" font-size="11" fill="#4f4211" font-weight="600">Admin CRUD operations update the database directly.</text>
+  <text x="500" y="768" text-anchor="middle" font-size="11" fill="#4f4211" font-weight="600">Audit logs are only generated for transfer workflow actions.</text>
+
+</svg>

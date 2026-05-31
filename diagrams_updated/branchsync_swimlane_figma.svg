@@ -1,0 +1,218 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2050" height="1200" viewBox="0 0 2050 1200">
+  <defs>
+    <style>
+      .page { fill: #ffffff; }
+      .title { font: 700 24px Arial, sans-serif; fill: #12355f; text-anchor: middle; }
+      .subtitle { font: 400 13px Arial, sans-serif; fill: #52657a; text-anchor: middle; }
+      .lane-head { fill: #eaf2fb; stroke: #2f5f9f; stroke-width: 1.8; }
+      .lane-head-text { font: 700 12px Arial, sans-serif; fill: #12355f; text-anchor: middle; dominant-baseline: middle; }
+      .lane { fill: #fbfdff; stroke: #c8d9ee; stroke-width: 1.2; }
+      .step { fill: #dfeecb; stroke: #2f5f9f; stroke-width: 1.8; rx: 8; }
+      .step-text { font: 600 11px Arial, sans-serif; fill: #101820; text-anchor: middle; dominant-baseline: middle; }
+      .decision { fill: #ffffff; stroke: #2f5f9f; stroke-width: 1.8; }
+      .decision-text { font: 600 10px Arial, sans-serif; fill: #101820; text-anchor: middle; dominant-baseline: middle; }
+      .terminal { fill: #ffffff; stroke: #2f5f9f; stroke-width: 1.8; rx: 20; }
+      .terminal-text { font: 700 11px Arial, sans-serif; fill: #101820; text-anchor: middle; dominant-baseline: middle; }
+      .status { fill: #fff8db; stroke: #d7b84f; stroke-width: 1.4; rx: 6; }
+      .status-text { font: 600 9px Arial, sans-serif; fill: #4f4211; text-anchor: middle; dominant-baseline: middle; }
+      .audit { fill: #f3ecff; stroke: #7755aa; stroke-width: 1.4; rx: 6; }
+      .audit-text { font: 600 9px Arial, sans-serif; fill: #3f2d66; text-anchor: middle; dominant-baseline: middle; }
+      .flow { stroke: #3f78bf; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .alt { stroke: #b05f5f; stroke-width: 2; stroke-dasharray: 6 5; fill: none; marker-end: url(#arrow-red); }
+      .audit-line { stroke: #7755aa; stroke-width: 1.5; stroke-dasharray: 5 4; fill: none; marker-end: url(#arrow-purple); }
+      .small-label { font: 600 10px Arial, sans-serif; fill: #52657a; text-anchor: middle; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#3f78bf"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#b05f5f"/>
+    </marker>
+    <marker id="arrow-purple" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#7755aa"/>
+    </marker>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="2050" height="1200"/>
+  <rect x="12" y="12" width="2026" height="1176" fill="none" stroke="#dce8f7"/>
+  <text class="title" x="1025" y="42">BranchSync Swimlane Diagram</text>
+  <text class="subtitle" x="1025" y="64">Eight-stage inter-branch transfer workflow with HQ routing and ledger operations</text>
+
+  <!-- Lane Headers (8 lanes) -->
+  <rect class="lane-head" x="60" y="95" width="220" height="60"/>
+  <text class="lane-head-text" x="170" y="125">Officer / Requester</text>
+  <rect class="lane-head" x="280" y="95" width="220" height="60"/>
+  <text class="lane-head-text" x="390" y="125">Source Manager</text>
+  <rect class="lane-head" x="500" y="95" width="220" height="60"/>
+  <text class="lane-head-text" x="610" y="125">HQ Logistics Officer</text>
+  <rect class="lane-head" x="720" y="95" width="220" height="60"/>
+  <text class="lane-head-text" x="830" y="125">Destination Staff</text>
+  <rect class="lane-head" x="940" y="95" width="220" height="60"/>
+  <text class="lane-head-text" x="1050" y="125">Destination Manager</text>
+  <rect class="lane-head" x="1160" y="95" width="220" height="60"/>
+  <text class="lane-head-text" x="1270" y="125">Delivery Person</text>
+  <rect class="lane-head" x="1380" y="95" width="220" height="60"/>
+  <text class="lane-head-text" x="1490" y="125">System / Audit</text>
+  <rect class="lane-head" x="1600" y="95" width="220" height="60"/>
+  <text class="lane-head-text" x="1710" y="125">Final State</text>
+
+  <!-- Lane Bodies -->
+  <rect class="lane" x="60" y="155" width="220" height="950"/>
+  <rect class="lane" x="280" y="155" width="220" height="950"/>
+  <rect class="lane" x="500" y="155" width="220" height="950"/>
+  <rect class="lane" x="720" y="155" width="220" height="950"/>
+  <rect class="lane" x="940" y="155" width="220" height="950"/>
+  <rect class="lane" x="1160" y="155" width="220" height="950"/>
+  <rect class="lane" x="1380" y="155" width="220" height="950"/>
+  <rect class="lane" x="1600" y="155" width="220" height="950"/>
+
+  <!-- START -->
+  <rect class="terminal" x="105" y="185" width="130" height="45"/>
+  <text class="terminal-text" x="170" y="208">Start</text>
+
+  <!-- Step 1: Create Request -->
+  <rect class="step" x="85" y="265" width="170" height="60"/>
+  <text class="step-text" x="170" y="288">Create Transfer</text>
+  <text class="step-text" x="170" y="305">Request</text>
+
+  <!-- Decision: Manager bypass? -->
+  <polygon class="decision" points="170,400 240,355 310,400 240,445"/>
+  <text class="decision-text" x="240" y="393">Requester is</text>
+  <text class="decision-text" x="240" y="408">manager-level?</text>
+
+  <rect class="status" x="82" y="480" width="176" height="40"/>
+  <text class="status-text" x="170" y="495">Status:</text>
+  <text class="status-text" x="170" y="510">PENDING_INTERNAL</text>
+
+  <!-- Step 2: Internal Approval (Source Manager lane) -->
+  <rect class="step" x="305" y="475" width="170" height="55"/>
+  <text class="step-text" x="390" y="496">Approve</text>
+  <text class="step-text" x="390" y="512">Internally</text>
+
+  <!-- Status: PENDING_HQ_APPROVAL -->
+  <rect class="status" x="522" y="400" width="176" height="40"/>
+  <text class="status-text" x="610" y="415">Status:</text>
+  <text class="status-text" x="610" y="430">PENDING_HQ_APPROVAL</text>
+
+  <!-- Step 3: HQ Verify & Route (NEW LANE) -->
+  <rect class="step" x="525" y="475" width="170" height="55"/>
+  <text class="step-text" x="610" y="496">HQ Verify &amp;</text>
+  <text class="step-text" x="610" y="512">Route to Supplier</text>
+
+  <!-- Status: PENDING_ASSIGNMENT -->
+  <rect class="status" x="742" y="400" width="176" height="40"/>
+  <text class="status-text" x="830" y="415">Status:</text>
+  <text class="status-text" x="830" y="430">PENDING_ASSIGNMENT</text>
+
+  <!-- Step 4: Accept & Assign Driver -->
+  <rect class="step" x="745" y="475" width="170" height="55"/>
+  <text class="step-text" x="830" y="496">Accept &amp;</text>
+  <text class="step-text" x="830" y="512">Assign Driver</text>
+
+  <!-- Status: PENDING_FINAL_RELEASE -->
+  <rect class="status" x="955" y="400" width="190" height="40"/>
+  <text class="status-text" x="1050" y="415">Status:</text>
+  <text class="status-text" x="1050" y="430">PENDING_FINAL_RELEASE</text>
+
+  <!-- Step 5: Final Release -->
+  <rect class="step" x="965" y="475" width="170" height="55"/>
+  <text class="step-text" x="1050" y="496">Give Final</text>
+  <text class="step-text" x="1050" y="512">Release</text>
+
+  <!-- Status: READY_FOR_PICKUP -->
+  <rect class="status" x="1175" y="400" width="170" height="40"/>
+  <text class="status-text" x="1260" y="415">Status:</text>
+  <text class="status-text" x="1260" y="430">READY_FOR_PICKUP</text>
+
+  <!-- Step 6: Confirm Pickup -->
+  <rect class="step" x="1175" y="475" width="170" height="55"/>
+  <text class="step-text" x="1260" y="496">Confirm</text>
+  <text class="step-text" x="1260" y="512">Pickup</text>
+
+  <!-- Status: IN_TRANSIT -->
+  <rect class="status" x="1185" y="580" width="150" height="40"/>
+  <text class="status-text" x="1260" y="595">Status:</text>
+  <text class="status-text" x="1260" y="610">IN_TRANSIT</text>
+
+  <!-- Audit: Debit vault/SKU -->
+  <rect class="audit" x="1395" y="475" width="190" height="40"/>
+  <text class="audit-text" x="1490" y="490">Debit Vault/SKU</text>
+  <text class="audit-text" x="1490" y="505">Log TRANSFER_OUT</text>
+
+  <!-- Step 7: Confirm Delivery -->
+  <rect class="step" x="1175" y="665" width="170" height="55"/>
+  <text class="step-text" x="1260" y="686">Confirm</text>
+  <text class="step-text" x="1260" y="702">Delivery</text>
+
+  <!-- Audit: Credit vault/SKU -->
+  <rect class="audit" x="1395" y="665" width="190" height="40"/>
+  <text class="audit-text" x="1490" y="680">Credit Vault/SKU</text>
+  <text class="audit-text" x="1490" y="695">Log TRANSFER_IN</text>
+
+  <!-- Status: DELIVERED -->
+  <rect class="status" x="82" y="740" width="176" height="40"/>
+  <text class="status-text" x="170" y="755">Status:</text>
+  <text class="status-text" x="170" y="770">DELIVERED</text>
+
+  <!-- Step 8: Accept/Reject receipt -->
+  <polygon class="decision" points="170,860 240,815 310,860 240,905"/>
+  <text class="decision-text" x="240" y="852">Accept</text>
+  <text class="decision-text" x="240" y="867">receipt?</text>
+
+  <!-- Audit: Log completed/rejected -->
+  <rect class="audit" x="1385" y="270" width="210" height="40"/>
+  <text class="audit-text" x="1490" y="290">Log CREATED</text>
+  <rect class="audit" x="1395" y="560" width="190" height="40"/>
+  <text class="audit-text" x="1490" y="575">Log APPROVALS</text>
+  <text class="audit-text" x="1490" y="590">&amp; HQ ROUTING</text>
+  <rect class="audit" x="1385" y="840" width="210" height="40"/>
+  <text class="audit-text" x="1490" y="860">Log COMPLETED / REJECTED</text>
+
+  <!-- Terminal States -->
+  <rect class="terminal" x="1640" y="825" width="140" height="45"/>
+  <text class="terminal-text" x="1710" y="848">COMPLETED</text>
+  <rect class="terminal" x="1620" y="895" width="180" height="45"/>
+  <text class="terminal-text" x="1710" y="918">REJECTED_ON_RECEIPT</text>
+
+  <!-- Reversal note -->
+  <rect class="audit" x="1395" y="895" width="190" height="40"/>
+  <text class="audit-text" x="1490" y="910">Reversal Entries</text>
+  <text class="audit-text" x="1490" y="925">REVERSAL_IN / _OUT</text>
+
+  <!-- Flow arrows -->
+  <path class="flow" d="M170 230 L170 265"/>
+  <path class="flow" d="M170 325 L170 355"/>
+  <path class="flow" d="M240 445 C235 465 210 475 170 480"/>
+  <text class="small-label" x="215" y="465">No</text>
+  <path class="flow" d="M258 445 C300 460 340 465 390 475"/>
+  <path class="flow" d="M310 400 C400 380 480 380 610 400"/>
+  <text class="small-label" x="430" y="378">Yes / bypass</text>
+
+  <path class="flow" d="M475 502 L525 502"/>
+  <path class="flow" d="M695 502 L745 502"/>
+  <path class="flow" d="M915 502 L965 502"/>
+  <path class="flow" d="M1135 502 L1175 502"/>
+  <path class="flow" d="M1260 530 L1260 580"/>
+  <path class="flow" d="M1260 620 L1260 665"/>
+  <path class="flow" d="M1175 693 C760 740 430 740 258 740"/>
+  <path class="flow" d="M170 780 L170 815"/>
+  <path class="flow" d="M310 860 C800 840 1350 835 1640 848"/>
+  <text class="small-label" x="570" y="832">Accept</text>
+  <path class="alt" d="M240 905 C650 950 1200 950 1620 918"/>
+  <text class="small-label" x="570" y="940">Reject + mandatory note</text>
+
+  <!-- Audit lines -->
+  <path class="audit-line" d="M255 295 L1385 290"/>
+  <path class="audit-line" d="M475 502 L1395 580"/>
+  <path class="audit-line" d="M695 502 L1395 575"/>
+  <path class="audit-line" d="M1345 502 C1370 520 1395 540 1490 560"/>
+  <path class="audit-line" d="M1345 693 L1395 680"/>
+  <path class="audit-line" d="M310 860 L1385 860"/>
+  <path class="audit-line" d="M240 905 L1395 915"/>
+
+  <!-- Bottom annotation -->
+  <rect class="status" x="550" y="1020" width="700" height="55"/>
+  <text class="status-text" x="900" y="1037">Driver availability changes automatically: Pickup → isAvailable=false, Delivery → isAvailable=true</text>
+  <text class="status-text" x="900" y="1055">Cash/Stock ledger entries are immutable. Rejections trigger REVERSAL_IN and REVERSAL_OUT entries.</text>
+
+</svg>

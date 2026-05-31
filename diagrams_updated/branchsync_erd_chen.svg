@@ -1,0 +1,349 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1550" viewBox="0 0 2200 1550">
+  <defs>
+    <style>
+      .page { fill: #ffffff; }
+      .entity-rect { fill: #ffffff; stroke: #000000; stroke-width: 1.5; rx: 1px; }
+      .entity-txt { font: 700 12px Arial, sans-serif; fill: #000000; text-anchor: middle; dominant-baseline: middle; }
+      .attr-ellipse { fill: #ffffff; stroke: #000000; stroke-width: 1; }
+      .attr-txt { font: 500 9px Arial, sans-serif; fill: #000000; text-anchor: middle; dominant-baseline: middle; }
+      .rel-diamond { fill: #ffffff; stroke: #000000; stroke-width: 1.5; }
+      .rel-txt { font: 700 10px Arial, sans-serif; fill: #000000; text-anchor: middle; dominant-baseline: middle; }
+      .conn-line { stroke: #444444; stroke-width: 1; fill: none; }
+      .title-text { font: 700 22px Arial, sans-serif; fill: #000000; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect class="page" width="2200" height="1550"/>
+  <text class="title-text" x="1100" y="50">BranchSync Entity Relationship Diagram (Chen Notation - Grayscale)</text>
+
+  <!-- ==================================================================================== -->
+  <!-- ==================== COLUMN 1: IDENTITY & ORG MASTER (X = 200) ===================== -->
+  <!-- ==================================================================================== -->
+
+  <!-- ENTITY: Roles (cx=200, cy=180) -->
+  <line class="conn-line" x1="200" y1="180" x2="130" y2="120"/>
+  <line class="conn-line" x1="200" y1="180" x2="270" y2="120"/>
+  <ellipse class="attr-ellipse" cx="130" cy="120" rx="42" ry="16"/>
+  <text class="attr-txt" x="130" y="120">role_id</text>
+  <ellipse class="attr-ellipse" cx="270" cy="120" rx="42" ry="16"/>
+  <text class="attr-txt" x="270" y="120">role_name</text>
+  
+  <rect class="entity-rect" x="135" y="162" width="130" height="36"/>
+  <text class="entity-txt" x="200" y="180">Roles</text>
+
+
+  <!-- ENTITY: Users (cx=200, cy=450) -->
+  <line class="conn-line" x1="200" y1="450" x2="60" y2="390"/>
+  <line class="conn-line" x1="200" y1="450" x2="130" y2="390"/>
+  <line class="conn-line" x1="200" y1="450" x2="200" y2="390"/>
+  <line class="conn-line" x1="200" y1="450" x2="270" y2="390"/>
+  <line class="conn-line" x1="200" y1="450" x2="340" y2="390"/>
+  <ellipse class="attr-ellipse" cx="60" cy="390" rx="40" ry="16"/>
+  <text class="attr-txt" x="60" y="390">user_id</text>
+  <ellipse class="attr-ellipse" cx="130" cy="390" rx="40" ry="16"/>
+  <text class="attr-txt" x="130" y="390">employee_id</text>
+  <ellipse class="attr-ellipse" cx="200" cy="390" rx="40" ry="16"/>
+  <text class="attr-txt" x="200" y="390">full_name</text>
+  <ellipse class="attr-ellipse" cx="270" cy="390" rx="40" ry="16"/>
+  <text class="attr-txt" x="270" y="390">email</text>
+  <ellipse class="attr-ellipse" cx="340" cy="390" rx="40" ry="16"/>
+  <text class="attr-txt" x="340" y="390">phone_no</text>
+
+  <rect class="entity-rect" x="135" y="432" width="130" height="36"/>
+  <text class="entity-txt" x="200" y="450">Users</text>
+
+
+  <!-- ENTITY: Branches (cx=200, cy=720) -->
+  <line class="conn-line" x1="200" y1="720" x2="60" y2="780"/>
+  <line class="conn-line" x1="200" y1="720" x2="130" y2="780"/>
+  <line class="conn-line" x1="200" y1="720" x2="200" y2="780"/>
+  <line class="conn-line" x1="200" y1="720" x2="270" y2="780"/>
+  <line class="conn-line" x1="200" y1="720" x2="340" y2="780"/>
+  <ellipse class="attr-ellipse" cx="60" cy="780" rx="40" ry="16"/>
+  <text class="attr-txt" x="60" y="780">branch_id</text>
+  <ellipse class="attr-ellipse" cx="130" cy="780" rx="40" ry="16"/>
+  <text class="attr-txt" x="130" y="780">branch_code</text>
+  <ellipse class="attr-ellipse" cx="200" cy="780" rx="40" ry="16"/>
+  <text class="attr-txt" x="200" y="780">branch_name</text>
+  <ellipse class="attr-ellipse" cx="270" cy="780" rx="40" ry="16"/>
+  <text class="attr-txt" x="270" y="780">branch_type</text>
+  <ellipse class="attr-ellipse" cx="340" cy="780" rx="40" ry="16"/>
+  <text class="attr-txt" x="340" y="780">district</text>
+
+  <rect class="entity-rect" x="135" y="702" width="130" height="36"/>
+  <text class="entity-txt" x="200" y="720">Branches</text>
+
+
+  <!-- ENTITY: Departments (cx=200, cy=990) -->
+  <line class="conn-line" x1="200" y1="990" x2="130" y2="1050"/>
+  <line class="conn-line" x1="200" y1="990" x2="270" y2="1050"/>
+  <ellipse class="attr-ellipse" cx="130" cy="1050" rx="42" ry="16"/>
+  <text class="attr-txt" x="130" y="1050">department_id</text>
+  <ellipse class="attr-ellipse" cx="270" cy="1050" rx="42" ry="16"/>
+  <text class="attr-txt" x="270" y="1050">dept_name</text>
+
+  <rect class="entity-rect" x="135" y="972" width="130" height="36"/>
+  <text class="entity-txt" x="200" y="990">Departments</text>
+
+
+  <!-- ==================================================================================== -->
+  <!-- ==================== COLUMN 2: TRANSFERS & LIFECYCLE (X = 700) ===================== -->
+  <!-- ==================================================================================== -->
+
+  <!-- ENTITY: Transfer Requests (cx=700, cy=450) -->
+  <line class="conn-line" x1="700" y1="450" x2="560" y2="390"/>
+  <line class="conn-line" x1="700" y1="450" x2="630" y2="390"/>
+  <line class="conn-line" x1="700" y1="450" x2="700" y2="390"/>
+  <line class="conn-line" x1="700" y1="450" x2="770" y2="390"/>
+  <line class="conn-line" x1="700" y1="450" x2="840" y2="390"/>
+  <ellipse class="attr-ellipse" cx="560" cy="390" rx="40" ry="16"/>
+  <text class="attr-txt" x="560" y="390">request_id</text>
+  <ellipse class="attr-ellipse" cx="630" cy="390" rx="40" ry="16"/>
+  <text class="attr-txt" x="630" y="390">req_code</text>
+  <ellipse class="attr-ellipse" cx="700" cy="390" rx="40" ry="16"/>
+  <text class="attr-txt" x="700" y="390">priority</text>
+  <ellipse class="attr-ellipse" cx="770" cy="390" rx="40" ry="16"/>
+  <text class="attr-txt" x="770" y="390">status</text>
+  <ellipse class="attr-ellipse" cx="840" cy="390" rx="40" ry="16"/>
+  <text class="attr-txt" x="840" y="390">amount</text>
+
+  <rect class="entity-rect" x="635" y="432" width="130" height="36"/>
+  <text class="entity-txt" x="700" y="450">Transfer Requests</text>
+
+
+  <!-- ENTITY: Audit Logs (cx=700, cy=720) -->
+  <line class="conn-line" x1="700" y1="720" x2="560" y2="780"/>
+  <line class="conn-line" x1="700" y1="720" x2="630" y2="780"/>
+  <line class="conn-line" x1="700" y1="720" x2="700" y2="780"/>
+  <line class="conn-line" x1="700" y1="720" x2="770" y2="780"/>
+  <ellipse class="attr-ellipse" cx="560" cy="780" rx="40" ry="16"/>
+  <text class="attr-txt" x="560" y="780">audit_id</text>
+  <ellipse class="attr-ellipse" cx="630" cy="780" rx="40" ry="16"/>
+  <text class="attr-txt" x="630" y="780">action</text>
+  <ellipse class="attr-ellipse" cx="700" cy="780" rx="40" ry="16"/>
+  <text class="attr-txt" x="700" y="780">from_status</text>
+  <ellipse class="attr-ellipse" cx="770" cy="780" rx="40" ry="16"/>
+  <text class="attr-txt" x="770" y="780">to_status</text>
+
+  <rect class="entity-rect" x="635" y="702" width="130" height="36"/>
+  <text class="entity-txt" x="700" y="720">Audit Logs</text>
+
+
+  <!-- ENTITY: Denominations (cx=700, cy=990) -->
+  <line class="conn-line" x1="700" y1="990" x2="600" y2="1050"/>
+  <line class="conn-line" x1="700" y1="990" x2="700" y2="1050"/>
+  <line class="conn-line" x1="700" y1="990" x2="800" y2="1050"/>
+  <ellipse class="attr-ellipse" cx="600" cy="1050" rx="45" ry="16"/>
+  <text class="attr-txt" x="600" y="1050">denom_id</text>
+  <ellipse class="attr-ellipse" cx="700" cy="1050" rx="40" ry="16"/>
+  <text class="attr-txt" x="700" y="1050">denomination</text>
+  <ellipse class="attr-ellipse" cx="800" cy="1050" rx="40" ry="16"/>
+  <text class="attr-txt" x="800" y="1050">quantity</text>
+
+  <rect class="entity-rect" x="635" y="972" width="130" height="36"/>
+  <text class="entity-txt" x="700" y="990">Denominations</text>
+
+
+  <!-- ==================================================================================== -->
+  <!-- ==================== COLUMN 3: CASH VAULT MODULE (X = 1200) ===================== -->
+  <!-- ==================================================================================== -->
+
+  <!-- ENTITY: BranchCashBalance (cx=1200, cy=180) -->
+  <line class="conn-line" x1="1200" y1="180" x2="1130" y2="120"/>
+  <line class="conn-line" x1="1200" y1="180" x2="1270" y2="120"/>
+  <ellipse class="attr-ellipse" cx="1130" cy="120" rx="45" ry="16"/>
+  <text class="attr-txt" x="1130" y="120">curr_balance</text>
+  <ellipse class="attr-ellipse" cx="1270" cy="120" rx="42" ry="16"/>
+  <text class="attr-txt" x="1270" y="120">last_updated</text>
+
+  <rect class="entity-rect" x="1135" y="162" width="130" height="36"/>
+  <text class="entity-txt" x="1200" y="180">Cash Balance</text>
+
+
+  <!-- ENTITY: CashLedger (cx=1200, cy=450) -->
+  <line class="conn-line" x1="1200" y1="450" x2="1060" y2="510"/>
+  <line class="conn-line" x1="1200" y1="450" x2="1130" y2="510"/>
+  <line class="conn-line" x1="1200" y1="450" x2="1200" y2="510"/>
+  <line class="conn-line" x1="1200" y1="450" x2="1270" y2="510"/>
+  <ellipse class="attr-ellipse" cx="1060" cy="510" rx="40" ry="16"/>
+  <text class="attr-txt" x="1060" y="510">ledger_id</text>
+  <ellipse class="attr-ellipse" cx="1130" cy="510" rx="40" ry="16"/>
+  <text class="attr-txt" x="1130" y="510">entry_type</text>
+  <ellipse class="attr-ellipse" cx="1200" cy="510" rx="40" ry="16"/>
+  <text class="attr-txt" x="1200" y="510">amount</text>
+  <ellipse class="attr-ellipse" cx="1270" cy="510" rx="40" ry="16"/>
+  <text class="attr-txt" x="1270" y="510">bal_after</text>
+
+  <rect class="entity-rect" x="1135" y="432" width="130" height="36"/>
+  <text class="entity-txt" x="1200" y="450">Cash Ledger</text>
+
+
+  <!-- ENTITY: CashManualAdjustments (cx=1200, cy=720) -->
+  <line class="conn-line" x1="1200" y1="720" x2="1110" y2="780"/>
+  <line class="conn-line" x1="1200" y1="720" x2="1200" y2="780"/>
+  <line class="conn-line" x1="1200" y1="720" x2="1290" y2="780"/>
+  <ellipse class="attr-ellipse" cx="1110" cy="780" rx="40" ry="16"/>
+  <text class="attr-txt" x="1110" y="780">adj_id</text>
+  <ellipse class="attr-ellipse" cx="1200" cy="780" rx="40" ry="16"/>
+  <text class="attr-txt" x="1200" y="780">amount</text>
+  <ellipse class="attr-ellipse" cx="1290" cy="780" rx="40" ry="16"/>
+  <text class="attr-txt" x="1290" y="780">status</text>
+
+  <rect class="entity-rect" x="1135" y="702" width="130" height="36"/>
+  <text class="entity-txt" x="1200" y="720">Cash Adjustments</text>
+
+
+  <!-- ==================================================================================== -->
+  <!-- ==================== COLUMN 4: STOCK INVENTORY (X = 1700) ===================== -->
+  <!-- ==================================================================================== -->
+
+  <!-- ENTITY: ItemCategories (cx=1700, cy=180) -->
+  <line class="conn-line" x1="1700" y1="180" x2="1630" y2="120"/>
+  <line class="conn-line" x1="1700" y1="180" x2="1770" y2="120"/>
+  <ellipse class="attr-ellipse" cx="1630" cy="120" rx="42" ry="16"/>
+  <text class="attr-txt" x="1630" y="120">category_id</text>
+  <ellipse class="attr-ellipse" cx="1770" cy="120" rx="42" ry="16"/>
+  <text class="attr-txt" x="1770" y="120">behavior_type</text>
+
+  <rect class="entity-rect" x="1635" y="162" width="130" height="36"/>
+  <text class="entity-txt" x="1700" y="180">Item Categories</text>
+
+
+  <!-- ENTITY: StockItems (cx=1700, cy=450) -->
+  <line class="conn-line" x1="1700" y1="450" x2="1610" y2="510"/>
+  <line class="conn-line" x1="1700" y1="450" x2="1700" y2="510"/>
+  <line class="conn-line" x1="1700" y1="450" x2="1790" y2="510"/>
+  <ellipse class="attr-ellipse" cx="1610" cy="510" rx="40" ry="16"/>
+  <text class="attr-txt" x="1610" y="510">stock_item_id</text>
+  <ellipse class="attr-ellipse" cx="1700" cy="510" rx="40" ry="16"/>
+  <text class="attr-txt" x="1700" y="510">item_name</text>
+  <ellipse class="attr-ellipse" cx="1790" cy="510" rx="40" ry="16"/>
+  <text class="attr-txt" x="1790" y="510">unit</text>
+
+  <rect class="entity-rect" x="1635" y="432" width="130" height="36"/>
+  <text class="entity-txt" x="1700" y="450">Stock Items</text>
+
+
+  <!-- ENTITY: BranchStockBalance (cx=1700, cy=720) -->
+  <line class="conn-line" x1="1700" y1="720" x2="1630" y2="780"/>
+  <line class="conn-line" x1="1700" y1="720" x2="1770" y2="780"/>
+  <ellipse class="attr-ellipse" cx="1630" cy="780" rx="42" ry="16"/>
+  <text class="attr-txt" x="1630" y="780">balance_id</text>
+  <ellipse class="attr-ellipse" cx="1770" cy="780" rx="42" ry="16"/>
+  <text class="attr-txt" x="1770" y="780">curr_qty</text>
+
+  <rect class="entity-rect" x="1635" y="702" width="130" height="36"/>
+  <text class="entity-txt" x="1700" y="720">Stock Balance</text>
+
+
+  <!-- ENTITY: StockLedger (cx=1700, cy=990) -->
+  <line class="conn-line" x1="1700" y1="990" x2="1560" y2="1050"/>
+  <line class="conn-line" x1="1700" y1="990" x2="1630" y2="1050"/>
+  <line class="conn-line" x1="1700" y1="990" x2="1700" y2="1050"/>
+  <line class="conn-line" x1="1700" y1="990" x2="1770" y2="1050"/>
+  <ellipse class="attr-ellipse" cx="1560" cy="1050" rx="40" ry="16"/>
+  <text class="attr-txt" x="1560" y="1050">ledger_id</text>
+  <ellipse class="attr-ellipse" cx="1630" cy="1050" rx="40" ry="16"/>
+  <text class="attr-txt" x="1630" y="1050">entry_type</text>
+  <ellipse class="attr-ellipse" cx="1700" cy="1050" rx="40" ry="16"/>
+  <text class="attr-txt" x="1700" y="1050">quantity</text>
+  <ellipse class="attr-ellipse" cx="1770" cy="1050" rx="40" ry="16"/>
+  <text class="attr-txt" x="1770" y="1050">bal_after</text>
+
+  <rect class="entity-rect" x="1635" y="972" width="130" height="36"/>
+  <text class="entity-txt" x="1700" y="990">Stock Ledger</text>
+
+
+  <!-- ENTITY: StockManualAdjustments (cx=1700, cy=1260) -->
+  <line class="conn-line" x1="1700" y1="1260" x2="1610" y2="1320"/>
+  <line class="conn-line" x1="1700" y1="1260" x2="1700" y2="1320"/>
+  <line class="conn-line" x1="1700" y1="1260" x2="1790" y2="1320"/>
+  <ellipse class="attr-ellipse" cx="1610" cy="1320" rx="40" ry="16"/>
+  <text class="attr-txt" x="1610" y="1320">adj_id</text>
+  <ellipse class="attr-ellipse" cx="1700" cy="1320" rx="40" ry="16"/>
+  <text class="attr-txt" x="1700" y="1320">quantity</text>
+  <ellipse class="attr-ellipse" cx="1790" cy="1320" rx="40" ry="16"/>
+  <text class="attr-txt" x="1790" y="1320">status</text>
+
+  <rect class="entity-rect" x="1635" y="1242" width="130" height="36"/>
+  <text class="entity-txt" x="1700" y="1260">Stock Adjustments</text>
+
+
+  <!-- ==================================================================================== -->
+  <!-- ==================== RELATIONSHIPS & CONNECTOR LINES WITH DIAMONDS ==================== -->
+  <!-- ==================================================================================== -->
+
+  <!-- Roles ♦ Classifies ♦ Users -->
+  <line class="conn-line" x1="200" y1="198" x2="200" y2="432"/>
+  <polygon class="rel-diamond" points="200,300 240,315 200,330 160,315"/>
+  <text class="rel-txt" x="200" y="315">Classifies</text>
+
+  <!-- Users ♦ Assigned To ♦ Branches -->
+  <line class="conn-line" x1="200" y1="468" x2="200" y2="702"/>
+  <polygon class="rel-diamond" points="200,570 245,585 200,600 155,585"/>
+  <text class="rel-txt" x="200" y="585">Assigned To</text>
+
+  <!-- Branches ♦ Offers ♦ Departments -->
+  <line class="conn-line" x1="200" y1="738" x2="200" y2="972"/>
+  <polygon class="rel-diamond" points="200,840 235,855 200,870 165,855"/>
+  <text class="rel-txt" x="200" y="855">Offers</text>
+
+
+  <!-- Users ♦ Initiates ♦ TransferRequests -->
+  <line class="conn-line" x1="265" y1="450" x2="635" y2="450"/>
+  <polygon class="rel-diamond" points="450,435 485,450 450,465 415,450"/>
+  <text class="rel-txt" x="450" y="450">Initiates</text>
+
+  <!-- TransferRequests ♦ Records ♦ AuditLogs -->
+  <line class="conn-line" x1="700" y1="468" x2="700" y2="702"/>
+  <polygon class="rel-diamond" points="700,570 735,585 700,600 665,585"/>
+  <text class="rel-txt" x="700" y="585">Records</text>
+
+  <!-- TransferRequests ♦ Contains ♦ Denominations -->
+  <line class="conn-line" x1="700" y1="738" x2="700" y2="972"/>
+  <polygon class="rel-diamond" points="700,840 735,855 700,870 665,855"/>
+  <text class="rel-txt" x="700" y="855">Contains</text>
+
+
+  <!-- Branches ♦ Vault Cash ♦ BranchCashBalance -->
+  <path class="conn-line" d="M 265 720 L 450 720 L 450 280 L 1000 280 L 1000 180 L 1135 180"/>
+  <polygon class="rel-diamond" points="1000,265 1045,280 1000,295 955,280"/>
+  <text class="rel-txt" x="1000" y="280">Vault Cash</text>
+
+  <!-- Branches ♦ Logs Cash ♦ CashLedger -->
+  <path class="conn-line" d="M 265 720 L 450 720 L 450 850 L 1040 850 L 1040 450 L 1135 450"/>
+  <polygon class="rel-diamond" points="1040,580 1085,595 1040,610 995,595"/>
+  <text class="rel-txt" x="1040" y="595">Logs Cash</text>
+
+  <!-- Branches ♦ Submits Cash Adj ♦ CashManualAdjustments -->
+  <path class="conn-line" d="M 265 720 L 450 720 L 450 880 L 1100 880 L 1100 720 L 1135 720"/>
+  <polygon class="rel-diamond" points="900,865 945,880 900,895 855,880"/>
+  <text class="rel-txt" x="900" y="880">Submits Cash Adj</text>
+
+
+  <!-- Departments ♦ Manages ♦ ItemCategories -->
+  <path class="conn-line" d="M 265 990 L 450 990 L 450 1150 L 1480 1150 L 1480 180 L 1635 180"/>
+  <polygon class="rel-diamond" points="1480,565 1520,580 1480,595 1440,580"/>
+  <text class="rel-txt" x="1480" y="580">Manages</text>
+
+  <!-- ItemCategories ♦ Classifies Stock ♦ StockItems -->
+  <line class="conn-line" x1="1700" y1="198" x2="1700" y2="432"/>
+  <polygon class="rel-diamond" points="1700,300 1745,315 1700,330 1655,315"/>
+  <text class="rel-txt" x="1700" y="315">Classifies Stock</text>
+
+  <!-- Branches ♦ Tracks Stock ♦ BranchStockBalance -->
+  <path class="conn-line" d="M 265 720 L 450 720 L 450 1180 L 1580 1180 L 1580 720 L 1635 720"/>
+  <polygon class="rel-diamond" points="1520,1165 1565,1180 1520,1195 1475,1180"/>
+  <text class="rel-txt" x="1520" y="1180">Tracks Stock</text>
+
+  <!-- StockItems ♦ Tracked In ♦ StockLedger -->
+  <path class="conn-line" d="M 1700 468 L 1860 468 L 1860 972 L 1700 972"/>
+  <polygon class="rel-diamond" points="1860,700 1915,715 1860,730 1805,715"/>
+  <text class="rel-txt" x="1860" y="715">Tracked In</text>
+
+  <!-- StockItems ♦ Adjusted Via ♦ StockManualAdjustments -->
+  <path class="conn-line" d="M 1700 468 L 1950 468 L 1950 1260 L 1765 1260"/>
+  <polygon class="rel-diamond" points="1950,840 1995,855 1950,870 1905,855"/>
+  <text class="rel-txt" x="1950" y="855">Adjusted Via</text>
+
+</svg>

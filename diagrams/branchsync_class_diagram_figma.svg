@@ -1,0 +1,212 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200">
+  <defs>
+    <style>
+      .page { fill: #ffffff; }
+      .title { font: 700 28px Arial, sans-serif; fill: #12355f; text-anchor: middle; }
+      .class-box { fill: #ffffff; stroke: #333333; stroke-width: 1.2; }
+      .class-divider { stroke: #333333; stroke-width: 1; }
+      .class-name { font: 700 14px Arial, sans-serif; fill: #111111; text-anchor: middle; dominant-baseline: middle; }
+      .class-attr { font: 400 11px Arial, sans-serif; fill: #222222; }
+      .class-method { font: 400 11px Arial, sans-serif; fill: #444444; font-style: italic; }
+      .rel-line { stroke: #333333; stroke-width: 1.2; fill: none; }
+      .multiplicity { font: 400 11px Arial, sans-serif; fill: #111111; }
+      .figure-text { font: 700 18px Arial, sans-serif; fill: #12355f; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1600" height="1200"/>
+  
+  <text class="title" x="800" y="50">BranchSync Class Diagram (Full Domain Model)</text>
+
+  <!-- Role Class -->
+  <g transform="translate(50, 150)">
+    <rect class="class-box" width="180" height="80"/>
+    <line class="class-divider" x1="0" y1="30" x2="180" y2="30"/>
+    <line class="class-divider" x1="0" y1="60" x2="180" y2="60"/>
+    <text class="class-name" x="90" y="15">Role</text>
+    <text class="class-attr" x="10" y="45">+roleId: long</text>
+    <text class="class-attr" x="10" y="55">+roleName: String</text>
+    <text class="class-method" x="10" y="75">+getPermissions()</text>
+  </g>
+
+  <!-- User Class -->
+  <g transform="translate(300, 150)">
+    <rect class="class-box" width="220" height="220"/>
+    <line class="class-divider" x1="0" y1="30" x2="220" y2="30"/>
+    <line class="class-divider" x1="0" y1="170" x2="220" y2="170"/>
+    <text class="class-name" x="110" y="15">User</text>
+    <text class="class-attr" x="10" y="45">+userId: long</text>
+    <text class="class-attr" x="10" y="58">+employeeId: String</text>
+    <text class="class-attr" x="10" y="71">+fullName: String</text>
+    <text class="class-attr" x="10" y="84">+email: String</text>
+    <text class="class-attr" x="10" y="97">+phoneNumber: String</text>
+    <text class="class-attr" x="10" y="110">+roleId: long</text>
+    <text class="class-attr" x="10" y="123">+branchId: long</text>
+    <text class="class-attr" x="10" y="136">+departmentId: long</text>
+    <text class="class-attr" x="10" y="149">+isAvailable: boolean</text>
+    <text class="class-attr" x="10" y="162">+isActive: boolean</text>
+    <text class="class-method" x="10" y="185">+authenticate()</text>
+    <text class="class-method" x="10" y="198">+getProfile()</text>
+    <text class="class-method" x="10" y="211">+toggleStatus()</text>
+  </g>
+
+  <!-- Branch Class -->
+  <g transform="translate(600, 150)">
+    <rect class="class-box" width="220" height="180"/>
+    <line class="class-divider" x1="0" y1="30" x2="220" y2="30"/>
+    <line class="class-divider" x1="0" y1="140" x2="220" y2="140"/>
+    <text class="class-name" x="110" y="15">Branch</text>
+    <text class="class-attr" x="10" y="45">+branchId: long</text>
+    <text class="class-attr" x="10" y="58">+branchCode: String</text>
+    <text class="class-attr" x="10" y="71">+branchName: String</text>
+    <text class="class-attr" x="10" y="84">+branchType: String</text>
+    <text class="class-attr" x="10" y="97">+district: String</text>
+    <text class="class-attr" x="10" y="110">+division: String</text>
+    <text class="class-attr" x="10" y="123">+address: String</text>
+    <text class="class-method" x="10" y="155">+getDepartments()</text>
+    <text class="class-method" x="10" y="168">+getBranchInfo()</text>
+  </g>
+
+  <!-- Department Class -->
+  <g transform="translate(900, 150)">
+    <rect class="class-box" width="200" height="80"/>
+    <line class="class-divider" x1="0" y1="30" x2="200" y2="30"/>
+    <line class="class-divider" x1="0" y1="60" x2="200" y2="60"/>
+    <text class="class-name" x="100" y="15">Department</text>
+    <text class="class-attr" x="10" y="45">+departmentId: long</text>
+    <text class="class-attr" x="10" y="55">+departmentName: String</text>
+    <text class="class-method" x="10" y="75">+listStaff()</text>
+  </g>
+
+  <!-- BranchDepartment Class (Associative) -->
+  <g transform="translate(750, 400)">
+    <rect class="class-box" width="180" height="70"/>
+    <line class="class-divider" x1="0" y1="30" x2="180" y2="30"/>
+    <line class="class-divider" x1="0" y1="55" x2="180" y2="55"/>
+    <text class="class-name" x="90" y="15">BranchDepartment</text>
+    <text class="class-attr" x="10" y="45">+branchId: long</text>
+    <text class="class-attr" x="10" y="52">+departmentId: long</text>
+  </g>
+
+  <!-- ItemCategory Class -->
+  <g transform="translate(1180, 150)">
+    <rect class="class-box" width="220" height="120"/>
+    <line class="class-divider" x1="0" y1="30" x2="220" y2="30"/>
+    <line class="class-divider" x1="0" y1="90" x2="220" y2="90"/>
+    <text class="class-name" x="110" y="15">ItemCategory</text>
+    <text class="class-attr" x="10" y="45">+categoryId: long</text>
+    <text class="class-attr" x="10" y="58">+categoryName: String</text>
+    <text class="class-attr" x="10" y="71">+departmentId: long</text>
+    <text class="class-attr" x="10" y="84">+sensitivityLevel: String</text>
+    <text class="class-method" x="10" y="105">+getHandlingRules()</text>
+  </g>
+
+  <!-- TransferRequest Class -->
+  <g transform="translate(600, 550)">
+    <rect class="class-box" width="250" height="340"/>
+    <line class="class-divider" x1="0" y1="30" x2="250" y2="30"/>
+    <line class="class-divider" x1="0" y1="230" x2="250" y2="230"/>
+    <text class="class-name" x="125" y="15">TransferRequest</text>
+    <text class="class-attr" x="10" y="45">+requestId: long</text>
+    <text class="class-attr" x="10" y="56">+requestCode: String</text>
+    <text class="class-attr" x="10" y="67">+title: String</text>
+    <text class="class-attr" x="10" y="78">+categoryId: long</text>
+    <text class="class-attr" x="10" y="89">+priority: String</text>
+    <text class="class-attr" x="10" y="100">+status: String</text>
+    <text class="class-attr" x="10" y="111">+originBranchId: long</text>
+    <text class="class-attr" x="10" y="122">+destinationBranchId: long</text>
+    <text class="class-attr" x="10" y="133">+initiatedById: long</text>
+    <text class="class-attr" x="10" y="144">+internalApproverId: long</text>
+    <text class="class-attr" x="10" y="155">+deptAcceptorId: long</text>
+    <text class="class-attr" x="10" y="166">+finalReleaserId: long</text>
+    <text class="class-attr" x="10" y="177">+deliveryPersonId: long</text>
+    <text class="class-attr" x="10" y="188">+pickedUpAt: Timestamp</text>
+    <text class="class-attr" x="10" y="199">+deliveredAt: Timestamp</text>
+    <text class="class-attr" x="10" y="210">+closedAt: Timestamp</text>
+    <text class="class-attr" x="10" y="221">+requestedAt: Timestamp</text>
+    <text class="class-method" x="10" y="245">+initiate()</text>
+    <text class="class-method" x="10" y="258">+approveInternal()</text>
+    <text class="class-method" x="10" y="271">+assignDriver()</text>
+    <text class="class-method" x="10" y="284">+release()</text>
+    <text class="class-method" x="10" y="297">+pickup()</text>
+    <text class="class-method" x="10" y="310">+deliver()</text>
+    <text class="class-method" x="10" y="323">+close()</text>
+  </g>
+
+  <!-- AuditLog Class -->
+  <g transform="translate(100, 550)">
+    <rect class="class-box" width="220" height="180"/>
+    <line class="class-divider" x1="0" y1="30" x2="220" y2="30"/>
+    <line class="class-divider" x1="0" y1="130" x2="220" y2="130"/>
+    <text class="class-name" x="110" y="15">AuditLog</text>
+    <text class="class-attr" x="10" y="45">+auditId: long</text>
+    <text class="class-attr" x="10" y="58">+requestId: long</text>
+    <text class="class-attr" x="10" y="71">+actorId: long</text>
+    <text class="class-attr" x="10" y="84">+action: String</text>
+    <text class="class-attr" x="10" y="97">+fromStatus: String</text>
+    <text class="class-attr" x="10" y="110">+toStatus: String</text>
+    <text class="class-attr" x="10" y="123">+actedAt: Timestamp</text>
+    <text class="class-method" x="10" y="145">+logAction()</text>
+    <text class="class-method" x="10" y="158">+getHistory()</text>
+  </g>
+
+  <!-- Relationships -->
+
+  <!-- Role to User -->
+  <line class="rel-line" x1="230" y1="190" x2="300" y2="190"/>
+  <text class="multiplicity" x="235" y="185">1</text>
+  <text class="multiplicity" x="280" y="185">0..*</text>
+
+  <!-- Branch to User -->
+  <line class="rel-line" x1="520" y1="210" x2="600" y2="210"/>
+  <text class="multiplicity" x="525" y="205">1</text>
+  <text class="multiplicity" x="580" y="205">0..*</text>
+
+  <!-- Department to User -->
+  <path class="rel-line" d="M1000 230 L1000 300 L520 300"/>
+  <text class="multiplicity" x="1010" y="240">1</text>
+  <text class="multiplicity" x="530" y="295">0..*</text>
+
+  <!-- Branch to BranchDepartment -->
+  <path class="rel-line" d="M710 330 L710 435 L750 435"/>
+  <text class="multiplicity" x="720" y="340">1</text>
+  <text class="multiplicity" x="735" y="430">0..*</text>
+
+  <!-- Department to BranchDepartment -->
+  <path class="rel-line" d="M1000 230 L1000 435 L930 435"/>
+  <text class="multiplicity" x="1010" y="240">1</text>
+  <text class="multiplicity" x="935" y="430">0..*</text>
+
+  <!-- Department to ItemCategory -->
+  <line class="rel-line" x1="1100" y1="190" x2="1180" y2="190"/>
+  <text class="multiplicity" x="1105" y="185">1</text>
+  <text class="multiplicity" x="1160" y="185">0..*</text>
+
+  <!-- TransferRequest to ItemCategory -->
+  <path class="rel-line" d="M850 600 L1290 600 L1290 270"/>
+  <text class="multiplicity" x="860" y="595">0..*</text>
+  <text class="multiplicity" x="1300" y="280">1</text>
+
+  <!-- TransferRequest to Branch (Origin/Destination) -->
+  <path class="rel-line" d="M600 650 L560 650 L560 210 L600 210"/>
+  <text class="multiplicity" x="585" y="645">0..*</text>
+  <text class="multiplicity" x="585" y="205">2 (O/D)</text>
+
+  <!-- TransferRequest to User (Various Actors) -->
+  <line class="rel-line" x1="520" y1="350" x2="600" y2="550"/>
+  <text class="multiplicity" x="530" y="340">1</text>
+  <text class="multiplicity" x="580" y="540">0..* (Actors)</text>
+
+  <!-- AuditLog to TransferRequest -->
+  <line class="rel-line" x1="320" y1="640" x2="600" y2="640"/>
+  <text class="multiplicity" x="330" y="635">0..*</text>
+  <text class="multiplicity" x="580" y="635">1</text>
+
+  <!-- AuditLog to User (Actor) -->
+  <path class="rel-line" d="M210 550 L210 450 L300 370"/>
+  <text class="multiplicity" x="220" y="540">0..*</text>
+  <text class="multiplicity" x="310" y="380">1</text>
+
+  <text class="figure-text" x="800" y="1150">Figure 4.7 Class Diagram (Complete BranchSync Entity Relationships)</text>
+
+</svg>

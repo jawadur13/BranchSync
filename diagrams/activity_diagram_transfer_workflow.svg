@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1200" viewBox="0 0 1000 1200">
+  <defs>
+    <style>
+      .page { fill: #ffffff; }
+      .title { font: 700 24px Arial, sans-serif; fill: #12355f; text-anchor: middle; }
+      .activity { fill: #ffffff; stroke: #333333; stroke-width: 1.2; rx: 15; }
+      .activity-text { font: 400 12px Arial, sans-serif; fill: #111111; text-anchor: middle; dominant-baseline: middle; }
+      .decision { fill: #ffffff; stroke: #333333; stroke-width: 1.2; }
+      .decision-text { font: 700 11px Arial, sans-serif; fill: #111111; text-anchor: middle; dominant-baseline: middle; }
+      .flow-line { stroke: #333333; stroke-width: 1.2; fill: none; marker-end: url(#arrow); }
+      .start-node { fill: #111111; }
+      .end-node { fill: #ffffff; stroke: #111111; stroke-width: 2; }
+      .end-inner { fill: #111111; }
+      .label { font: 400 11px Arial, sans-serif; fill: #666666; }
+      .swimlane-line { stroke: #e0e0e0; stroke-width: 1; stroke-dasharray: 5 5; }
+      .swimlane-text { font: 700 14px Arial, sans-serif; fill: #777777; }
+    </style>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L7,4 z" fill="#333333"/>
+    </marker>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1000" height="1200"/>
+  <text class="title" x="500" y="50">Activity Diagram: Core Transfer Workflow</text>
+
+  <!-- Swimlanes -->
+  <line class="swimlane-line" x1="250" y1="100" x2="250" y2="1150"/>
+  <line class="swimlane-line" x1="500" y1="100" x2="500" y2="1150"/>
+  <line class="swimlane-line" x1="750" y1="100" x2="750" y2="1150"/>
+  <text class="swimlane-text" x="50" y="120">Source Branch</text>
+  <text class="swimlane-text" x="300" y="120">Dest. Dept</text>
+  <text class="swimlane-text" x="550" y="120">Dest. Manager</text>
+  <text class="swimlane-text" x="800" y="120">Logistics</text>
+
+  <!-- Start -->
+  <circle class="start-node" cx="125" cy="150" r="10"/>
+  <line class="flow-line" x1="125" y1="160" x2="125" y2="200"/>
+
+  <!-- Step 1: Initiate -->
+  <rect class="activity" x="50" y="200" width="150" height="40"/>
+  <text class="activity-text" x="125" y="220">Initiate Request</text>
+  <line class="flow-line" x1="125" y1="240" x2="125" y2="280"/>
+
+  <!-- Step 2: Internal Approval -->
+  <rect class="activity" x="50" y="280" width="150" height="40"/>
+  <text class="activity-text" x="125" y="300">Internal Review</text>
+  <line class="flow-line" x1="125" y1="320" x2="125" y2="350"/>
+
+  <polygon class="decision" points="125,350 155,380 125,410 95,380"/>
+  <text class="decision-text" x="125" y="380">Approved?</text>
+  
+  <line class="flow-line" x1="155" y1="380" x2="300" y2="380"/>
+  <text class="label" x="180" y="375">Yes</text>
+  
+  <line class="flow-line" x1="95" y1="380" x2="50" y2="380"/>
+  <text class="label" x="65" y="375">No</text>
+  <rect class="activity" x="-80" y="360" width="120" height="40" transform="translate(50,0)"/>
+  <text class="activity-text" x="10" y="380" transform="translate(50,0)">Request Cancelled</text>
+
+  <!-- Step 3: Destination Accept -->
+  <rect class="activity" x="300" y="360" width="150" height="40"/>
+  <text class="activity-text" x="375" y="380">Accept &amp; Assign Driver</text>
+  <line class="flow-line" x1="375" y1="400" x2="375" y2="450"/>
+
+  <!-- Step 4: Final Release -->
+  <line class="flow-line" x1="450" y1="450" x2="550" y2="450"/>
+  <rect class="activity" x="550" y="430" width="150" height="40"/>
+  <text class="activity-text" x="625" y="450">Authorize Final Release</text>
+  <line class="flow-line" x1="625" y1="470" x2="625" y2="520"/>
+
+  <polygon class="decision" points="625,520 655,550 625,580 595,550"/>
+  <text class="decision-text" x="625" y="550">Released?</text>
+
+  <line class="flow-line" x1="655" y1="550" x2="800" y2="550"/>
+  <text class="label" x="680" y="545">Yes</text>
+
+  <!-- Step 5: Pickup & Delivery -->
+  <rect class="activity" x="800" y="530" width="150" height="40"/>
+  <text class="activity-text" x="875" y="550">Item Pickup</text>
+  <line class="flow-line" x1="875" y1="570" x2="875" y2="620"/>
+
+  <rect class="activity" x="800" y="620" width="150" height="40"/>
+  <text class="activity-text" x="875" y="640">Transit &amp; Delivery</text>
+  <line class="flow-line" x1="800" y1="640" x2="125" y2="640" transform="translate(0, 100)"/>
+
+  <!-- Step 6: Completion -->
+  <rect class="activity" x="50" y="720" width="150" height="40"/>
+  <text class="activity-text" x="125" y="740">Verification by Requester</text>
+  <line class="flow-line" x1="125" y1="760" x2="125" y2="800"/>
+
+  <polygon class="decision" points="125,800 155,830 125,860 95,830"/>
+  <text class="decision-text" x="125" y="830">Accepted?</text>
+
+  <line class="flow-line" x1="155" y1="830" x2="250" y2="830"/>
+  <text class="label" x="180" y="825">Yes</text>
+  <rect class="activity" x="250" y="810" width="120" height="40"/>
+  <text class="activity-text" x="310" y="830">Mark Completed</text>
+
+  <line class="flow-line" x1="95" y1="830" x2="50" y2="830"/>
+  <text class="label" x="70" y="825">No</text>
+  <rect class="activity" x="-100" y="810" width="120" height="40" transform="translate(50,0)"/>
+  <text class="activity-text" x="-40" y="830" transform="translate(50,0)">Reject on Receipt</text>
+
+  <!-- End -->
+  <line class="flow-line" x1="310" y1="850" x2="310" y2="920"/>
+  <g transform="translate(310, 935)">
+    <circle class="end-node" cx="0" cy="0" r="15"/>
+    <circle class="end-inner" cx="0" cy="0" r="8"/>
+  </g>
+
+</svg>

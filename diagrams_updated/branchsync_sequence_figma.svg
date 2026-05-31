@@ -1,0 +1,259 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="2200" viewBox="0 0 1400 2200">
+  <defs>
+    <style>
+      .page { fill: #ffffff; }
+      .title { font: 700 28px Arial, sans-serif; fill: #12355f; text-anchor: middle; }
+      .participant-box { fill: #f5f5f5; stroke: #a0a0a0; stroke-width: 1; }
+      .participant-text { font: 400 13px Arial, sans-serif; fill: #333333; text-anchor: middle; dominant-baseline: middle; }
+      .lifeline { stroke: #d0d0d0; stroke-width: 1; stroke-dasharray: 4 4; }
+      .phase-box { fill: #e7f3ff; stroke: #3b82f6; stroke-width: 1; stroke-dasharray: 4 4; opacity: 0.6; }
+      .phase-text { font: 700 15px Arial, sans-serif; fill: #1e40af; text-anchor: middle; }
+      .msg-line { stroke: #333333; stroke-width: 1.2; fill: none; marker-end: url(#arrow); }
+      .return-line { stroke: #666666; stroke-width: 1; stroke-dasharray: 5 4; fill: none; marker-end: url(#arrow-gray); }
+      .msg-text { font: 400 11px Arial, sans-serif; fill: #111111; }
+      .step-circle { fill: #111111; }
+      .step-number { font: 700 9px Arial, sans-serif; fill: #ffffff; text-anchor: middle; dominant-baseline: middle; }
+      .figure-text { font: 700 18px Arial, sans-serif; fill: #12355f; text-anchor: middle; }
+    </style>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L7,4 z" fill="#333333"/>
+    </marker>
+    <marker id="arrow-gray" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L0,8 L7,4 z" fill="#666666"/>
+    </marker>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1400" height="2200"/>
+
+  <text class="title" x="700" y="50">Sequence Diagram</text>
+
+  <!-- Participants (6) -->
+  <g transform="translate(80, 90)">
+    <rect class="participant-box" width="120" height="40"/>
+    <text class="participant-text" x="60" y="20">User (Officer)</text>
+    <line class="lifeline" x1="60" y1="40" x2="60" y2="2050"/>
+  </g>
+
+  <g transform="translate(280, 90)">
+    <rect class="participant-box" width="120" height="40"/>
+    <text class="participant-text" x="60" y="20">Web Portal (UI)</text>
+    <line class="lifeline" x1="60" y1="40" x2="60" y2="2050"/>
+  </g>
+
+  <g transform="translate(520, 90)">
+    <rect class="participant-box" width="150" height="40"/>
+    <text class="participant-text" x="75" y="20">BranchSync Server</text>
+    <line class="lifeline" x1="75" y1="40" x2="75" y2="2050"/>
+  </g>
+
+  <g transform="translate(780, 90)">
+    <rect class="participant-box" width="120" height="40"/>
+    <text class="participant-text" x="60" y="20">Central Database</text>
+    <line class="lifeline" x1="60" y1="40" x2="60" y2="2050"/>
+  </g>
+
+  <g transform="translate(1000, 90)">
+    <rect class="participant-box" width="140" height="40"/>
+    <text class="participant-text" x="70" y="12">Cash / Stock</text>
+    <text class="participant-text" x="70" y="30">Service</text>
+    <line class="lifeline" x1="70" y1="40" x2="70" y2="2050"/>
+  </g>
+
+  <g transform="translate(1200, 90)">
+    <rect class="participant-box" width="120" height="40"/>
+    <text class="participant-text" x="60" y="20">Action Logger</text>
+    <line class="lifeline" x1="60" y1="40" x2="60" y2="2050"/>
+  </g>
+
+  <!-- Phase 1: Login -->
+  <rect class="phase-box" x="40" y="170" width="1320" height="240"/>
+  <text class="phase-text" x="700" y="195">Phase 1: Login &amp; Authentication</text>
+
+  <g transform="translate(140, 220)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">1</text>
+    <line class="msg-line" x1="9" y1="0" x2="200" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Enters Employee ID &amp; Password</text>
+  </g>
+  <g transform="translate(340, 255)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">2</text>
+    <line class="msg-line" x1="9" y1="0" x2="255" y2="0"/>
+    <text class="msg-text" x="20" y="-10">POST /api/auth/login</text>
+  </g>
+  <g transform="translate(595, 290)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">3</text>
+    <line class="msg-line" x1="9" y1="0" x2="245" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Verify SHA-256 hash in users table</text>
+  </g>
+  <g transform="translate(840, 325)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">4</text>
+    <line class="return-line" x1="0" y1="0" x2="-245" y2="0"/>
+    <text class="msg-text" x="-180" y="-10" text-anchor="end">User Found → Generate JWT</text>
+  </g>
+  <g transform="translate(595, 370)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">5</text>
+    <line class="return-line" x1="0" y1="0" x2="-255" y2="0"/>
+    <text class="msg-text" x="-180" y="-10" text-anchor="end">Login Successful (JWT + Profile)</text>
+  </g>
+
+  <!-- Phase 2: Create Request -->
+  <rect class="phase-box" x="40" y="440" width="1320" height="280"/>
+  <text class="phase-text" x="700" y="465">Phase 2: Create Transfer Request</text>
+
+  <g transform="translate(140, 500)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">6</text>
+    <line class="msg-line" x1="9" y1="0" x2="200" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Fill Form &amp; Submit</text>
+  </g>
+  <g transform="translate(340, 535)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">7</text>
+    <line class="msg-line" x1="9" y1="0" x2="255" y2="0"/>
+    <text class="msg-text" x="20" y="-10">POST /api/transfers (Request DTO)</text>
+  </g>
+  <g transform="translate(595, 570)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">8</text>
+    <line class="msg-line" x1="9" y1="0" x2="245" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Validate &amp; Save (PENDING_INTERNAL)</text>
+  </g>
+  <g transform="translate(595, 610)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">9</text>
+    <line class="msg-line" x1="9" y1="0" x2="665" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Log CREATED action to audit_logs</text>
+  </g>
+  <g transform="translate(595, 670)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">10</text>
+    <line class="return-line" x1="0" y1="0" x2="-255" y2="0"/>
+    <text class="msg-text" x="-180" y="-10" text-anchor="end">Request Created (REQ-YYYY-NNNN)</text>
+  </g>
+
+  <!-- Phase 3: Internal + HQ Approval -->
+  <rect class="phase-box" x="40" y="750" width="1320" height="320"/>
+  <text class="phase-text" x="700" y="775">Phase 3: Internal Approval &amp; HQ Routing</text>
+
+  <g transform="translate(140, 810)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">11</text>
+    <line class="msg-line" x1="9" y1="0" x2="200" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Source Manager clicks "Approve"</text>
+  </g>
+  <g transform="translate(340, 845)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">12</text>
+    <line class="msg-line" x1="9" y1="0" x2="255" y2="0"/>
+    <text class="msg-text" x="20" y="-10">POST /api/transfers/{id}/approve-internal</text>
+  </g>
+  <g transform="translate(595, 880)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">13</text>
+    <line class="msg-line" x1="9" y1="0" x2="245" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Update to PENDING_HQ_APPROVAL</text>
+  </g>
+  <g transform="translate(140, 930)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">14</text>
+    <line class="msg-line" x1="9" y1="0" x2="200" y2="0"/>
+    <text class="msg-text" x="20" y="-10">HQ Officer selects supplier &amp; routes</text>
+  </g>
+  <g transform="translate(340, 965)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">15</text>
+    <line class="msg-line" x1="9" y1="0" x2="255" y2="0"/>
+    <text class="msg-text" x="20" y="-10">POST /api/transfers/{id}/hq-verify</text>
+  </g>
+  <g transform="translate(595, 1010)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">16</text>
+    <line class="msg-line" x1="9" y1="0" x2="245" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Set destination_branch, status → PENDING_ASSIGNMENT</text>
+  </g>
+
+  <!-- Phase 4: Destination Accept, Release, Pickup, Delivery -->
+  <rect class="phase-box" x="40" y="1100" width="1320" height="560"/>
+  <text class="phase-text" x="700" y="1125">Phase 4: Acceptance, Release, Pickup &amp; Delivery</text>
+
+  <g transform="translate(140, 1160)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">17</text>
+    <line class="msg-line" x1="9" y1="0" x2="200" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Dest. Officer accepts &amp; assigns driver</text>
+  </g>
+  <g transform="translate(340, 1195)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">18</text>
+    <line class="msg-line" x1="9" y1="0" x2="255" y2="0"/>
+    <text class="msg-text" x="20" y="-10">POST /api/transfers/{id}/accept</text>
+  </g>
+  <g transform="translate(140, 1250)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">19</text>
+    <line class="msg-line" x1="9" y1="0" x2="200" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Dest. Manager approves final release</text>
+  </g>
+  <g transform="translate(340, 1285)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">20</text>
+    <line class="msg-line" x1="9" y1="0" x2="255" y2="0"/>
+    <text class="msg-text" x="20" y="-10">POST /api/transfers/{id}/release → READY_FOR_PICKUP</text>
+  </g>
+
+  <!-- Pickup -->
+  <g transform="translate(140, 1350)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">21</text>
+    <line class="msg-line" x1="9" y1="0" x2="200" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Driver clicks "Confirm Pickup"</text>
+  </g>
+  <g transform="translate(340, 1385)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">22</text>
+    <line class="msg-line" x1="9" y1="0" x2="255" y2="0"/>
+    <text class="msg-text" x="20" y="-10">POST /api/transfers/{id}/pickup</text>
+  </g>
+  <g transform="translate(595, 1420)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">23</text>
+    <line class="msg-line" x1="9" y1="0" x2="475" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Debit supplier vault/SKU → Log TRANSFER_OUT</text>
+  </g>
+
+  <!-- Delivery -->
+  <g transform="translate(140, 1480)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">24</text>
+    <line class="msg-line" x1="9" y1="0" x2="200" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Driver clicks "Confirm Delivery"</text>
+  </g>
+  <g transform="translate(340, 1515)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">25</text>
+    <line class="msg-line" x1="9" y1="0" x2="255" y2="0"/>
+    <text class="msg-text" x="20" y="-10">POST /api/transfers/{id}/deliver</text>
+  </g>
+  <g transform="translate(595, 1555)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">26</text>
+    <line class="msg-line" x1="9" y1="0" x2="475" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Credit receiver vault/SKU → Log TRANSFER_IN</text>
+  </g>
+  <g transform="translate(595, 1600)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">27</text>
+    <line class="return-line" x1="0" y1="0" x2="-255" y2="0"/>
+    <text class="msg-text" x="-180" y="-10" text-anchor="end">Status → DELIVERED</text>
+  </g>
+
+  <!-- Phase 5: Verification -->
+  <rect class="phase-box" x="40" y="1690" width="1320" height="280"/>
+  <text class="phase-text" x="700" y="1715">Phase 5: Requester Verification &amp; Closing</text>
+
+  <g transform="translate(140, 1760)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">28</text>
+    <line class="msg-line" x1="9" y1="0" x2="200" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Requester accepts or rejects receipt</text>
+  </g>
+  <g transform="translate(340, 1800)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">29</text>
+    <line class="msg-line" x1="9" y1="0" x2="255" y2="0"/>
+    <text class="msg-text" x="20" y="-10">POST /api/transfers/{id}/close</text>
+  </g>
+  <g transform="translate(595, 1840)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">30</text>
+    <line class="msg-line" x1="9" y1="0" x2="475" y2="0"/>
+    <text class="msg-text" x="20" y="-10">[If rejected] Reversal entries → REVERSAL_IN / REVERSAL_OUT</text>
+  </g>
+  <g transform="translate(595, 1890)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">31</text>
+    <line class="msg-line" x1="9" y1="0" x2="665" y2="0"/>
+    <text class="msg-text" x="20" y="-10">Log COMPLETED or REJECTED_ON_RECEIPT</text>
+  </g>
+  <g transform="translate(595, 1930)">
+    <circle class="step-circle" cx="0" cy="0" r="9"/><text class="step-number" x="0" y="0">32</text>
+    <line class="return-line" x1="0" y1="0" x2="-255" y2="0"/>
+    <text class="msg-text" x="-180" y="-10" text-anchor="end">Workflow Complete</text>
+  </g>
+
+  <text class="figure-text" x="700" y="2120">Figure 4.8 Sequence Diagram (BranchSync Full Workflow)</text>
+
+</svg>
