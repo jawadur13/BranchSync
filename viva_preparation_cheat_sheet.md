@@ -76,58 +76,82 @@ Defines the visual user experience, built with React and TypeScript.
 
 ---
 
-## 🎯 Section 3: High-Scoring Viva Questions & Code References
+## 🎯 Section 3: Visual Page-to-Code Point & Answer Viva Questions
 
-Use these structured answers to demonstrate deep mastery of your project code.
-
-### ❓ Question 1: "Where does the transfer workflow logic live, and how do you ensure integrity during transitions?"
-> **💡 Key Answer:**
-> "The core workflow transitions are implemented in **`TransferServiceImpl.java`** using Spring's **`@Transactional`** annotation on methods like `initiateTransfer()`, `markPickedUp()`, and `markDelivered()`. 
-> 
-> Using `@Transactional` guarantees **ACID compliance**. If any step fails (e.g., a database connection drops while updating stock counts), the entire transaction rolls back, preventing double-debits or orphaned transfers. 
-> 
-> *Code Location Reference:* [TransferServiceImpl.java](file:///d:/Projects/BranchSync/backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java#L38-L68)."
+Use these structured answers when the examination board points to a specific visual element on the screen and asks, **"How is this coming, and which part of the code is handling this logic?"**
 
 ---
 
-### ❓ Question 2: "How is security configured in your system, and how do you protect API endpoints?"
-> **💡 Key Answer:**
-> "Our security architecture is built on a custom stateless implementation using **Spring Security** and **JWT (JSON Web Tokens)**.
-> 1. In **`SecurityConfig.java`**, we define which endpoints are public (like `/auth/login`) and which require authorization, and inject our custom filter.
-> 2. On every incoming request, **`JwtAuthenticationFilter.java`** intercepts the HTTP call, extracts the token from the `Authorization: Bearer <token>` header, parses the user's role and branch details via **`JwtUtils.java`**, and establishes the security context if valid.
+### ❓ Question 1 (Dashboard Page Welcome Banner)
+**Examiner points to:** The greeting message (e.g., *"Good Evening, jawadur13!"*) inside the welcome banner.
+> **Board asks:** *"How does the system dynamically know whether to say 'Good Morning', 'Good Afternoon', or 'Good Evening'? Where is the code logic handling this greeting message?"*
+>
+> **💡 How you answer:**
+> "This message is determined client-side in the React component. It uses the standard JavaScript `new Date()` API inside the helper function **`getGreeting()`** to fetch the current hour of the user's system.
 > 
-> *Code Location Reference:* [SecurityConfig.java](file:///d:/Projects/BranchSync/backend/src/main/java/com/jamunabank/branchsync/security/SecurityConfig.java) and [JwtAuthenticationFilter.java](file:///d:/Projects/BranchSync/backend/src/main/java/com/jamunabank/branchsync/security/JwtAuthenticationFilter.java)."
+> * **If it's before 12:00 PM**, it returns `'Good Morning'`.
+> * **If it's between 12:00 PM and 5:00 PM (17:00)**, it returns `'Good Afternoon'`.
+> * **Otherwise**, it defaults to `'Good Evening'`.
+> 
+> *Code Location Reference:* [Dashboard.tsx:L72-77](file:///d:/Projects/BranchSync/frontend/src/pages/Dashboard.tsx#L72-L77)."
 
 ---
 
-### ❓ Question 3: "What is 'double-entry ledger logic' in your project, and how are quantities modified when items move?"
-> **💡 Key Answer:**
-> "To prevent discrepancies, inventory is never just 'incremented' or 'decremented' in isolation. When an item is marked as **Picked Up** or **Delivered** in `TransferServiceImpl.java`:
-> 1. During **Pickup** (`markPickedUp`), the sending branch is debited via `stockService.recordTransferOut()` which logs a negative ledger balance entry.
-> 2. During **Delivery** (`markDelivered`), the receiving branch is credited via `stockService.recordTransferIn()` which logs a positive ledger balance entry.
+### ❓ Question 2 (Dashboard Page Attention Widget)
+**Examiner points to:** The list of items inside the "Attention Required" widget on the dashboard.
+> **Board asks:** *"How does the system decide which transfers show up in this 'Attention Required' widget? Where is the code determining if a request requires immediate action?"*
+>
+> **💡 How you answer:**
+> "The dashboard filters the retrieved list of transfers using the helper function **`isActionable()`** on the frontend. This function checks the logged-in user's role and evaluates it against the transfer's status:
 > 
-> *Code Location Reference:* Inside [TransferServiceImpl.java](file:///d:/Projects/BranchSync/backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java#L344-L364) (for outgoing debit) and [TransferServiceImpl.java](file:///d:/Projects/BranchSync/backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java#L389-L408) (for incoming credit)."
+> 1. If the user is `HQ_LOGISTICS_OFFICER` and status is `'PENDING_HQ_APPROVAL'`.
+> 2. If the user is a `BRANCH_MANAGER` / `OPERATION_MANAGER` and status is `'PENDING_INTERNAL'` or `'PENDING_FINAL_RELEASE'`.
+> 3. If the user is a branch `OFFICER` and status is `'PENDING_ASSIGNMENT'`.
+> 4. If the user is a `DELIVERY_PERSON` and status is `'READY_FOR_PICKUP'` or `'IN_TRANSIT'`.
+> 5. If the transfer is `'DELIVERED'` and the user is the original initiator (requester) who needs to close/acknowledge receipt.
+> 
+> *Code Location Reference:* [Dashboard.tsx:L79-94](file:///d:/Projects/BranchSync/frontend/src/pages/Dashboard.tsx#L79-L94)."
 
 ---
 
-### ❓ Question 4: "What happens if a driver delivers the items, but the receiving branch rejects the transfer on receipt? how does your code handle this?"
-> **💡 Key Answer:**
-> "This is handled by our **Reversal Logic** inside the `closeRequest()` method of `TransferServiceImpl.java` when the `accepted` flag is passed as `false` (status becomes `REJECTED_ON_RECEIPT`). 
+### ❓ Question 3 (Stock Ledger Page Totals)
+**Examiner points to:** The total count badge inside the "All Items" selection pill on the Stock Ledger page.
+> **Board asks:** *"How does the system dynamically sum the total counts of all assets currently listed on this page? Where is this calculated?"*
+>
+> **💡 How you answer:**
+> "On the frontend, rather than making a separate API call to sum the inventory, we dynamically calculate it from the loaded `balances` array using the JavaScript **`.reduce()`** array method. 
 > 
-> The system automatically triggers opposite double-entry corrections:
-> 1. The receiving branch (origin branch) loses the items back via `stockService.recordReversal(..., "OUT")`.
-> 2. The sending branch (destination branch) receives its items back via `stockService.recordReversal(..., "IN")`.
+> It iterates through the loaded balances and aggregates the `currentQuantity` property to display the live cumulative total count of items in the branch.
 > 
-> This ensures that physical assets are never lost in transit or mathematically unaccounted for if a delivery is declined at the destination.
-> 
-> *Code Location Reference:* [TransferServiceImpl.java](file:///d:/Projects/BranchSync/backend/src/main/java/com/jamunabank/branchsync/service/impl/TransferServiceImpl.java#L445-L467)."
+> *Code Location Reference:* [StockLedger.tsx:L467](file:///d:/Projects/BranchSync/frontend/src/pages/StockLedger.tsx#L467)."
 
 ---
 
-### ❓ Question 5: "On the frontend, how do you handle routing security and ensure that users cannot bypass login?"
-> **💡 Key Answer:**
-> "We protect frontend routes using a React higher-order wrapper component called **`ProtectedRoute.tsx`**. 
+### ❓ Question 4 (Transfer Details Page Cash Breakdown Validation)
+**Examiner points to:** The dynamic denomination breakdown panel (with inputs for ৳1000, ৳500 etc.) and the warning message: *'⚠ Must equal ৳[Amount]'*.
+> **Board asks:** *"How does the system calculate the live Total sum of the entered cash denominations and validate that it matches the original requested amount? Where is this code?"*
+>
+> **💡 How you answer:**
+> "Inside **`TransferDetails.tsx`**, the live total is calculated dynamically on every input change by mapping over our `DENOMINATION_TYPES` array and running a **`.reduce()`** accumulator over the state variables `denomQtys`:
 > 
-> It checks if a valid authenticated user object exists in our React context (`useAuth()`). If the user is authenticated, it renders the page; otherwise, it redirects the browser back to `/login` using the `<Navigate />` element from `react-router-dom`, preserving the intended destination for seamless re-routing post-login.
+> `DENOMINATION_TYPES.reduce((sum, d) => sum + (denomQtys[d] || 0) * d, 0)`
 > 
-> *Code Location Reference:* [ProtectedRoute.tsx](file:///d:/Projects/BranchSync/frontend/src/components/ProtectedRoute.tsx)."
+> The system then compares this dynamic sum with the `transfer.requestedAmount`. If they do not match, it conditionally renders the validation warning text in red.
+> 
+> *Code Location Reference:* [TransferDetails.tsx:L976-981](file:///d:/Projects/BranchSync/frontend/src/pages/TransferDetails.tsx#L976-L981)."
+
+---
+
+### ❓ Question 5 (Transfer Details Page Action Button Text)
+**Examiner points to:** The action button under the denominations that displays either *'Save Denomination Breakdown'* or *'Update Denomination Breakdown'*.
+> **Board asks:** *"How does this button know whether to say 'Save' or 'Update'? Where is this UI state toggled inside the code?"*
+>
+> **💡 How you answer:**
+> "The text content of the button is controlled dynamically using a ternary expression that evaluates the boolean flag **`transfer.denominationsSubmitted`** returned by our backend:
+> 
+> `transfer.denominationsSubmitted ? '✅ Update Denomination Breakdown' : '💾 Save Denomination Breakdown'`
+> 
+> If the backend database confirms that a breakdown was already submitted for this requisition, the button automatically swaps its state to 'Update' mode.
+> 
+> *Code Location Reference:* [TransferDetails.tsx:L988](file:///d:/Projects/BranchSync/frontend/src/pages/TransferDetails.tsx#L988)."
+
