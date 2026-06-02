@@ -155,3 +155,15 @@ Use these structured answers when the examination board points to a specific vis
 > 
 > *Code Location Reference:* [TransferDetails.tsx:L988](file:///d:/Projects/BranchSync/frontend/src/pages/TransferDetails.tsx#L988)."
 
+---
+
+### ❓ Question 6 (New Transfer Page Cash Amount Box)
+**Examiner points to:** The 💵 Amount Requested (৳) input box in the New Transfer Form.
+> **Board asks:** *"When we select Cash and hover over this box, we can scroll the mouse wheel up/down or press arrow keys to change the numbers. Where in the code is this scroll and arrow logic configured?"*
+>
+> **💡 How you answer:**
+> "This up/down scrolling and keyboard arrow behavior is a **native HTML5 browser behavior** enabled by setting the input element's type attribute to **`"number"`** (`type="number"`).
+> 
+> The code binds this input to our React state variable `requestedAmount` via the **`onChange`** event handler, which intercepts any visual interaction (typing, scrolling, or clicking the spinner arrows) and calls `setRequestedAmount(e.target.value)`.
+> 
+> *Code Location Reference:* [NewTransfer.tsx:L253-263](file:///d:/Projects/BranchSync/frontend/src/pages/NewTransfer.tsx#L253-L263)."
