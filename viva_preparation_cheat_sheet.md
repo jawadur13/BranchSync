@@ -274,5 +274,101 @@ If the examiners point to **any** dynamic text, list, badge, or button on the sc
 > 
 > *Code Location Reference:* [StockLedger.tsx:L73-76](file:///d:/Projects/BranchSync/frontend/src/pages/StockLedger.tsx#L73-L76) (fetching) and [StockLedger.tsx:L437-447](file:///d:/Projects/BranchSync/frontend/src/pages/StockLedger.tsx#L437-L447) (rendering)."
 
+---
+
+## 📂 Section 5: Live Defense Code Modification & Survival Guide
+
+If the board says: *"Let's see if you can modify the code. Add a column, change this text, or change this styling live."* 
+
+Do not panic. You can do this quickly by following these guidelines:
+
+### 🔍 Strategy 1: How to Locate the Code Instantly
+1. Look at the exact text on the screen they want changed (e.g. *"Attention Required"* or *"Initiate an inter-branch"*).
+2. Open VS Code, press **`Ctrl + Shift + F`** (Global Search).
+3. Type the exact text.
+4. Open the matching file (it will highlight the exact line).
+
+---
+
+### 🛠️ Common Modification Tasks & How to Write Them
+
+#### Task 1: Change Text Labels
+* **Scenario:** Board asks: *"Change the title 'Operational Stock Ledger' to 'Branch Asset Ledger'."*
+* **How to do it:** 
+  1. Search for `"Operational Stock Ledger"` via `Ctrl + Shift + F`.
+  2. In `StockLedger.tsx`, replace:
+     ```diff
+     - <h1 className="ledger-title">📦 Operational Stock Ledger</h1>
+     + <h1 className="ledger-title">📦 Branch Asset Ledger</h1>
+     ```
+  3. Save the file. React will hot-reload and update instantly in the browser.
+
+#### Task 2: Change Text / Alert Colors
+* **Scenario:** Board asks: *"Change the red warning text color under denominations to a warning blue."*
+* **How to do it:**
+  1. Search for `" Must equal "` to find the exact line in `TransferDetails.tsx`.
+  2. You will find:
+     ```tsx
+     <span style={{ color: '#dc2626', marginLeft: '8px' }}>⚠ Must equal ...</span>
+     ```
+  3. Simply replace the hex code `#dc2626` (red) with `#2563eb` (blue):
+     ```diff
+     - <span style={{ color: '#dc2626', marginLeft: '8px' }}>
+     + <span style={{ color: '#2563eb', marginLeft: '8px' }}>
+     ```
+  4. Save the file.
+
+#### Task 3: Add a New Column to a Table
+* **Scenario:** Board asks: *"In the Stock Ledger Logs table, add a new column displaying the Item ID."*
+* **How to do it:**
+  1. Search for `<thead>` inside `StockLedger.tsx` to find the table definition.
+  2. **Step A:** Add a header column `<th>Item ID</th>` next to the existing headers:
+     ```html
+     <thead>
+         <tr>
+             <th>Item ID</th> <!-- Added -->
+             <th>Timestamp</th>
+             <th>Type</th>
+         </tr>
+     </thead>
+     ```
+  3. **Step B:** Scroll down slightly to `<tbody>` and add a corresponding `<td>` data cell inside the row loop (`entries.map(e => ...)`):
+     ```html
+     <tbody>
+         {entries.map((e) => (
+             <tr key={e.ledgerId}>
+                 <td>{e.stockItem?.stockItemId || '—'}</td> <!-- Added -->
+                 <td>{formatDate(e.createdAt)}</td>
+                 ...
+             </tr>
+         ))}
+     </tbody>
+     ```
+  4. Save and run.
+
+#### Task 4: Add New Fields to Text Blocks
+* **Scenario:** Board asks: *"On the dashboard greeting banner, display the user's role next to their name."*
+* **How to do it:**
+  1. Search for `getGreeting()` in `Dashboard.tsx`.
+  2. You will see: `<h2>{getGreeting()}, {user?.fullName || user?.employeeId}! 👋</h2>`.
+  3. Modify the JSX to print the role (converting underscores to spaces if desired):
+     ```diff
+     - <h2>{getGreeting()}, {user?.fullName || user?.employeeId}! 👋</h2>
+     + <h2>{getGreeting()}, {user?.fullName || user?.employeeId} ({user?.role?.replace('ROLE_','').replace('_',' ')})! 👋</h2>
+     ```
+  4. Save and inspect.
+
+#### Task 5: Restrict/Disable Inputs Dynamically
+* **Scenario:** Board asks: *"Disable the Submit button on the new request form if the description is left empty."*
+* **How to do it:**
+  1. Go to `NewTransfer.tsx`. Find the submit button at the bottom: `<button type="submit" ...>`
+  2. Add a `disabled` condition evaluating the state variable `description`:
+     ```diff
+     - <button type="submit" className="btn-submit" disabled={loading}>
+     + <button type="submit" className="btn-submit" disabled={loading || !description.trim()}>
+     ```
+  3. Save. The button will now remain disabled until the user types something in the description box.
+
+
 
 
