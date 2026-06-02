@@ -167,3 +167,112 @@ Use these structured answers when the examination board points to a specific vis
 > The code binds this input to our React state variable `requestedAmount` via the **`onChange`** event handler, which intercepts any visual interaction (typing, scrolling, or clicking the spinner arrows) and calls `setRequestedAmount(e.target.value)`.
 > 
 > *Code Location Reference:* [NewTransfer.tsx:L253-263](file:///d:/Projects/BranchSync/frontend/src/pages/NewTransfer.tsx#L253-L263)."
+
+---
+
+### ❓ Question 7 (Database Configuration & Integration)
+**Examiner points to:** Any database interaction or simply asks a general integration question.
+> **Board asks:** *"Which database does your project connect to? Where are the database credentials configured, and how does the backend communicate with it?"*
+>
+> **💡 How you answer:**
+> "Our application connects to a **Local MySQL** database (run via XAMPP) using the official JDBC driver (`com.mysql.cj.jdbc.Driver`).
+> 
+> All configuration details—including the database connection URL (`jdbc:mysql://localhost:3306/branchsync`), root username, and password—are configured in the central **`application.properties`** file in our backend resources.
+> 
+> The backend communicates with this database using **Spring Data JPA** (Java Persistence API) with **Hibernate** as our Object-Relational Mapper (ORM). Additionally, the line `spring.jpa.hibernate.ddl-auto=update` is active, which tells Hibernate to automatically compare our Java Entity classes with the MySQL database and update the schema dynamically at startup.
+> 
+> *Code Location Reference:* [application.properties:L1-18](file:///d:/Projects/BranchSync/backend/src/main/resources/application.properties#L1-L18)."
+
+---
+
+### ❓ Question 8 (Role of the Model/Entity Folder)
+**Examiner points to:** Any file inside the `backend/src/main/java/com/jamunabank/branchsync/model/entity` folder.
+> **Board asks:** *"What is the purpose of the classes inside this entity folder? What does the @Entity annotation represent?"*
+>
+> **💡 How you answer:**
+> "The classes in the `model/entity` folder define our application's **Data Model**. They represent the **Object-Relational Mapping (ORM)** of our database.
+> 
+> * Each class annotated with **`@Entity`** (e.g., `User.java`, `Branch.java`, `TransferRequest.java`) maps directly to a corresponding **Table** in our MySQL database.
+> * The **`@Table(name = "...")`** annotation explicitly specifies the name of that table.
+> * Private fields in these classes marked with **`@Column`** represent the **Columns** inside that table.
+> * Relationships between tables (like a User belonging to a Branch) are defined using JPA annotations like **`@ManyToOne`** and **`@JoinColumn`**, which automatically establish **Foreign Key** constraints in MySQL.
+> 
+> By using these JPA Entities, Hibernate allows us to interact with our database using standard Java objects, completely eliminating the need to write manual, hardcoded SQL strings for queries."
+
+---
+
+## 📂 Section 4: Universal Formula to Answer Any Frontend Point-and-Ask Question
+
+If the examiners point to **any** dynamic text, list, badge, or button on the screen and ask: *"Where does this come from, and how is it rendered?"*, follow this **4-Step Answer Formula**:
+
+1. **The Page Component:** State which React file renders the current page (e.g. *"This page is rendered by the `Dashboard.tsx` component"*).
+2. **The React State:** Explain that the data is stored in a React state variable (e.g., `useState`) inside that component.
+3. **The API & Backend Connection:** Explain that when the page loads, a React **`useEffect`** hook triggers an asynchronous HTTP request using our **Axios (`api`) client** to fetch this data from the Spring Boot backend REST controllers.
+4. **The JSX Rendering:** Point out that we render this state inside the return block using **curly braces `{}`** (e.g., `{transfer.status}`) or by looping over an array using **`.map()`** to build HTML lists dynamically.
+
+---
+
+### 🎯 Sample Visual-Point Questions & Answers
+
+#### ❓ Example A (Sidebar Profile Details)
+**Examiner points to:** The User Name and Role (e.g., *"HQ LOGISTICS OFFICER"*) inside the sidebar header.
+> **Board asks:** *"Where are these login user details coming from? How does this component know who is logged in and what role they hold?"*
+>
+> **💡 How you answer:**
+> "These details are retrieved from our global React Auth Context (`useAuth`). When a user logs in via `Login.tsx`, the backend validates the credentials and returns a JWT token containing the user's details.
+> 
+> We store this user profile object in the React **`AuthContext.tsx`**. The sidebar component imports this context using `const { user } = useAuth()`, and dynamically prints the username via `{user?.fullName}` and the role name via `{user?.role}` in the JSX.
+> 
+> *Code Location Reference:* [Sidebar.tsx:L12](file:///d:/Projects/BranchSync/frontend/src/components/Layout/Sidebar.tsx#L12) (Imports `useAuth`) and lines where user info is rendered."
+
+---
+
+#### ❓ Example B (Transfer Details Action Buttons)
+**Examiner points to:** The action buttons (like *"Approve Requisition"*, *"Assign Driver"*, or *"Release Vault Cash"*) that change depending on the transfer request.
+> **Board asks:** *"Why do these buttons change? How does the frontend know which action buttons to show for which transfer, and where is the logic behind this?"*
+>
+> **💡 How you answer:**
+> "The visibility of these buttons is controlled by conditional rendering in **`TransferDetails.tsx`** based on:
+> 1. The current **Status** of the transfer request (e.g., `'PENDING_INTERNAL'`, `'PENDING_HQ_APPROVAL'`).
+> 2. The logged-in user's **Role** (e.g., `BRANCH_MANAGER`, `HQ_LOGISTICS_OFFICER`, `DELIVERY_PERSON`).
+> 
+> In the JSX return block, we wrap the buttons in conditional expressions like `{transfer.status === 'PENDING_HQ_APPROVAL' && user?.role === 'HQ_LOGISTICS_OFFICER' && ( ... )}`. This guarantees that a standard Officer cannot see the 'Approve' button, and a Manager only sees buttons relevant to their branch.
+> 
+> *Code Location Reference:* [TransferDetails.tsx:L910-1090](file:///d:/Projects/BranchSync/frontend/src/pages/TransferDetails.tsx#L910-L1090) (Conditional action panels section)."
+
+---
+
+#### ❓ Example C (Color-Coded Status Badges)
+**Examiner points to:** A color-coded status badge (e.g., a green *"Completed"* badge or an orange *"Pending HQ Approval"* badge).
+> **Board asks:** *"How do these status badges get their specific colors? Where is the CSS styling logic mapped?"*
+>
+> **💡 How you answer:**
+> "The styling is handled by mapping the status string returned by the database to a specific CSS class. 
+> 
+> In **`Dashboard.tsx`** (and other tables), we pass the status to a helper function **`getStatusBadgeClass(status)`**. This function uses a `switch` statement:
+> * Returns class `'badge-success'` (Green) for `'COMPLETED'`.
+> * Returns class `'badge-hq'` (Orange/Gold) for `'PENDING_HQ_APPROVAL'`.
+> * Returns class `'badge-danger'` (Red) for `'REJECTED'`.
+> 
+> This class name is then injected directly into the HTML badge class: `<span className={`badge ${getStatusBadgeClass(transfer.status)}`}>`.
+> 
+> *Code Location Reference:* [Dashboard.tsx:L42-66](file:///d:/Projects/BranchSync/frontend/src/pages/Dashboard.tsx#L42-L66)."
+
+---
+
+#### ❓ Example D (Ledger Department Filter Dropdown)
+**Examiner points to:** The Department dropdown filter (e.g. *"All Departments"*, *"General"*) on the Stock Ledger page.
+> **Board asks:** *"Where are the options inside this dropdown filter coming from? How does it load the list of available departments?"*
+>
+> **💡 How you answer:**
+> "In **`StockLedger.tsx`**, when the component loads, the `useEffect` hook fires an API request to the backend endpoint `/api/lookup/departments` using Axios. The response is saved in the state array `departmentsLookup`.
+> 
+> In the JSX, we map through these lookup categories inside a standard HTML `<select>` drop-down list: 
+> `{availableDepts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}`.
+> 
+> Choosing an option updates the React state `selectedDeptId`, which triggers our frontend filtering logic to show only items matching that department.
+> 
+> *Code Location Reference:* [StockLedger.tsx:L73-76](file:///d:/Projects/BranchSync/frontend/src/pages/StockLedger.tsx#L73-L76) (fetching) and [StockLedger.tsx:L437-447](file:///d:/Projects/BranchSync/frontend/src/pages/StockLedger.tsx#L437-L447) (rendering)."
+
+
+
